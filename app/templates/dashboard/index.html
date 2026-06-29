@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – SpoolBeacon{% endblock %}
+
+{% block content %}
+
+<!-- Page header -->
+<div class="mb-8">
+    <h1 class="text-2xl font-bold text-white tracking-tight">Dashboard</h1>
+    <p class="text-gray-500 text-sm mt-1">Übersicht über deinen Filament-Bestand</p>
+</div>
+
+<!-- KPI Cards -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+
+    <!-- Filamente -->
+    <div class="card p-5">
+        <div class="flex items-start justify-between mb-3">
+            <span class="section-label">Filamente</span>
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                     class="w-4 h-4 text-indigo-400">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/>
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-white tracking-tight">{{ stats.total_products }}</p>
+        <p class="text-xs text-gray-600 mt-1">Produkte erfasst</p>
+    </div>
+
+    <!-- Spulen -->
+    <div class="card p-5">
+        <div class="flex items-start justify-between mb-3">
+            <span class="section-label">Spulen aktiv</span>
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                     class="w-4 h-4 text-emerald-400">
+                    <circle cx="12" cy="12" r="9"/>
+                    <circle cx="12" cy="12" r="3"/>
+                    <path stroke-linecap="round" d="M12 3v6M12 15v6M3 12h6M15 12h6"/>
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-white tracking-tight">{{ stats.total_spools }}</p>
+        <p class="text-xs text-gray-600 mt-1">Nicht archiviert</p>
+    </div>
+
+    <!-- Restgewicht -->
+    <div class="card p-5">
+        <div class="flex items-start justify-between mb-3">
+            <span class="section-label">Restgewicht</span>
+            <div class="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                     class="w-4 h-4 text-sky-400">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 0 1-2.031.352 5.988 5.988 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.97Zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 0 1-2.031.352 5.989 5.989 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.97Z"/>
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-white tracking-tight">
+            {{ stats.total_remaining_kg }}<span class="text-lg font-medium text-gray-400 ml-1">kg</span>
+        </p>
+        <p class="text-xs text-gray-600 mt-1">Über alle Spulen</p>
+    </div>
+
+    <!-- Lagerwert -->
+    <div class="card p-5">
+        <div class="flex items-start justify-between mb-3">
+            <span class="section-label">Lagerwert</span>
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                     class="w-4 h-4 text-amber-400">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/>
+                </svg>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-white tracking-tight">
+            {{ "%.2f"|format(stats.inventory_value) }}<span class="text-lg font-medium text-gray-400 ml-1">€</span>
+        </p>
+        <p class="text-xs text-gray-600 mt-1">Gewichtsbasiert</p>
+    </div>
+
+</div>
+
+<!-- Second row: Preisübersicht + Knappe Spulen -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+
+    <!-- Preisübersicht -->
+    <div class="card p-5">
+        <h2 class="section-label mb-4">Preisübersicht</h2>
+        <dl class="space-y-3">
+            <div class="flex items-center justify-between">
+                <dt class="text-sm text-gray-500">Ø Preis / kg</dt>
+                <dd class="text-sm font-semibold text-white">{{ "%.2f"|format(stats.avg_price_per_kg) }} €</dd>
+            </div>
+            {% if stats.cheapest %}
+            <div class="flex items-center justify-between">
+                <dt class="text-sm text-gray-500">Günstigster Kauf</dt>
+                <dd class="text-sm font-semibold text-white">
+                    {{ "%.2f"|format(stats.cheapest[0]) }} {{ stats.cheapest[3] }}
+                    <span class="text-gray-600 font-normal text-xs ml-1">({{ stats.cheapest[1] }})</span>
+                </dd>
+            </div>
+            {% endif %}
+            {% if stats.last_purchase %}
+            <div class="flex items-start justify-between gap-4">
+                <dt class="text-sm text-gray-500 flex-shrink-0">Letzter Kauf</dt>
+                <dd class="text-sm font-medium text-white text-right">
+                    {{ stats.last_purchase.shop_name }}
+                    <span class="block text-xs text-gray-500 font-normal">{{ stats.last_purchase.purchase_date }}</span>
+                </dd>
+            </div>
+            {% endif %}
+            <div class="flex items-center justify-between pt-2 border-t border-gray-800">
+                <dt class="text-sm text-gray-500">Käufe gesamt</dt>
+                <dd class="text-sm font-semibold text-white">{{ stats.total_purchases }}</dd>
+            </div>
+        </dl>
+    </div>
+
+    <!-- Knappe Spulen -->
+    <div class="card p-5">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="section-label">Knappe Spulen</h2>
+            <span class="text-xs text-gray-600 bg-gray-800 px-2 py-0.5 rounded-full">unter 20 %</span>
+        </div>
+        {% if low_stock %}
+        <ul class="space-y-3">
+            {% for spool, product in low_stock %}
+            <li class="flex items-center gap-3">
+                {% if product.color_hex %}
+                <span class="w-3 h-3 rounded-full flex-shrink-0 ring-1 ring-white/10"
+                      style="background-color: {{ product.color_hex }}"></span>
+                {% else %}
+                <span class="w-3 h-3 rounded-full flex-shrink-0 bg-gray-700"></span>
+                {% endif %}
+                <a href="/inventory/{{ product.id }}"
+                   class="text-sm text-gray-300 hover:text-indigo-400 truncate flex-1 transition-colors">
+                    {{ product.name }}
+                </a>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <div class="w-12 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                        <div class="h-full bg-orange-500 rounded-full"
+                             style="width: {{ [spool.fill_percent, 100]|min }}%"></div>
+                    </div>
+                    <span class="text-xs font-medium text-orange-400 w-9 text-right">
+                        {{ spool.remaining_weight_g|int }}g
+                    </span>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="flex flex-col items-center justify-center py-6 text-center">
+            <div class="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center mb-2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     class="w-4 h-4 text-emerald-400">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+                </svg>
+            </div>
+            <p class="text-sm text-gray-500">Alle Spulen gut gefüllt.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Third row: Material + Farbe -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+    <!-- By Material -->
+    <div class="card overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-800">
+            <h2 class="section-label">Bestand nach Material</h2>
+        </div>
+        {% if by_material %}
+        <table class="w-full text-sm">
+            <tbody class="divide-y divide-gray-800/60">
+                {% for material, count, total_g in by_material %}
+                <tr class="hover:bg-white/[0.02] transition-colors">
+                    <td class="px-5 py-3 font-medium text-gray-200">{{ material }}</td>
+                    <td class="px-5 py-3 text-center">
+                        <span class="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full">
+                            {{ count }} Spl.
+                        </span>
+                    </td>
+                    <td class="px-5 py-3 text-right text-gray-300 font-medium tabular-nums">
+                        {{ (total_g / 1000)|round(2) }} kg
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="px-5 py-6 text-sm text-gray-600 text-center">Keine Daten vorhanden.</p>
+        {% endif %}
+    </div>
+
+    <!-- By Color -->
+    <div class="card overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-800">
+            <h2 class="section-label">Bestand nach Farbe</h2>
+        </div>
+        {% if by_color %}
+        <table class="w-full text-sm">
+            <tbody class="divide-y divide-gray-800/60">
+                {% for color_name, color_hex, count, total_g in by_color %}
+                <tr class="hover:bg-white/[0.02] transition-colors">
+                    <td class="px-5 py-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-3.5 h-3.5 rounded-full flex-shrink-0 ring-1 ring-white/10
+                                         {% if not color_hex %}bg-gray-600{% endif %}"
+                                  {% if color_hex %}style="background-color: {{ color_hex }}"{% endif %}></span>
+                            <span class="font-medium text-gray-200">{{ color_name }}</span>
+                        </div>
+                    </td>
+                    <td class="px-5 py-3 text-center">
+                        <span class="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full">
+                            {{ count }} Spl.
+                        </span>
+                    </td>
+                    <td class="px-5 py-3 text-right text-gray-300 font-medium tabular-nums">
+                        {{ (total_g / 1000)|round(2) }} kg
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="px-5 py-6 text-sm text-gray-600 text-center">Keine Daten vorhanden.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

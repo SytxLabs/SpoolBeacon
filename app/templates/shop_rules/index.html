@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Shop-Regeln – SpoolBeacon{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-7">
+    <div>
+        <h1 class="text-2xl font-bold text-white tracking-tight">Shop-Regeln</h1>
+        <p class="text-gray-500 text-sm mt-1">CSS-Selektoren und Regex-Muster für HTML-Auslesung (zukünftig)</p>
+    </div>
+    <a href="/shop-rules/new"
+       class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg
+              bg-indigo-600 text-white hover:bg-indigo-500 transition-colors">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+        </svg>
+        Neue Regel
+    </a>
+</div>
+
+{% if rules %}
+<div class="card overflow-hidden">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="border-b border-gray-800 bg-gray-900/50">
+                <th class="text-left px-5 py-3 section-label">Domain</th>
+                <th class="text-left px-5 py-3 section-label hidden md:table-cell">Preis-Selektor</th>
+                <th class="text-left px-5 py-3 section-label hidden lg:table-cell">Verfügbarkeit-Selektor</th>
+                <th class="text-center px-5 py-3 section-label">Währung</th>
+                <th class="text-center px-5 py-3 section-label">Status</th>
+                <th class="px-5 py-3 section-label"></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800/60">
+            {% for rule in rules %}
+            <tr class="hover:bg-white/[0.02] transition-colors {% if not rule.is_active %}opacity-50{% endif %}">
+                <td class="px-5 py-3.5">
+                    <span class="font-medium text-gray-200 font-mono text-xs">{{ rule.domain }}</span>
+                    {% if rule.test_url %}
+                    <a href="{{ rule.test_url }}" target="_blank" rel="noopener noreferrer"
+                       class="ml-2 text-xs text-gray-600 hover:text-indigo-400 transition-colors">test &nearr;</a>
+                    {% endif %}
+                    {% if rule.notes %}
+                    <p class="text-xs text-gray-600 mt-0.5">{{ rule.notes }}</p>
+                    {% endif %}
+                </td>
+                <td class="px-5 py-3.5 hidden md:table-cell">
+                    <span class="font-mono text-xs text-gray-500">{{ rule.price_selector or '–' }}</span>
+                    {% if rule.price_regex %}
+                    <span class="ml-2 text-xs text-gray-600 font-mono">/{{ rule.price_regex }}/</span>
+                    {% endif %}
+                </td>
+                <td class="px-5 py-3.5 hidden lg:table-cell">
+                    <span class="font-mono text-xs text-gray-500">{{ rule.availability_selector or '–' }}</span>
+                </td>
+                <td class="px-5 py-3.5 text-center">
+                    <span class="text-xs text-gray-500">{{ rule.currency }}</span>
+                </td>
+                <td class="px-5 py-3.5 text-center">
+                    <form method="POST" action="/shop-rules/{{ rule.id }}/toggle" class="inline">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit"
+                                class="px-2 py-0.5 rounded-full text-xs font-medium transition-all
+                                       {% if rule.is_active %}bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25
+                                       {% else %}bg-gray-800 text-gray-600 hover:text-gray-400{% endif %}">
+                            {% if rule.is_active %}aktiv{% else %}inaktiv{% endif %}
+                        </button>
+                    </form>
+                </td>
+                <td class="px-5 py-3.5 text-right">
+                    <div class="flex items-center justify-end gap-1">
+                        <a href="/shop-rules/{{ rule.id }}/edit"
+                           class="px-2 py-1 text-xs text-gray-500 hover:text-white bg-gray-800 hover:bg-gray-700 rounded transition-colors">
+                            Bearb.
+                        </a>
+                        <form method="POST" action="/shop-rules/{{ rule.id }}/delete" class="inline"
+                              onsubmit="return confirm('Regel fuer {{ rule.domain }} loeschen?')">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit"
+                                    class="px-2 py-1 text-xs text-gray-600 hover:text-red-400 hover:bg-red-950/30 rounded transition-colors">
+                                Del
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card p-12 text-center">
+    <p class="text-gray-500 text-sm mb-3">Noch keine Shop-Regeln. Regeln definieren Domain-Selektoren für spätere automatische Preisprüfung.</p>
+    <a href="/shop-rules/new"
+       class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg
+              bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 transition-all">
+        Erste Regel anlegen
+    </a>
+</div>
+{% endif %}
+{% endblock %}

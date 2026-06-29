@@ -1,0 +1,48 @@
+# Environment
+.env
+.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Testing / type checking
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Node (Tailwind build)
+node_modules/
+npm-debug.log*
+
+# Logs
+*.log
+logs/
+
+# DB / local files
+*.db
+*.sqlite3
+*.sql.gz
+
+# Docker
+.dockerignore

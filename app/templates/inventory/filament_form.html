@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% set editing = product is not none %}
+{% block title %}{% if editing %}{{ product.name }} bearbeiten{% else %}Filament anlegen{% endif %} – SpoolBeacon{% endblock %}
+
+{% macro field_val(name, default='') %}
+{%- if form_data is not none -%}{{ form_data.get(name, default) }}{%- elif editing -%}{{ product[name] if product[name] is not none else default }}{%- else -%}{{ default }}{%- endif -%}
+{% endmacro %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="mb-7">
+    <nav class="flex items-center gap-1.5 text-xs text-gray-600 mb-3">
+        <a href="/inventory/" class="hover:text-gray-400 transition-colors">Inventory</a>
+        {% if editing %}
+        <span>/</span>
+        <a href="/inventory/{{ product.id }}" class="hover:text-gray-400 transition-colors">{{ product.name }}</a>
+        {% endif %}
+        <span>/</span>
+        <span class="text-gray-400">{% if editing %}Bearbeiten{% else %}Neu anlegen{% endif %}</span>
+    </nav>
+    <h1 class="text-2xl font-bold text-white tracking-tight">
+        {% if editing %}{{ product.name }} bearbeiten{% else %}Filament anlegen{% endif %}
+    </h1>
+</div>
+
+<form method="POST"
+      action="{% if editing %}/inventory/filament/{{ product.id }}/edit{% else %}/inventory/filament/new{% endif %}"
+      class="max-w-2xl space-y-6">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+    <!-- Hersteller ─────────────────────────────────── -->
+    <div class="card p-5 space-y-4">
+        <h2 class="section-label">Hersteller</h2>
+
+        <div>
+            <label for="manufacturer_id" class="block text-sm text-gray-400 mb-1.5">
+                Hersteller <span class="text-red-500">*</span>
+            </label>
+            <select id="manufacturer_id" name="manufacturer_id"
+                    onchange="document.getElementById('new-mfr').classList.toggle('hidden', this.value !== 'new')"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                           focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                <option value="">– Hersteller wählen –</option>
+                {% for mfr in manufacturers %}
+                <option value="{{ mfr.id }}"
+                    {% if form_data and form_data.get('manufacturer_id') == mfr.id|string %}selected
+                    {% elif not form_data and editing and product.manufacturer_id == mfr.id %}selected
+                    {% endif %}>
+                    {{ mfr.name }}
+                </option>
+                {% endfor %}
+                <option value="new"
+                    {% if form_data and form_data.get('manufacturer_id') == 'new' %}selected{% endif %}>
+                    + Neuen Hersteller anlegen
+                </option>
+            </select>
+        </div>
+
+        <!-- Inline new manufacturer -->
+        <div id="new-mfr"
+             class="{% if not (form_data and form_data.get('manufacturer_id') == 'new') %}hidden{% endif %}
+                    bg-gray-800/50 border border-gray-700/50 rounded-lg p-4">
+            <label class="block text-sm text-gray-400 mb-1.5">
+                Name des neuen Herstellers <span class="text-red-500">*</span>
+            </label>
+            <input type="text" name="new_manufacturer_name"
+                   value="{{ form_data.get('new_manufacturer_name', '') if form_data else '' }}"
+                   placeholder="z. B. Bambu Lab"
+                   class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                          placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+        </div>
+    </div>
+
+    <!-- Filament-Details ────────────────────────────── -->
+    <div class="card p-5 space-y-4">
+        <h2 class="section-label">Filament</h2>
+
+        <!-- Name -->
+        <div>
+            <label for="name" class="block text-sm text-gray-400 mb-1.5">
+                Produktname <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="name" name="name"
+                   value="{{ field_val('name') }}"
+                   placeholder="z. B. PolyTerra PLA Matte"
+                   autofocus
+                   class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                          placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+        </div>
+
+        <!-- Material -->
+        <div>
+            <label for="material" class="block text-sm text-gray-400 mb-1.5">
+                Material <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="material" name="material"
+                   value="{{ field_val('material') }}"
+                   list="material-list"
+                   placeholder="z. B. PLA"
+                   class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                          placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+            <datalist id="material-list">
+                <option value="PLA">
+                <option value="PLA+">
+                <option value="PETG">
+                <option value="ABS">
+                <option value="ASA">
+                <option value="TPU">
+                <option value="PA">
+                <option value="PA-CF">
+                <option value="PETG-CF">
+                <option value="PC">
+                <option value="PVA">
+                <option value="HIPS">
+            </datalist>
+        </div>
+
+        <!-- Farbe -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label for="color_name" class="block text-sm text-gray-400 mb-1.5">
+                    Farbbezeichnung <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="color_name" name="color_name"
+                       value="{{ field_val('color_name') }}"
+                       placeholder="z. B. Marble White"
+                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                              placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+            </div>
+            <div>
+                <label for="color_hex_text" class="block text-sm text-gray-400 mb-1.5">
+                    Farbwert (optional)
+                </label>
+                <div class="flex items-center gap-2">
+                    <input type="color" id="color_picker"
+                           value="{{ field_val('color_hex', '#ffffff') }}"
+                           oninput="document.getElementById('color_hex_text').value = this.value"
+                           class="h-9 w-12 rounded-lg cursor-pointer bg-gray-800 border border-gray-700 p-0.5">
+                    <input type="text" id="color_hex_text" name="color_hex"
+                           value="{{ field_val('color_hex') }}"
+                           placeholder="#ffffff"
+                           maxlength="7"
+                           oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('color_picker').value = this.value"
+                           class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                                  placeholder-gray-600 font-mono focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                </div>
+            </div>
+        </div>
+
+        <!-- Durchmesser + Nenngewicht -->
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label for="diameter_mm" class="block text-sm text-gray-400 mb-1.5">Durchmesser</label>
+                <select id="diameter_mm" name="diameter_mm"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                               focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                    {% for d in [('1.75', '1.75 mm'), ('2.85', '2.85 mm'), ('3.0', '3.0 mm')] %}
+                    <option value="{{ d[0] }}"
+                        {% if field_val('diameter_mm', '1.75') == d[0] %}selected{% endif %}>
+                        {{ d[1] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="nominal_weight_g" class="block text-sm text-gray-400 mb-1.5">Nenngewicht</label>
+                <select id="nominal_weight_g" name="nominal_weight_g"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                               focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                    {% for w in [250, 500, 750, 1000, 2000, 3000, 5000] %}
+                    <option value="{{ w }}"
+                        {% if field_val('nominal_weight_g', '1000') == w|string %}selected{% endif %}>
+                        {{ w }} g{% if w >= 1000 %} ({{ w // 1000 }} kg){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notizen ─────────────────────────────────────── -->
+    <div class="card p-5">
+        <label for="notes" class="block section-label mb-3">Notizen (optional)</label>
+        <textarea id="notes" name="notes" rows="3"
+                  placeholder="Besonderheiten, Druckeinstellungen, …"
+                  class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                         placeholder-gray-600 resize-y focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">{{ field_val('notes') }}</textarea>
+    </div>
+
+    <!-- Buttons ─────────────────────────────────────── -->
+    <div class="flex items-center gap-3">
+        <button type="submit"
+                class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors">
+            {% if editing %}Änderungen speichern{% else %}Filament anlegen{% endif %}
+        </button>
+        <a href="{% if editing %}/inventory/{{ product.id }}{% else %}/inventory/{% endif %}"
+           class="px-5 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-sm font-medium rounded-lg transition-colors">
+            Abbrechen
+        </a>
+        {% if editing %}
+        <div class="ml-auto">
+            <form method="POST" action="/inventory/filament/{{ product.id }}/delete" class="inline"
+                  onsubmit="return confirm('Filament wirklich löschen? Dies kann nicht rückgängig gemacht werden.')">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <button type="submit"
+                        class="px-4 py-2 text-sm text-red-500 hover:text-red-400 hover:bg-red-950/30 rounded-lg transition-colors">
+                    Löschen
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+</form>
+{% endblock %}
