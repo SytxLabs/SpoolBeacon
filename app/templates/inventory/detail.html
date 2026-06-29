@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} – SpoolBeacon{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb + Header -->
+<div class="mb-7">
+    <nav class="flex items-center gap-1.5 text-xs text-gray-600 mb-3">
+        <a href="/inventory/" class="hover:text-gray-400 transition-colors">Inventory</a>
+        <span>/</span>
+        <span class="text-gray-500">{{ product.manufacturer.name }}</span>
+        <span>/</span>
+        <span class="text-gray-300">{{ product.name }}</span>
+    </nav>
+
+    <a href="/inventory/filament/{{ product.id }}/edit"
+       class="ml-auto flex-shrink-0 px-3 py-1.5 text-xs text-gray-400 hover:text-white
+              bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
+        Bearbeiten
+    </a>
+
+    <div class="flex items-start gap-4">
+        <!-- Color swatch -->
+        <div class="w-11 h-11 rounded-xl flex-shrink-0 ring-1 ring-white/10 mt-0.5
+                    {% if not product.color_hex %}bg-gray-800{% endif %}"
+             {% if product.color_hex %}style="background-color: {{ product.color_hex }}"{% endif %}></div>
+
+        <div class="min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+                <h1 class="text-2xl font-bold text-white tracking-tight">{{ product.name }}</h1>
+                <span class="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full font-medium">
+                    {{ product.material }}
+                </span>
+                {% if product.diameter_mm %}
+                <span class="text-xs bg-gray-800 text-gray-500 px-2 py-0.5 rounded-full">
+                    {{ product.diameter_mm }} mm
+                </span>
+                {% endif %}
+            </div>
+            <p class="text-gray-500 text-sm mt-1">{{ product.manufacturer.name }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Product meta -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-7">
+    <div class="card p-4">
+        <p class="section-label mb-1">Farbe</p>
+        <div class="flex items-center gap-2 mt-1">
+            <span class="w-3 h-3 rounded-full ring-1 ring-white/10 flex-shrink-0
+                         {% if not product.color_hex %}bg-gray-700{% endif %}"
+                  {% if product.color_hex %}style="background-color: {{ product.color_hex }}"{% endif %}></span>
+            <span class="text-sm font-medium text-gray-200">{{ product.color_name }}</span>
+        </div>
+        {% if product.color_hex %}
+        <p class="text-xs text-gray-600 mt-1 font-mono">{{ product.color_hex }}</p>
+        {% endif %}
+    </div>
+    <div class="card p-4">
+        <p class="section-label mb-1">Material</p>
+        <p class="text-sm font-medium text-gray-200 mt-1">{{ product.material }}</p>
+    </div>
+    <div class="card p-4">
+        <p class="section-label mb-1">Durchmesser</p>
+        <p class="text-sm font-medium text-gray-200 mt-1">{{ product.diameter_mm }} mm</p>
+    </div>
+    <div class="card p-4">
+        <p class="section-label mb-1">Nenngewicht</p>
+        <p class="text-sm font-medium text-gray-200 mt-1">{{ product.nominal_weight_g }} g</p>
+    </div>
+</div>
+
+{% if product.notes %}
+<div class="card px-5 py-3.5 mb-7 text-sm text-gray-400 border-l-2 border-indigo-800">
+    {{ product.notes }}
+</div>
+{% endif %}
+
+<!-- ── Shop-Links ─────────────────────────────── -->
+<div class="flex items-center justify-between mb-3">
+    <h2 class="text-base font-semibold text-white">Shop-Links</h2>
+    <a href="/inventory/{{ product.id }}/shop-link/new"
+       class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-lg
+              bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 hover:text-indigo-300
+              border border-indigo-500/20 transition-all">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        Link hinzufügen
+    </a>
+</div>
+
+{% if shop_links %}
+<div class="card overflow-hidden mb-7">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="border-b border-gray-800 bg-gray-900/50">
+                <th class="text-left px-5 py-3 section-label">Shop</th>
+                <th class="text-right px-5 py-3 section-label hidden sm:table-cell">Paket</th>
+                <th class="text-right px-5 py-3 section-label">Manuell</th>
+                <th class="text-right px-5 py-3 section-label hidden sm:table-cell">Versand</th>
+                <th class="text-right px-5 py-3 section-label">Gesamt</th>
+                <th class="text-right px-5 py-3 section-label hidden md:table-cell">pro kg</th>
+                <th class="text-right px-5 py-3 section-label hidden lg:table-cell">Snapshot</th>
+                <th class="text-center px-5 py-3 section-label">Status</th>
+                <th class="px-5 py-3 section-label"></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800/60">
+            {% for sl in shop_links %}
+            <tr class="hover:bg-white/[0.02] transition-colors {% if not sl.is_active %}opacity-50{% endif %}">
+                <td class="px-5 py-3.5">
+                    <a href="{{ sl.url }}" target="_blank" rel="noopener noreferrer"
+                       class="font-medium text-indigo-400 hover:text-indigo-300 transition-colors inline-flex items-center gap-1">
+                        {{ sl.shop_name }}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                             class="w-3 h-3 flex-shrink-0 opacity-50">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+                        </svg>
+                    </a>
+                    {% if sl.notes %}
+                    <p class="text-xs text-gray-600 mt-0.5">{{ sl.notes }}</p>
+                    {% endif %}
+                </td>
+                <td class="px-5 py-3.5 text-right text-gray-500 text-xs tabular-nums hidden sm:table-cell">
+                    {{ sl.package_weight_g }} g
+                </td>
+                <td class="px-5 py-3.5 text-right tabular-nums">
+                    <span class="text-gray-200 font-medium">{{ "%.2f"|format(sl.manual_price) }}</span>
+                    <span class="text-gray-600 text-xs ml-0.5">{{ sl.currency }}</span>
+                </td>
+                <td class="px-5 py-3.5 text-right text-gray-500 text-xs tabular-nums hidden sm:table-cell">
+                    {% if sl.shipping_price %}{{ "%.2f"|format(sl.shipping_price) }} {{ sl.currency }}{% else %}–{% endif %}
+                </td>
+                <td class="px-5 py-3.5 text-right tabular-nums">
+                    <span class="text-white font-semibold">{{ "%.2f"|format(sl.total_price) }}</span>
+                    <span class="text-gray-600 text-xs ml-0.5">{{ sl.currency }}</span>
+                </td>
+                <td class="px-5 py-3.5 text-right tabular-nums hidden md:table-cell">
+                    <span class="text-emerald-400 font-medium">{{ sl.price_per_kg }}</span>
+                    <span class="text-gray-600 text-xs ml-0.5">{{ sl.currency }}/kg</span>
+                </td>
+                <td class="px-5 py-3.5 text-right tabular-nums hidden lg:table-cell">
+                    {% set snap = latest_snapshots.get(sl.id) %}
+                    {% if snap and snap.source != 'error' %}
+                    <span class="text-white font-medium">{{ "%.2f"|format(snap.price) }}</span>
+                    <span class="text-gray-600 text-xs ml-0.5">{{ snap.currency }}</span>
+                    <p class="text-xs text-gray-600 mt-0.5">{{ snap.captured_at.strftime('%d.%m.%Y %H:%M') }}</p>
+                    {% if snap.availability %}
+                    <p class="text-xs text-gray-600 mt-0.5">{{ snap.availability }}</p>
+                    {% endif %}
+                    {% elif snap and snap.source == 'error' %}
+                    <span class="text-red-500 text-xs">Fehler</span>
+                    {% else %}
+                    <span class="text-gray-700 text-xs">–</span>
+                    {% endif %}
+                </td>
+                <td class="px-5 py-3.5 text-center">
+                    <form method="POST" action="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/toggle" class="inline">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit"
+                                class="px-2 py-0.5 rounded-full text-xs font-medium transition-all
+                                       {% if sl.is_active %}bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25
+                                       {% else %}bg-gray-800 text-gray-600 hover:text-gray-400{% endif %}">
+                            {% if sl.is_active %}aktiv{% else %}inaktiv{% endif %}
+                        </button>
+                    </form>
+                </td>
+                <td class="px-5 py-3.5 text-right">
+                    <div class="flex items-center justify-end gap-1">
+                        <a href="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/snapshot/new"
+                           class="px-2 py-1 text-xs text-indigo-500 hover:text-indigo-300 bg-indigo-950/40 hover:bg-indigo-950/70 rounded transition-colors">
+                            Snap
+                        </a>
+                        <a href="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/snapshots"
+                           class="px-2 py-1 text-xs text-gray-500 hover:text-white bg-gray-800 hover:bg-gray-700 rounded transition-colors">
+                            Hist.
+                        </a>
+                        <a href="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/edit"
+                           class="px-2 py-1 text-xs text-gray-500 hover:text-white bg-gray-800 hover:bg-gray-700 rounded transition-colors">
+                            Bearb.
+                        </a>
+                        <form method="POST" action="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/delete"
+                              class="inline"
+                              onsubmit="return confirm('Shop-Link wirklich loeschen?')">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit"
+                                    class="px-2 py-1 text-xs text-gray-600 hover:text-red-400 hover:bg-red-950/30 rounded transition-colors">
+                                Del
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card p-8 text-center mb-7">
+    <p class="text-gray-500 text-sm">Keine Shop-Links. Preis manuell erfassen?</p>
+    <a href="/inventory/{{ product.id }}/shop-link/new"
+       class="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 text-xs font-medium rounded-lg
+              bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 transition-all">
+        Link hinzufügen
+    </a>
+</div>
+{% endif %}
+
+<!-- ── Käufe ──────────────────────────────────── -->
+<div class="flex items-center justify-between mb-3">
+    <h2 class="text-base font-semibold text-white">Käufe</h2>
+    {% if purchase_lines %}
+    <span class="text-xs text-gray-600">{{ purchase_lines|length }} Einkauf{% if purchase_lines|length != 1 %}söposition{% else %}söposition{% endif %}</span>
+    {% endif %}
+</div>
+
+{% if purchase_lines %}
+<div class="card overflow-hidden mb-7">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="border-b border-gray-800 bg-gray-900/50">
+                <th class="text-left px-5 py-3 section-label">Datum</th>
+                <th class="text-left px-5 py-3 section-label">Shop</th>
+                <th class="text-left px-5 py-3 section-label hidden md:table-cell">Bestellnr.</th>
+                <th class="text-right px-5 py-3 section-label">Menge</th>
+                <th class="text-right px-5 py-3 section-label">Preis / Stk.</th>
+                <th class="text-right px-5 py-3 section-label hidden sm:table-cell">Gewicht</th>
+                <th class="text-left px-5 py-3 section-label hidden lg:table-cell">Los-Nr.</th>
+                <th class="px-5 py-3 section-label"></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800/60">
+            {% for line in purchase_lines %}
+            <tr class="hover:bg-white/[0.02] transition-colors">
+                <td class="px-5 py-3.5 text-gray-400 tabular-nums text-xs">{{ line.purchase.purchase_date }}</td>
+                <td class="px-5 py-3.5 font-medium text-gray-200">{{ line.purchase.shop_name }}</td>
+                <td class="px-5 py-3.5 text-gray-600 text-xs font-mono hidden md:table-cell">
+                    {{ line.purchase.order_number or '–' }}
+                </td>
+                <td class="px-5 py-3.5 text-right font-medium text-gray-200 tabular-nums">
+                    {{ line.quantity }}×
+                </td>
+                <td class="px-5 py-3.5 text-right tabular-nums">
+                    <span class="font-semibold text-gray-100">{{ "%.2f"|format(line.unit_price) }}</span>
+                    <span class="text-gray-600 text-xs ml-0.5">{{ line.currency }}</span>
+                </td>
+                <td class="px-5 py-3.5 text-right text-gray-500 text-xs tabular-nums hidden sm:table-cell">
+                    {{ line.spool_weight_g }} g
+                </td>
+                <td class="px-5 py-3.5 text-gray-600 text-xs font-mono hidden lg:table-cell">
+                    {{ line.lot_number or '–' }}
+                </td>
+                <td class="px-5 py-3.5 text-right">
+                    <form method="POST"
+                          action="/inventory/purchase-line/{{ line.id }}/create-spools"
+                          class="inline">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit"
+                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium
+                                       bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 hover:text-indigo-300
+                                       border border-indigo-500/20 transition-all">
+                            Spulen anlegen
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card p-8 text-center mb-7">
+    <p class="text-gray-400 font-medium text-sm">Keine Käufe erfasst.</p>
+    <p class="text-gray-600 text-xs mt-1">Füge einen Kauf hinzu, um Spulen anzulegen.</p>
+</div>
+{% endif %}
+
+<!-- ── Spulen ──────────────────────────────────── -->
+<div class="flex items-center justify-between mb-3">
+    <h2 class="text-base font-semibold text-white">
+        Spulen
+        <span class="text-sm font-normal text-gray-600 ml-1.5">{{ spools|length }}</span>
+    </h2>
+    {% set active_spools = spools|selectattr('status.value', 'ne', 'archiviert')|list %}
+    {% if active_spools %}
+    <span class="text-xs text-gray-600">
+        {{ active_spools|length }} aktiv ·
+        {{ (active_spools|sum(attribute='remaining_weight_g') / 1000)|round(2) }} kg gesamt
+    </span>
+    {% endif %}
+</div>
+
+{% if spools %}
+<div class="card overflow-hidden">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="border-b border-gray-800 bg-gray-900/50">
+                <th class="text-left px-5 py-3 section-label">Code</th>
+                <th class="text-left px-5 py-3 section-label">Status</th>
+                <th class="text-left px-5 py-3 section-label hidden sm:table-cell">Lagerort</th>
+                <th class="text-left px-5 py-3 section-label hidden md:table-cell">Aufbewahrung</th>
+                <th class="text-right px-5 py-3 section-label">Restgewicht</th>
+                <th class="text-right px-5 py-3 section-label hidden sm:table-cell">Füllstand</th>
+                <th class="text-left px-5 py-3 section-label hidden lg:table-cell">Geöffnet</th>
+                <th class="text-left px-5 py-3 section-label hidden lg:table-cell">Getrocknet</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800/60">
+            {% set status_styles = {
+                'neu':        'bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20',
+                'geöffnet':   'bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20',
+                'fast leer':  'bg-orange-500/10 text-orange-400 ring-1 ring-orange-500/20',
+                'leer':       'bg-gray-800 text-gray-500',
+                'archiviert': 'bg-gray-900 text-gray-700'
+            } %}
+            {% for spool in spools %}
+            <tr class="hover:bg-white/[0.02] transition-colors
+                {% if spool.is_low and spool.status.value not in ('leer', 'archiviert') %}bg-orange-950/10{% endif %}">
+                <td class="px-5 py-3.5 font-mono text-xs text-gray-500">{{ spool.spool_code }}</td>
+                <td class="px-5 py-3.5">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                                 {{ status_styles.get(spool.status.value, 'bg-gray-800 text-gray-400') }}">
+                        {{ spool.status.value }}
+                    </span>
+                </td>
+                <td class="px-5 py-3.5 text-gray-500 text-xs hidden sm:table-cell">
+                    {{ spool.storage_location or '–' }}
+                </td>
+                <td class="px-5 py-3.5 text-gray-500 text-xs hidden md:table-cell">
+                    {{ spool.storage_status.value }}
+                </td>
+                <td class="px-5 py-3.5 text-right tabular-nums font-semibold
+                           {% if spool.is_low %}text-orange-400{% else %}text-gray-200{% endif %}">
+                    {{ spool.remaining_weight_g|int }}
+                    <span class="text-gray-600 font-normal text-xs">g</span>
+                </td>
+                <td class="px-5 py-3.5 text-right hidden sm:table-cell">
+                    <div class="flex items-center justify-end gap-2">
+                        <div class="w-20 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all
+                                {% if spool.fill_percent < 20 %}bg-orange-500
+                                {% elif spool.fill_percent < 50 %}bg-yellow-500
+                                {% else %}bg-emerald-500{% endif %}"
+                                 style="width: {{ [spool.fill_percent, 100]|min }}%"></div>
+                        </div>
+                        <span class="text-xs text-gray-600 w-8 text-right tabular-nums">
+                            {{ spool.fill_percent }}%
+                        </span>
+                    </div>
+                </td>
+                <td class="px-5 py-3.5 text-gray-600 text-xs hidden lg:table-cell">
+                    {{ spool.opened_at.strftime('%d.%m.%Y') if spool.opened_at else '–' }}
+                </td>
+                <td class="px-5 py-3.5 text-gray-600 text-xs hidden lg:table-cell">
+                    {{ spool.last_dried_at.strftime('%d.%m.%Y') if spool.last_dried_at else '–' }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card p-10 text-center">
+    <div class="w-12 h-12 rounded-xl bg-gray-800 flex items-center justify-center mx-auto mb-3">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             class="w-6 h-6 text-gray-500">
+            <circle cx="12" cy="12" r="9"/>
+            <circle cx="12" cy="12" r="3"/>
+            <path stroke-linecap="round" d="M12 3v6M12 15v6M3 12h6M15 12h6"/>
+        </svg>
+    </div>
+    <p class="text-gray-400 font-medium text-sm">Noch keine Spulen erfasst.</p>
+    <p class="text-gray-600 text-xs mt-1">
+        Kauf oben anlegen und „Spulen anlegen" klicken.
+    </p>
+</div>
+{% endif %}
+
+{% endblock %}

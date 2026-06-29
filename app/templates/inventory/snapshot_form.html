@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Preis erfassen – SpoolBeacon{% endblock %}
+
+{% macro fval(name, default='') %}
+{%- if form_data is not none -%}{{ form_data.get(name, default) }}{%- else -%}{{ default }}{%- endif -%}
+{% endmacro %}
+
+{% block content %}
+<div class="mb-7">
+    <nav class="flex items-center gap-1.5 text-xs text-gray-600 mb-3">
+        <a href="/inventory/" class="hover:text-gray-400 transition-colors">Inventory</a>
+        <span>/</span>
+        <a href="/inventory/{{ product.id }}" class="hover:text-gray-400 transition-colors">{{ product.name }}</a>
+        <span>/</span>
+        <span class="text-gray-400">Preis erfassen</span>
+    </nav>
+    <h1 class="text-2xl font-bold text-white tracking-tight">Preis erfassen</h1>
+    <p class="text-gray-500 text-sm mt-1">
+        <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer"
+           class="text-indigo-400 hover:text-indigo-300 transition-colors">{{ link.shop_name }} &nearr;</a>
+    </p>
+</div>
+
+<form method="POST"
+      action="/inventory/{{ product.id }}/shop-link/{{ link.id }}/snapshot/new"
+      class="max-w-lg space-y-5">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+    <div class="card p-5 space-y-4">
+        <h2 class="section-label">Preis</h2>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label for="price" class="block text-sm text-gray-400 mb-1.5">
+                    Preis ({{ link.currency }}) <span class="text-red-500">*</span>
+                </label>
+                <input type="number" id="price" name="price"
+                       value="{{ fval('price') }}"
+                       min="0" step="0.01" autofocus
+                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                              focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                <p class="text-xs text-gray-600 mt-1">Manuell: {{ "%.2f"|format(link.manual_price) }} {{ link.currency }}</p>
+            </div>
+            <div>
+                <label for="shipping_price" class="block text-sm text-gray-400 mb-1.5">
+                    Versand (optional)
+                </label>
+                <input type="number" id="shipping_price" name="shipping_price"
+                       value="{{ fval('shipping_price') }}"
+                       min="0" step="0.01" placeholder="0.00"
+                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                              placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                {% if link.shipping_price is not none %}
+                <p class="text-xs text-gray-600 mt-1">Manuell: {{ "%.2f"|format(link.shipping_price) }} {{ link.currency }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div>
+            <label for="availability" class="block text-sm text-gray-400 mb-1.5">Verfügbarkeit (optional)</label>
+            <input type="text" id="availability" name="availability"
+                   value="{{ fval('availability') }}"
+                   placeholder="Auf Lager / Ausverkauft / ..."
+                   class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                          placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+        </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+        <button type="submit"
+                class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors">
+            Snapshot speichern
+        </button>
+        <a href="/inventory/{{ product.id }}"
+           class="px-5 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-sm font-medium rounded-lg transition-colors">
+            Abbrechen
+        </a>
+    </div>
+</form>
+{% endblock %}

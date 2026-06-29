@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Snapshot-Historie – SpoolBeacon{% endblock %}
+
+{% block content %}
+<div class="mb-7">
+    <nav class="flex items-center gap-1.5 text-xs text-gray-600 mb-3">
+        <a href="/inventory/" class="hover:text-gray-400 transition-colors">Inventory</a>
+        <span>/</span>
+        <a href="/inventory/{{ product.id }}" class="hover:text-gray-400 transition-colors">{{ product.name }}</a>
+        <span>/</span>
+        <span class="text-gray-400">Snapshots</span>
+    </nav>
+    <div class="flex items-start justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-white tracking-tight">Snapshot-Historie</h1>
+            <p class="text-gray-500 text-sm mt-1">
+                <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer"
+                   class="text-indigo-400 hover:text-indigo-300 transition-colors">{{ link.shop_name }} &nearr;</a>
+                &nbsp;·&nbsp; {{ product.name }}
+            </p>
+        </div>
+        <a href="/inventory/{{ product.id }}/shop-link/{{ link.id }}/snapshot/new"
+           class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg
+                  bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 transition-all">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+            Preis erfassen
+        </a>
+    </div>
+</div>
+
+{% if snapshots %}
+<div class="card overflow-hidden">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="border-b border-gray-800 bg-gray-900/50">
+                <th class="text-left px-5 py-3 section-label">Zeitpunkt</th>
+                <th class="text-right px-5 py-3 section-label">Preis</th>
+                <th class="text-right px-5 py-3 section-label hidden sm:table-cell">Versand</th>
+                <th class="text-right px-5 py-3 section-label">Gesamt</th>
+                <th class="text-right px-5 py-3 section-label hidden md:table-cell">pro kg</th>
+                <th class="text-right px-5 py-3 section-label hidden sm:table-cell">Änderung</th>
+                <th class="text-left px-5 py-3 section-label hidden lg:table-cell">Verfügbarkeit</th>
+                <th class="text-center px-5 py-3 section-label">Quelle</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800/60">
+            {% for snap in snapshots %}
+            {# snapshots are newest-first; prev = next item in list = older snapshot #}
+            {% set prev = snapshots[loop.index0 + 1] if loop.index0 + 1 < snapshots|length else none %}
+            {% if prev and prev.source == 'error' %}{% set prev = none %}{% endif %}
+            <tr class="hover:bg-white/[0.02] transition-colors {% if snap.source == 'error' %}opacity-50{% endif %}">
+                <td class="px-5 py-3.5 tabular-nums">
+                    <span class="text-gray-300">{{ snap.captured_at.strftime('%d.%m.%Y') }}</span>
+                    <span class="text-gray-600 text-xs ml-1">{{ snap.captured_at.strftime('%H:%M') }}</span>
+                </td>
+                {% if snap.source == 'error' %}
+                <td class="px-5 py-3.5 text-right" colspan="5">
+                    <span class="text-red-400 text-xs">{{ snap.error_message or 'Fehler' }}</span>
+                </td>
+                {% else %}
+                <td class="px-5 py-3.5 text-right tabular-nums">
+                    <span class="text-gray-200 font-medium">{{ "%.2f"|format(snap.price) }}</span>
+                    <span class="text-gray-600 text-xs ml-0.5">{{ snap.currency }}</span>
+                </td>
+                <td class="px-5 py-3.5 text-right text-gray-500 text-xs tabular-nums hidden sm:table-cell">
+                    {% if snap.shipping_price is not none %}{{ "%.2f"|format(snap.shipping_price) }} {{ snap.currency }}{% else %}–{% endif %}
+                </td>
+                <td class="px-5 py-3.5 text-right tabular-nums">
+                    <span class="text-white font-semibold">{{ "%.2f"|format(snap.total_price) }}</span>
+                    <span class="text-gray-600 text-xs ml-0.5">{{ snap.currency }}</span>
+                </td>
+                <td class="px-5 py-3.5 text-right tabular-nums hidden md:table-cell">
+                    {% set ppkg = (snap.total_price / link.package_weight_g * 1000) %}
+                    <span class="text-emerald-400 font-medium">{{ "%.2f"|format(ppkg) }}</span>
+                    <span class="text-gray-600 text-xs ml-0.5">{{ snap.currency }}/kg</span>
+                </td>
+                <td class="px-5 py-3.5 text-right tabular-nums hidden sm:table-cell">
+                    {% if prev %}
+                        {% set diff = snap.total_price - prev.total_price %}
+                        {% set pct = diff / prev.total_price * 100 %}
+                        {% if diff < -0.001 %}
+                        <span class="text-emerald-400 font-medium">{{ "%.2f"|format(diff) }} {{ snap.currency }}</span>
+                        <p class="text-xs text-emerald-600 mt-0.5">{{ "%.1f"|format(pct) }} %</p>
+                        {% elif diff > 0.001 %}
+                        <span class="text-red-400 font-medium">+{{ "%.2f"|format(diff) }} {{ snap.currency }}</span>
+                        <p class="text-xs text-red-600 mt-0.5">+{{ "%.1f"|format(pct) }} %</p>
+                        {% else %}
+                        <span class="text-gray-600 text-xs">=</span>
+                        {% endif %}
+                    {% else %}
+                    <span class="text-gray-700 text-xs">–</span>
+                    {% endif %}
+                </td>
+                {% endif %}
+                <td class="px-5 py-3.5 hidden lg:table-cell">
+                    <span class="text-gray-500 text-xs">{{ snap.availability or '–' }}</span>
+                </td>
+                <td class="px-5 py-3.5 text-center">
+                    <span class="px-1.5 py-0.5 rounded text-xs font-mono
+                                 {% if snap.source == 'manual' %}text-gray-500 bg-gray-800
+                                 {% elif snap.source == 'html' %}text-blue-400 bg-blue-950/30
+                                 {% else %}text-red-400 bg-red-950/30{% endif %}">
+                        {{ snap.source }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card p-10 text-center">
+    <p class="text-gray-500 text-sm mb-3">Noch keine Snapshots für diesen Shop-Link.</p>
+    <a href="/inventory/{{ product.id }}/shop-link/{{ link.id }}/snapshot/new"
+       class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg
+              bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 transition-all">
+        Ersten Preis erfassen
+    </a>
+</div>
+{% endif %}
+{% endblock %}
