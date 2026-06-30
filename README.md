@@ -18,7 +18,6 @@ Self-hosted filament inventory for 3D printing. Track spools, purchases and shop
 ## Requirements
 
 - Docker + Docker Compose
-- MariaDB 10.6+ (external, not bundled)
 
 For local development: Python 3.12+
 
@@ -26,56 +25,27 @@ For local development: Python 3.12+
 
 ## Quick Start (Docker)
 
-### 1. Create `.env`
-
 ```bash
 cp .env.example .env
 ```
 
-Fill in the values:
+Edit `.env` — choose strong passwords:
 
 ```env
-SECRET_KEY=        # long random string (see below)
-DB_HOST=           # MariaDB host
-DB_PORT=3306
-DB_USER=spoolbeacon
-DB_PASSWORD=       # your DB password
-DB_NAME=spoolbeacon
-DEBUG=false
-QUART_AUTH_COOKIE_SECURE=true   # set true when serving over HTTPS
+SECRET_KEY=       # generate: python -c "import secrets; print(secrets.token_hex(32))"
+DB_PASSWORD=changeme
+QUART_AUTH_COOKIE_SECURE=true
 ```
 
-Generate a secret key:
-```bash
-python -c "import secrets; print(secrets.token_hex(32))"
-```
-
-### 2. Create the database
-
-Run once on your MariaDB instance:
-
-```sql
-CREATE DATABASE spoolbeacon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'spoolbeacon'@'%' IDENTIFIED BY 'your-password';
-GRANT ALL PRIVILEGES ON spoolbeacon.* TO 'spoolbeacon'@'%';
-FLUSH PRIVILEGES;
-```
-
-### 3. Start the container
+Start everything:
 
 ```bash
 docker compose up --build -d
 ```
 
-The app runs on port `5000`. A `/health` endpoint is available for monitoring.
+MariaDB starts automatically, migrations run on container start. No port is exposed to the host.
 
-### 4. Run migrations
-
-```bash
-docker compose exec web python migration.py upgrade head
-```
-
-### 5. Create the first admin account
+### First admin account
 
 Open `http://your-host:5000/setup` — only available when no users exist yet.
 
@@ -86,8 +56,9 @@ Open `http://your-host:5000/setup` — only available when no users exist yet.
 ```bash
 docker compose pull
 docker compose up --build -d
-docker compose exec web python migration.py upgrade head
 ```
+
+Migrations run automatically on restart.
 
 ---
 

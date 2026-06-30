@@ -13,6 +13,8 @@ RUN playwright install --with-deps chromium
 
 COPY . .
 
+RUN chmod +x entrypoint.sh
+
 EXPOSE 5000
 
-CMD ["python", "main.py"]
+ENTRYPOINT ["./entrypoint.sh"]
