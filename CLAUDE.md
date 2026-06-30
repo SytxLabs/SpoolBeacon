@@ -29,9 +29,11 @@ No test suite, no linter config exists.
 
 **Stack:** Quart 0.20 (async Flask), SQLAlchemy 2.x async, asyncmy (MariaDB), Alembic, Jinja2, Tailwind CSS (CDN), APScheduler, httpx, selectolax, cloudscraper, Playwright.
 
-**App factory:** `app/__init__.py` → `create_app()`. Registers blueprints, CSRF middleware, scheduler, and a context processor that injects `current_user`, `csrf_token`, `nav_alert_count`, `is_admin` into every template.
+**App factory:** `app/__init__.py` → `create_app()`. Registers blueprints, CSRF middleware, scheduler, error handlers (403/404/500), and a context processor that injects `current_user`, `csrf_token`, `nav_alert_count`, `is_admin` into every template.
 
 **DB session:** Always use `async with get_db() as session:`. The context manager auto-commits on clean exit, rolls back on exception.
+
+**Static files:** `app/static/` — served at `/static/`. Logo at `app/static/img/logo.png`, referenced via `url_for('static', filename='img/logo.png')`.
 
 **Blueprints / routes:**
 
@@ -44,6 +46,8 @@ No test suite, no linter config exists.
 | `settings_bp` | `/settings` | `routes/settings.py` |
 | `users_bp` | `/users` | `routes/users.py` |
 | `health_bp` | `/health` | `routes/health.py` |
+
+**Error templates:** `app/templates/errors/{403,404,500}.html` — extend `base.html`.
 
 **Models and their relationships:**
 
@@ -63,7 +67,7 @@ AppSetting (key/value table for all runtime config: scheduler, notifications, en
 4. If registered adapter exists for domain → `adapter.extract(html, url)` → `AdapterResult`; else fall back to `ShopRule` CSS selector + regex
 5. `PriceSnapshot` saved; `alert_service.maybe_create_alerts()` creates/auto-resolves `PriceAlertEvent`
 
-**Shop adapters** (`app/shop_adapters/`): Subclass `BaseAdapter`, set `domain` and optionally `fetch_engine = "cloudscraper"`, implement `extract(html, url) → AdapterResult`. Register in `registry.py` via `_reg(YourAdapter())`. See `PLANNED` dict in `registry.py` for evaluated-but-unsupported domains with reason codes.
+**Shop adapters** (`app/shop_adapters/`): Subclass `BaseAdapter`, set `domain` and optionally `fetch_engine = "cloudscraper"`, implement `extract(html, url) → AdapterResult`. Register in `registry.py` via `_reg(YourAdapter())`. Currently registered: `3djake.de`, `prusa3d.com`, `anycubic.com`, `eu.store.bambulab.com`, `esun3dstore.com`, `esun3dstoreeu.com`, `elegoo.com`.
 
 **Price parsing:** `parse_price()` in `routes/shop_rules.py` handles German (`1.299,00 €`) and English (`1,299.00`) formats, plus JSON-LD key fragments. Import from there when needed elsewhere.
 
@@ -77,10 +81,14 @@ AppSetting (key/value table for all runtime config: scheduler, notifications, en
 
 **Form pattern:** Templates use a `fval(name, default)` Jinja macro to populate inputs from either form re-post data, existing model, or default — in that priority order. Follow this pattern for all forms.
 
+**Card headers:** Inside `.card` elements, use `<div class="pb-3 border-b border-gray-800"><p class="text-sm font-medium text-gray-200">Title</p></div>` as the section header — not `<h2 class="section-label">`. Labels inside cards use `text-xs text-gray-400`.
+
+**Nested forms:** Never nest `<form>` inside another `<form>` (invalid HTML). For action buttons that need separate POST targets (test/delete), place those forms outside the main form and reference them via the HTML5 `form="form-id"` attribute on the button.
+
 **Secret fields (webhook URL, SMTP password):** Never display stored value in input. Submit empty = keep existing value. The POST handler in `routes/settings.py` shows the pattern.
 
 **Migrations:** `alembic.ini` uses file template `YYYYMMDD_HHMM_<rev>_<slug>`. `migrations/env.py` imports `app.models` to populate `Base.metadata` for autogenerate. Always run `python migration.py upgrade head` after creating a migration file.
 
 **Scheduler:** APScheduler always starts (1-min heartbeat). Enabled/interval are controlled via `AppSetting` (`scheduler.enabled`, `scheduler.interval_minutes`, `scheduler.min_interval_minutes`) — set via the settings page, not ENV. `apply_settings()` in `app/scheduler.py` updates in-memory state immediately after save.
 
-**Spool codes:** Auto-generated as `SB-{product_id}-{line_id}-{timestamp}-{seq}` in `inventory.create_spools_from_line`. `remaining_weight_g` allows 0 (empty spool); validation rejects negative values only.
+**Spool codes:** Auto-generated using the template in `AppSetting` key `spool.code_template` (default: `SB-{product_id}-{line_id}-{timestamp}-{seq:02d}`). The `{seq}` counter is product-scoped (counts all existing spools for the product, not just the current line). `remaining_weight_g` allows 0 (empty spool); validation rejects negative values only.

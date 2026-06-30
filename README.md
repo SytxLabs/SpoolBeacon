@@ -1,53 +1,62 @@
 # SpoolBeacon
 
-Self-hosted filament inventory tracker for 3D printing. Tracks filament spools (weight, status, storage), purchase history, shop prices, and alerts you when a filament hits your target price.
+Self-hosted filament inventory for 3D printing. Track spools, purchases and shop prices — get notified when a filament hits your target price.
+
+---
 
 ## Features
 
-- **Inventory** — filament products with manufacturer, material, color, diameter; spool tracking with remaining weight, fill %, storage location and status
-- **Purchase history** — per-product purchase log with unit price, lot number, currency; spools auto-created from purchases
-- **Shop price tracking** — shop links with manual prices and automated scraping via ShopRules or built-in adapters
-- **Price snapshots** — history per shop link, with availability, auto-check via scheduler
-- **Target price alerts** — alert when scraped price ≤ target (absolute or per-kg); Discord and SMTP notifications
-- **Dashboard** — totals, low-stock list, by-material/color breakdown, active alerts, scheduler status
-- **User management** — admin / member / viewer roles; admin-only settings and user management
-- **Docker-ready** — single container, connects to external MariaDB
+- **Inventory** — filaments by manufacturer, material, color and diameter; spools with remaining weight, fill %, storage location and status
+- **Purchase history** — price per spool, lot number, currency; spools auto-created on purchase
+- **Price monitoring** — shop links with manual prices and automated scraping via ShopRules or built-in adapters
+- **Price alerts** — alert when price ≤ target (absolute or per kg); Discord and SMTP notifications
+- **Dashboard** — overview, low-stock list, material/color breakdown, active alerts, scheduler status
+- **User management** — Admin / Member / Viewer roles
+
+---
 
 ## Requirements
 
-- Python 3.12+ (for local dev)
+- Docker + Docker Compose
 - MariaDB 10.6+ (external, not bundled)
-- Playwright/Chromium (for JS-heavy shop pages; installed via `playwright install --with-deps chromium`)
-- Docker + Docker Compose (for container deployment)
 
-## Docker Setup
+For local development: Python 3.12+
 
-### 1. Create `.env` from example
+---
+
+## Quick Start (Docker)
+
+### 1. Create `.env`
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env`:
+Fill in the values:
 
 ```env
-SECRET_KEY=<generate a long random string>
-DB_HOST=your-mariadb-host
+SECRET_KEY=        # long random string (see below)
+DB_HOST=           # MariaDB host
 DB_PORT=3306
 DB_USER=spoolbeacon
-DB_PASSWORD=your-db-password
+DB_PASSWORD=       # your DB password
 DB_NAME=spoolbeacon
 DEBUG=false
-QUART_AUTH_COOKIE_SECURE=true   # set true if serving over HTTPS
+QUART_AUTH_COOKIE_SECURE=true   # set true when serving over HTTPS
 ```
 
-### 2. Create the MariaDB database
+Generate a secret key:
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
 
-Connect to your MariaDB instance and run:
+### 2. Create the database
+
+Run once on your MariaDB instance:
 
 ```sql
 CREATE DATABASE spoolbeacon CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'spoolbeacon'@'%' IDENTIFIED BY 'your-db-password';
+CREATE USER 'spoolbeacon'@'%' IDENTIFIED BY 'your-password';
 GRANT ALL PRIVILEGES ON spoolbeacon.* TO 'spoolbeacon'@'%';
 FLUSH PRIVILEGES;
 ```
@@ -58,21 +67,31 @@ FLUSH PRIVILEGES;
 docker compose up --build -d
 ```
 
-The container exposes port `5000`. A `/health` endpoint is available for monitoring.
+The app runs on port `5000`. A `/health` endpoint is available for monitoring.
 
-### 4. Run migrations (first run and after updates)
+### 4. Run migrations
 
 ```bash
 docker compose exec web python migration.py upgrade head
 ```
 
-### 5. First admin setup
+### 5. Create the first admin account
 
-Open `http://your-host:5000/setup` — only available when no users exist. Creates the first admin account.
+Open `http://your-host:5000/setup` — only available when no users exist yet.
 
 ---
 
-## Local Development Setup
+## Updating
+
+```bash
+docker compose pull
+docker compose up --build -d
+docker compose exec web python migration.py upgrade head
+```
+
+---
+
+## Local Development
 
 ```bash
 python -m venv .venv
@@ -81,156 +100,79 @@ pip install -r requirements.txt
 playwright install --with-deps chromium
 cp .env.example .env   # fill in DB credentials
 python migration.py upgrade head
-python main.py         # starts on http://localhost:5000
+python main.py         # runs on http://localhost:5000
 ```
 
-## Seed Data
-
-For a quick demo with sample filaments, purchases, and shop links:
+Seed sample data:
 
 ```bash
-python seed.py           # idempotent — skips existing records
-python seed.py --reset   # wipes all tables (except users/settings) and re-seeds
-python seed_shops.py     # ShopRules only — safe for open-source use (no personal data)
+python seed.py           # manufacturers, products, purchases, links, rules (idempotent)
+python seed.py --reset   # wipe all tables (except users/settings) and re-seed
+python seed_shops.py     # ShopRules only, no inventory data
 ```
 
 ---
 
-## .env Variables
+## Configuration
 
-| Variable | Default | Description |
-|---|---|---|
-| `SECRET_KEY` | *(required)* | Flask/Quart session secret. Generate with `python -c "import secrets; print(secrets.token_hex(32))"` |
-| `DB_HOST` | `localhost` | MariaDB host |
-| `DB_PORT` | `3306` | MariaDB port |
-| `DB_USER` | `spoolbeacon` | MariaDB user |
-| `DB_PASSWORD` | *(required)* | MariaDB password |
-| `DB_NAME` | `spoolbeacon` | MariaDB database name |
-| `DEBUG` | `false` | Enable debug mode (do not use in production) |
-| `QUART_AUTH_COOKIE_SECURE` | `false` | Set `true` when serving over HTTPS |
+All runtime settings are managed on the Settings page (`/settings`, admin only) — not via `.env`.
 
----
-
-## Migrations
-
-Migrations use Alembic. Always run after pulling updates:
-
-```bash
-python migration.py upgrade head   # apply all pending migrations
-python migration.py current        # show current revision
-python migration.py downgrade -1   # roll back one step
-```
-
-To create a migration after changing a model:
-
-```bash
-python migration.py revision -m "describe_change"
-python migration.py upgrade head
-```
-
-Migration files are auto-named `YYYYMMDD_HHMM_<rev>_<slug>.py`.
+| Section | What you can configure |
+|---|---|
+| Scheduler | Enable automatic price checks, set interval in minutes |
+| Fetch engine | `playwright` (default, JS-capable) or `httpx` (faster, no JS) |
+| Discord | Webhook URL, enable/disable, test message |
+| Email (SMTP) | Host, port, credentials, TLS, from/to address, test email |
+| Spool code template | Pattern for auto-generated spool codes |
 
 ---
 
-## Settings Page (`/settings`)
-
-Admin-only. Configure:
-
-- **Scheduler** — enable/disable automatic price checks, set interval (minutes), minimum re-check interval per link
-- **Price-check engine** — `playwright` (default, handles JS-rendered pages) or `httpx` (faster, no JS)
-- **Playwright options** — headless mode, timeout, max concurrent checks
-- **Discord notifications** — webhook URL, enable/disable
-- **SMTP notifications** — host, port, credentials, TLS, from/to addresses
-
-Test buttons for both Discord and SMTP are on the settings page.
-
----
-
-## Scheduler
-
-The scheduler runs a 1-minute heartbeat (APScheduler) and reads its configuration from the database (Settings page). It does **not** use `.env` — enable it from the UI.
-
-- **Enabled** — controlled via Settings → Scheduler → Enabled toggle
-- **Interval** — how often (in minutes) a full price-check run fires
-- **Min re-check interval** — a link that was checked within this window is skipped
-
-The scheduler status (next run, last run) is shown on the dashboard.
-
----
-
-## Price Checks: ShopRules and Adapters
-
-Two mechanisms fetch prices automatically:
+## Price Monitoring
 
 ### Built-in Adapters
 
-Pre-built adapters with custom extraction logic for specific shops. Currently registered:
+These shops work out of the box without any manual configuration:
 
-| Domain | Method |
+| Shop | Method |
 |---|---|
-| `3djake.de` | CSS selector (SSR PHP) |
+| `3djake.de` | CSS selector |
 | `prusa3d.com` | JSON-LD |
 | `anycubic.com` | Shopify JSON-LD |
-| `filamentworld.de` | WooCommerce |
 | `eu.store.bambulab.com` | JSON-LD (cloudscraper) |
 | `esun3dstore.com` | Shopify JSON-LD (cloudscraper) |
+| `esun3dstoreeu.com` | Shopify JSON-LD (cloudscraper) |
+| `elegoo.com` | Shopify og:price:amount |
 
-To add a new adapter: subclass `BaseAdapter` in `app/shop_adapters/`, implement `extract(html, url) -> AdapterResult`, and register in `app/shop_adapters/registry.py`. Set `fetch_engine = "cloudscraper"` on the adapter class if the shop uses Cloudflare.
+To add a new adapter: subclass `BaseAdapter` in `app/shop_adapters/`, implement `extract(html, url) -> AdapterResult`, register in `registry.py` via `_reg(YourAdapter())`.
 
 ### ShopRules (generic)
 
-For any shop not covered by an adapter: define a ShopRule at `/shop-rules`. A rule has:
-- **Domain** — matched against the shop link's URL hostname
-- **Price selector** — CSS selector to find the price element
-- **Price regex** — optional regex applied to the selected text
-- **Availability selector + regex** — same pattern for stock status
-
-The `parse_price()` function handles German (`1.299,00 €`) and English (`1,299.00`) formats automatically.
-
-### Manual snapshots
-
-Manual price entry is always available via the "Add Snapshot" button on each shop link — no rule or adapter required.
-
----
-
-## Notifications
-
-Configured in Settings. Triggered when a price snapshot hits a target price (absolute or per-kg).
-
-**Discord** — sends a plain-text message to a Discord webhook URL.
-
-**SMTP** — sends an email. Port 465 uses `SMTP_SSL`; other ports use STARTTLS when TLS is enabled. Leave user/password empty for unauthenticated relays.
-
-Notifications are sent once per alert event (not on every check). Alerts auto-resolve when the price rises above the target again.
+For any other shop: create a rule at `/shop-rules` with domain, CSS price selector, and optional regex. German (`1.299,00 €`) and English (`1,299.00`) price formats are detected automatically.
 
 ---
 
 ## Known Limitations
 
-- **No spool delete** — spools can be set to 0 g (empty) or archived but not deleted from the UI (prevents accidental data loss; workaround: set status to `archiviert`)
-- **Amazon / eBay not supported** — Amazon ASIN pages require an authenticated session or the Product Advertising API; eBay is blocked by Cloudflare. See `app/shop_adapters/registry.py` → `PLANNED` for details on evaluated shops
-- **Some shops block automation** — Cloudflare WAF blocks httpx and Playwright for certain shops. `cloudscraper` bypasses basic JS challenges; heavy WAF requires a paid proxy or API
-- **No printer / slicer integration** — no Klipper, OrcaSlicer, Bambu Studio, or print-job tracking. SpoolBeacon is inventory-only
-- **No mobile app** — web-only, responsive layout
+- **Amazon / eBay** not supported — Amazon requires an authenticated session or the Product Advertising API; eBay blocks scraping via Cloudflare
+- **Heavy WAFs** (Cloudflare Enterprise) block even cloudscraper — a proxy or official API is needed
+- **No printer / slicer integration** — no Klipper, OrcaSlicer or print job tracking; inventory only
+- **No mobile app** — web only, but responsive layout
 
 ---
 
 ## Troubleshooting
 
-**App fails to start — `Database not initialized`**
-→ Check DB credentials in `.env`. Ensure MariaDB is reachable and the database exists.
+**App won't start — `Database not initialized`**
+→ Check DB credentials in `.env`. MariaDB must be reachable and the database must exist.
 
 **Migrations fail — `Table already exists`**
-→ Database was created manually. Run `python migration.py stamp head` to mark the current state, then apply new migrations.
+→ Run `python migration.py stamp head` to mark the current state, then migrate.
 
-**Playwright price checks timeout**
-→ Increase `playwright.timeout_ms` in Settings (default 30 000 ms). Some shops are slow or geo-blocked.
+**Playwright checks time out**
+→ Increase `playwright.timeout_ms` in Settings (default: 30 000 ms).
 
-**`playwright install --with-deps chromium` fails in Docker**
-→ The Dockerfile uses `python:3.12-slim` (Debian-based). `--with-deps` installs all Chromium system dependencies automatically. Rebuild the image after any requirements change.
+**Price not found**
+→ The shop's HTML structure changed. Use the Test button on `/shop-rules` and update the selector/regex.
 
-**Price not extracted (`Price not found`)**
-→ The shop's HTML structure changed. Test the ShopRule at `/shop-rules` → Test button, update the CSS selector / regex. For adapter-backed shops, check `app/shop_adapters/_<shop>.py`.
-
-**Setup page unavailable after first user is created**
-→ `/setup` is disabled once any user exists. Add users via `/users` (admin only).
+**Setup page unavailable**
+→ `/setup` is locked once a user exists. Add users via `/users` (admin only).
