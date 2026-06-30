@@ -46,7 +46,7 @@ class ElegooAdapter(BaseAdapter):
             )
 
         try:
-            price_parsed = round(float(price_raw), 2)
+            price_parsed = round(float(price_raw.replace(',', '.')), 2)
         except (ValueError, TypeError) as e:
             return AdapterResult(
                 status="error",

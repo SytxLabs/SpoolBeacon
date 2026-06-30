@@ -29,10 +29,11 @@
 
     <!-- Shop + URL -->
     <div class="card p-5 space-y-4">
-        <h2 class="section-label">Shop</h2>
-
+        <div class="pb-3 border-b border-gray-800">
+            <p class="text-sm font-medium text-gray-200">Shop</p>
+        </div>
         <div>
-            <label for="shop_name" class="block text-sm text-gray-400 mb-1.5">
+            <label for="shop_name" class="block text-xs text-gray-400 mb-1.5">
                 Shop Name <span class="text-red-500">*</span>
             </label>
             <input type="text" id="shop_name" name="shop_name"
@@ -42,9 +43,8 @@
                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
         </div>
-
         <div>
-            <label for="url" class="block text-sm text-gray-400 mb-1.5">
+            <label for="url" class="block text-xs text-gray-400 mb-1.5">
                 URL <span class="text-red-500">*</span>
             </label>
             <input type="url" id="url" name="url"
@@ -57,11 +57,12 @@
 
     <!-- Price -->
     <div class="card p-5 space-y-4">
-        <h2 class="section-label">Price</h2>
-
+        <div class="pb-3 border-b border-gray-800">
+            <p class="text-sm font-medium text-gray-200">Price</p>
+        </div>
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <label for="manual_price" class="block text-sm text-gray-400 mb-1.5">
+                <label for="manual_price" class="block text-xs text-gray-400 mb-1.5">
                     Price <span class="text-red-500">*</span>
                 </label>
                 <input type="number" id="manual_price" name="manual_price"
@@ -71,7 +72,7 @@
                               focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
             </div>
             <div>
-                <label for="currency" class="block text-sm text-gray-400 mb-1.5">Currency</label>
+                <label for="currency" class="block text-xs text-gray-400 mb-1.5">Currency</label>
                 <select id="currency" name="currency"
                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
@@ -81,12 +82,9 @@
                 </select>
             </div>
         </div>
-
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <label for="shipping_price" class="block text-sm text-gray-400 mb-1.5">
-                    Shipping (optional)
-                </label>
+                <label for="shipping_price" class="block text-xs text-gray-400 mb-1.5">Shipping (optional)</label>
                 <input type="number" id="shipping_price" name="shipping_price"
                        value="{{ fval('shipping_price') }}"
                        min="0" step="0.01"
@@ -95,8 +93,8 @@
                               placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
             </div>
             <div>
-                <label for="package_weight_g" class="block text-sm text-gray-400 mb-1.5">
-                    Package Weight (g) <span class="text-red-500">*</span>
+                <label for="package_weight_g" class="block text-xs text-gray-400 mb-1.5">
+                    Package Weight <span class="text-red-500">*</span>
                 </label>
                 <select id="package_weight_g" name="package_weight_g"
                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
@@ -110,7 +108,6 @@
                 </select>
             </div>
         </div>
-
         <!-- Live price calculation -->
         <div id="price-preview" class="bg-gray-800/50 rounded-lg px-4 py-3 text-sm text-gray-400 hidden">
             Total: <span id="calc-total" class="text-white font-medium">–</span>
@@ -120,33 +117,39 @@
 
     <!-- Target Price -->
     <div class="card p-5 space-y-4">
-        <h2 class="section-label">Target Price <span class="text-gray-700 font-normal">(optional)</span></h2>
+        <div class="pb-3 border-b border-gray-800">
+            <p class="text-sm font-medium text-gray-200">Target Price <span class="text-gray-600 font-normal text-xs">(optional)</span></p>
+            <p class="text-xs text-gray-600 mt-0.5">Alert fires when price drops at or below target</p>
+        </div>
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <label for="target_price" class="block text-sm text-gray-400 mb-1.5">Target Price (Total)</label>
+                <label for="target_price" class="block text-xs text-gray-400 mb-1.5">Target Price (Total)</label>
                 <input type="number" id="target_price" name="target_price"
                        value="{{ fval('target_price') }}"
                        min="0" step="0.01"
                        placeholder="e.g. 18.99"
                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                               placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-                <p class="text-xs text-gray-600 mt-1">Price + shipping ≤ target = target hit.</p>
+                <p class="text-xs text-gray-600 mt-1">Price + shipping ≤ target = alert</p>
             </div>
             <div>
-                <label for="target_price_per_kg" class="block text-sm text-gray-400 mb-1.5">Target Price per kg</label>
+                <label for="target_price_per_kg" class="block text-xs text-gray-400 mb-1.5">Target Price per kg</label>
                 <input type="number" id="target_price_per_kg" name="target_price_per_kg"
                        value="{{ fval('target_price_per_kg') }}"
                        min="0" step="0.01"
                        placeholder="e.g. 14.99"
                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                               placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-                <p class="text-xs text-gray-600 mt-1">Snapshot price/kg ≤ target = target hit.</p>
+                <p class="text-xs text-gray-600 mt-1">Snapshot price/kg ≤ target = alert</p>
             </div>
         </div>
     </div>
 
     <!-- Status + Notes -->
     <div class="card p-5 space-y-4">
+        <div class="pb-3 border-b border-gray-800">
+            <p class="text-sm font-medium text-gray-200">Status &amp; Notes</p>
+        </div>
         <div class="flex items-center gap-3">
             <input type="hidden" name="is_active" value="0">
             <input type="checkbox" id="is_active" name="is_active" value="1"
@@ -155,7 +158,7 @@
             <label for="is_active" class="text-sm text-gray-300 cursor-pointer">Link active</label>
         </div>
         <div>
-            <label for="notes" class="block section-label mb-2">Notes (optional)</label>
+            <label for="notes" class="block text-xs text-gray-400 mb-1.5">Notes (optional)</label>
             <textarea id="notes" name="notes" rows="2"
                       placeholder="e.g. free shipping on orders over 50 EUR"
                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white

@@ -48,7 +48,7 @@
 {% block content %}
 
 <!-- Breadcrumb + Header -->
-<div class="mb-8">
+<div class="mb-6">
     <div class="flex items-center justify-between mb-4">
         <nav class="flex items-center gap-1.5 text-xs text-gray-600">
             <a href="/inventory/" class="hover:text-gray-400 transition-colors">Inventory</a>
@@ -79,13 +79,13 @@
 </div>
 
 {% if product.notes %}
-<div class="card px-5 py-3.5 mb-6 text-sm text-gray-400 border-l-2 border-l-indigo-700/60">
+<div class="card px-5 py-3.5 mb-5 text-sm text-gray-400 border-l-2 border-l-indigo-700/60">
     {{ product.notes }}
 </div>
 {% endif %}
 
 <!-- ── Stock Overview ─────────────────────────── -->
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
     <div class="stat-card">
         <p class="section-label mb-2">Active Spools</p>
         <p class="text-3xl font-bold text-white tabular-nums">{{ active_spool_count }}</p>
@@ -126,336 +126,389 @@
     </div>
 </div>
 
-<!-- ── Shop Links ─────────────────────────────── -->
-<div class="flex items-center justify-between mb-3">
-    <h2 class="text-sm font-semibold text-white">Shop Links</h2>
-    <a href="/inventory/{{ product.id }}/shop-link/new" class="btn-icon">
-        {{ icon_plus('w-3.5 h-3.5') }} Add Link
-    </a>
-</div>
-
-{% if shop_links %}
-<div class="card overflow-hidden mb-8">
-    <table class="w-full text-sm">
-        <thead>
-            <tr class="border-b border-gray-800 bg-gray-900/50">
-                <th class="text-left px-5 py-3 section-label">Shop</th>
-                <th class="text-right px-5 py-3 section-label hidden sm:table-cell">Package</th>
-                <th class="text-right px-5 py-3 section-label">Manual</th>
-                <th class="text-right px-5 py-3 section-label hidden sm:table-cell">Shipping</th>
-                <th class="text-right px-5 py-3 section-label">Total</th>
-                <th class="text-right px-5 py-3 section-label hidden md:table-cell">per kg</th>
-                <th class="text-right px-5 py-3 section-label hidden lg:table-cell">Latest Price</th>
-                <th class="text-center px-5 py-3 section-label">Status</th>
-                <th class="px-3 py-3 section-label"></th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-800/50">
-            {% for sl in shop_links %}
-            <tr class="hover:bg-white/[0.015] transition-colors {% if not sl.is_active %}opacity-50{% endif %}">
-                <td class="px-5 py-4">
-                    <a href="{{ sl.url }}" target="_blank" rel="noopener noreferrer"
-                       class="font-medium text-indigo-400 hover:text-indigo-300 transition-colors inline-flex items-center gap-1.5">
-                        {{ sl.shop_name }}
-                        {{ icon_external() }}
-                    </a>
-                    {% if sl.notes %}
-                    <p class="text-xs text-gray-600 mt-0.5 max-w-xs truncate">{{ sl.notes }}</p>
-                    {% endif %}
-                </td>
-                <td class="px-5 py-4 text-right text-gray-500 text-xs tabular-nums hidden sm:table-cell">{{ sl.package_weight_g }} g</td>
-                <td class="px-5 py-4 text-right tabular-nums">
-                    <span class="text-gray-200 font-medium">{{ "%.2f"|format(sl.manual_price) }}</span>
-                    <span class="text-gray-600 text-xs ml-0.5">{{ sl.currency }}</span>
-                </td>
-                <td class="px-5 py-4 text-right text-gray-500 text-xs tabular-nums hidden sm:table-cell">
-                    {% if sl.shipping_price %}{{ "%.2f"|format(sl.shipping_price) }} {{ sl.currency }}{% else %}–{% endif %}
-                </td>
-                <td class="px-5 py-4 text-right tabular-nums">
-                    <span class="text-white font-semibold">{{ "%.2f"|format(sl.total_price) }}</span>
-                    <span class="text-gray-600 text-xs ml-0.5">{{ sl.currency }}</span>
-                </td>
-                <td class="px-5 py-4 text-right tabular-nums hidden md:table-cell">
-                    <span class="text-emerald-400 font-medium">{{ sl.price_per_kg }}</span>
-                    <span class="text-gray-600 text-xs ml-0.5">{{ sl.currency }}/kg</span>
-                </td>
-                <td class="px-5 py-4 text-right tabular-nums hidden lg:table-cell">
-                    {% set snap = latest_snapshots.get(sl.id) %}
-                    {% if snap and snap.source != 'error' %}
-                    <span class="text-white font-medium">{{ "%.2f"|format(snap.price) }}</span>
-                    <span class="text-gray-600 text-xs ml-0.5">{{ snap.currency }}</span>
-                    <p class="text-xs text-gray-600 mt-0.5">{{ snap.captured_at.strftime('%d.%m. %H:%M') }}</p>
-                    {% set snap_total = snap.price + (snap.shipping_price or 0) %}
-                    {% if sl.target_price is not none %}
-                    {% if snap_total <= sl.target_price %}
-                    <span class="badge-green text-[10px] mt-1">Target ✓</span>
-                    {% else %}
-                    <span class="text-xs text-gray-600 block mt-0.5">Target: {{ "%.2f"|format(sl.target_price) }}</span>
-                    {% endif %}
-                    {% endif %}
-                    {% elif snap and snap.source == 'error' %}
-                    <span class="badge-red text-[10px]">Error</span>
-                    {% else %}
-                    <span class="text-gray-700 text-xs">–</span>
-                    {% endif %}
-                </td>
-                <td class="px-5 py-4 text-center">
-                    <form method="POST" action="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/toggle" class="inline">
-                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit"
-                                class="px-2.5 py-1 rounded-full text-xs font-medium transition-all
-                                       {% if sl.is_active %}bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25
-                                       {% else %}bg-gray-800 text-gray-600 hover:text-gray-400{% endif %}">
-                            {% if sl.is_active %}active{% else %}inactive{% endif %}
-                        </button>
-                    </form>
-                </td>
-                <!-- Action icons -->
-                <td class="px-3 py-4">
-                    <div class="flex items-center justify-end gap-0.5">
-                        {% if sl.id in checkable_link_ids %}
-                        {% set _has_adapter = sl.id in adapter_link_ids %}
-                        {% set _has_rule    = sl.id in rule_link_ids %}
-                        {% if _has_adapter and _has_rule %}{% set _badge = "Adapter + Rule" %}
-                        {% elif _has_adapter %}{% set _badge = "Adapter" %}
-                        {% else %}{% set _badge = "Rule" %}{% endif %}
-                        <form method="POST" action="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/check" class="inline">
-                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" title="Check price · {{ _badge }}"
-                                    class="p-1.5 rounded-lg text-amber-500/80 hover:text-amber-300 hover:bg-amber-950/50 transition-colors">
-                                {{ icon_refresh() }}
-                            </button>
-                        </form>
-                        {% else %}
-                        <a href="/shop-rules/" title="No active Shop Rule or adapter – add a rule to enable"
-                           class="p-1.5 rounded-lg text-gray-700 hover:text-gray-500 transition-colors">
-                            {{ icon_refresh() }}
-                        </a>
-                        {% endif %}
-                        <a href="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/snapshot/new" title="Add price snapshot"
-                           class="p-1.5 rounded-lg text-indigo-500/80 hover:text-indigo-300 hover:bg-indigo-950/50 transition-colors">
-                            {{ icon_camera() }}
-                        </a>
-                        <a href="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/snapshots" title="Price history"
-                           class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
-                            {{ icon_clock() }}
-                        </a>
-                        <a href="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/edit" title="Edit"
-                           class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
-                            {{ icon_pencil() }}
-                        </a>
-                        <form method="POST" action="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/delete"
-                              class="inline" onsubmit="return confirm('Delete this shop link?')">
-                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" title="Delete"
-                                    class="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-950/30 transition-colors">
-                                {{ icon_trash() }}
-                            </button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% else %}
-<div class="card p-8 text-center mb-8">
-    <p class="text-gray-500 text-sm">No shop links yet.</p>
-    <a href="/inventory/{{ product.id }}/shop-link/new" class="btn-icon mt-3">
-        {{ icon_plus('w-3.5 h-3.5') }} Add Link
-    </a>
-</div>
-{% endif %}
-
-<!-- ── Purchases ──────────────────────────────── -->
-<div class="flex items-center justify-between mb-3">
-    <h2 class="text-sm font-semibold text-white">
-        Purchases
-        {% if purchase_lines %}
-        <span class="text-xs font-normal text-gray-600 ml-1.5">{{ purchase_lines|length }}</span>
-        {% endif %}
-    </h2>
-    <a href="/inventory/{{ product.id }}/purchase/new" class="btn-icon">
-        {{ icon_plus('w-3.5 h-3.5') }} Add Purchase
-    </a>
-</div>
-
-{% if purchase_lines %}
-<div class="card overflow-hidden mb-8">
-    <table class="w-full text-sm">
-        <thead>
-            <tr class="border-b border-gray-800 bg-gray-900/50">
-                <th class="text-left px-5 py-3 section-label">Date</th>
-                <th class="text-left px-5 py-3 section-label">Shop</th>
-                <th class="text-left px-5 py-3 section-label hidden md:table-cell">Order #</th>
-                <th class="text-right px-5 py-3 section-label">Qty</th>
-                <th class="text-right px-5 py-3 section-label">Price / unit</th>
-                <th class="text-right px-5 py-3 section-label hidden sm:table-cell">Weight</th>
-                <th class="px-5 py-3 section-label"></th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-800/50">
-            {% for line in purchase_lines %}
-            <tr class="hover:bg-white/[0.015] transition-colors">
-                <td class="px-5 py-3.5 text-gray-500 tabular-nums text-xs">{{ line.purchase.purchase_date }}</td>
-                <td class="px-5 py-3.5 font-medium text-gray-200">{{ line.purchase.shop_name }}</td>
-                <td class="px-5 py-3.5 text-gray-600 text-xs font-mono hidden md:table-cell">
-                    {{ line.purchase.order_number or '–' }}
-                </td>
-                <td class="px-5 py-3.5 text-right font-medium text-gray-200 tabular-nums">{{ line.quantity }}×</td>
-                <td class="px-5 py-3.5 text-right tabular-nums">
-                    <span class="font-semibold text-gray-100">{{ "%.2f"|format(line.unit_price) }}</span>
-                    <span class="text-gray-600 text-xs ml-0.5">{{ line.currency }}</span>
-                </td>
-                <td class="px-5 py-3.5 text-right text-gray-500 text-xs tabular-nums hidden sm:table-cell">
-                    {{ line.spool_weight_g }} g
-                </td>
-                <td class="px-5 py-3.5 text-right">
-                    <div class="flex items-center justify-end gap-1.5">
-                        <a href="/inventory/{{ product.id }}/purchase/{{ line.id }}/edit" title="Edit purchase"
-                           class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
-                            {{ icon_pencil() }}
-                        </a>
-                        {% set line_spool_count = spool_counts_by_line.get(line.id, 0) %}
-                        {% if line_spool_count < line.quantity %}
-                        <form method="POST" action="/inventory/purchase-line/{{ line.id }}/create-spools" class="inline">
-                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn-icon px-2 py-1 text-xs rounded-lg flex items-center gap-1">
-                                {{ icon_plus('w-3 h-3') }}
-                                {% if line_spool_count == 0 %}
-                                    Create Spools
-                                {% else %}
-                                    Add Missing ({{ line_spool_count }}/{{ line.quantity }})
-                                {% endif %}
-                            </button>
-                        </form>
-                        {% else %}
-                        <span class="text-xs text-gray-700 px-2">{{ line_spool_count }}/{{ line.quantity }} spools</span>
-                        {% endif %}
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% else %}
-<div class="card p-8 text-center mb-8">
-    <p class="text-gray-400 font-medium text-sm">No purchases recorded.</p>
-    <p class="text-gray-600 text-xs mt-1">Add a purchase to create spools.</p>
-    <a href="/inventory/{{ product.id }}/purchase/new" class="btn-icon mt-4">
-        {{ icon_plus('w-3.5 h-3.5') }} Add Purchase
-    </a>
-</div>
-{% endif %}
-
-<!-- ── Spools ──────────────────────────────────── -->
-<div class="flex items-center justify-between mb-3">
-    <h2 class="text-sm font-semibold text-white">
-        Spools
-        <span class="text-xs font-normal text-gray-600 ml-1.5">{{ spools|length }}</span>
-    </h2>
-    {% set active_spools = spools|selectattr('status.value', 'ne', 'archiviert')|list %}
-    {% if active_spools %}
-    <span class="text-xs text-gray-600">
-        {{ active_spools|length }} active ·
-        {{ (active_spools|sum(attribute='remaining_weight_g') / 1000)|round(2) }} kg
-    </span>
-    {% endif %}
-</div>
-
-{% if spools %}
-<div class="card overflow-hidden">
-    <table class="w-full text-sm">
-        <thead>
-            <tr class="border-b border-gray-800 bg-gray-900/50">
-                <th class="text-left px-5 py-3 section-label">Code</th>
-                <th class="text-left px-5 py-3 section-label">Status</th>
-                <th class="text-left px-5 py-3 section-label hidden sm:table-cell">Location</th>
-                <th class="text-left px-5 py-3 section-label hidden md:table-cell">Storage</th>
-                <th class="text-right px-5 py-3 section-label">Remaining</th>
-                <th class="text-right px-5 py-3 section-label hidden sm:table-cell">Fill Level</th>
-                <th class="text-left px-5 py-3 section-label hidden lg:table-cell">Opened</th>
-                <th class="text-left px-5 py-3 section-label hidden lg:table-cell">Last Dried</th>
-                <th class="px-5 py-3 section-label"></th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-800/50">
-            {% set status_styles = {
-                'neu':        'badge-blue',
-                'geöffnet':   'badge-green',
-                'fast leer':  'badge-amber',
-                'leer':       'badge-gray',
-                'archiviert': 'badge'
-            } %}
-            {% set status_labels = {
-                'neu':        'New',
-                'geöffnet':   'Open',
-                'fast leer':  'Almost empty',
-                'leer':       'Empty',
-                'archiviert': 'Archived'
-            } %}
-            {% for spool in spools %}
-            <tr class="hover:bg-white/[0.015] transition-colors
-                {% if spool.is_low and spool.status.value not in ('leer', 'archiviert') %}bg-orange-950/10{% endif %}">
-                <td class="px-5 py-3.5 font-mono text-xs text-gray-500">{{ spool.spool_code }}</td>
-                <td class="px-5 py-3.5">
-                    <span class="{{ status_styles.get(spool.status.value, 'badge-gray') }} text-[10px]">
-                        {{ status_labels.get(spool.status.value, spool.status.value) }}
-                    </span>
-                </td>
-                <td class="px-5 py-3.5 text-gray-500 text-xs hidden sm:table-cell">
-                    {{ spool.storage_location or '–' }}
-                </td>
-                <td class="px-5 py-3.5 text-gray-500 text-xs hidden md:table-cell">
-                    {{ spool.storage_status.value }}
-                </td>
-                <td class="px-5 py-3.5 text-right tabular-nums font-semibold
-                           {% if spool.is_low %}text-orange-400{% else %}text-gray-200{% endif %}">
-                    {{ spool.remaining_weight_g|int }}<span class="text-gray-600 font-normal text-xs ml-0.5">g</span>
-                </td>
-                <td class="px-5 py-3.5 text-right hidden sm:table-cell">
-                    <div class="flex items-center justify-end gap-2">
-                        <div class="w-20 h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                            <div class="h-full rounded-full transition-all
-                                {% if spool.fill_percent < 20 %}bg-orange-500
-                                {% elif spool.fill_percent < 50 %}bg-yellow-500
-                                {% else %}bg-emerald-500{% endif %}"
-                                 style="width: {{ [spool.fill_percent, 100]|min }}%"></div>
-                        </div>
-                        <span class="text-xs text-gray-600 w-8 text-right tabular-nums">{{ spool.fill_percent }}%</span>
-                    </div>
-                </td>
-                <td class="px-5 py-3.5 text-gray-600 text-xs hidden lg:table-cell">
-                    {{ spool.opened_at.strftime('%d.%m.%Y') if spool.opened_at else '–' }}
-                </td>
-                <td class="px-5 py-3.5 text-gray-600 text-xs hidden lg:table-cell">
-                    {{ spool.last_dried_at.strftime('%d.%m.%Y') if spool.last_dried_at else '–' }}
-                </td>
-                <td class="px-5 py-3.5 text-right">
-                    <a href="/inventory/{{ product.id }}/spool/{{ spool.id }}/edit" title="Edit spool"
-                       class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors inline-flex">
-                        {{ icon_pencil() }}
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% else %}
-<div class="card p-10 text-center">
-    <div class="w-12 h-12 rounded-2xl bg-gray-850 border border-gray-800 flex items-center justify-center mx-auto mb-3">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-6 h-6 text-gray-600">
-            <circle cx="12" cy="12" r="9"/>
-            <circle cx="12" cy="12" r="3"/>
-            <path stroke-linecap="round" d="M12 3v6M12 15v6M3 12h6M15 12h6"/>
-        </svg>
+<!-- ── Tabs ─────────────────────────────────────────── -->
+<div class="mb-6" id="detail-tabs">
+    <div class="flex items-center gap-1 border-b border-gray-800 mb-6">
+        <button onclick="showTab('shop-links')" id="tab-btn-shop-links"
+                class="tab-btn px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px">
+            Shop Links
+            <span class="ml-1.5 text-xs px-1.5 py-0.5 rounded-full bg-gray-800 text-gray-500">{{ shop_links|length }}</span>
+        </button>
+        <button onclick="showTab('purchases')" id="tab-btn-purchases"
+                class="tab-btn px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px">
+            Purchases
+            <span class="ml-1.5 text-xs px-1.5 py-0.5 rounded-full bg-gray-800 text-gray-500">{{ purchase_lines|length }}</span>
+        </button>
+        <button onclick="showTab('spools')" id="tab-btn-spools"
+                class="tab-btn px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px">
+            Spools
+            <span class="ml-1.5 text-xs px-1.5 py-0.5 rounded-full bg-gray-800 text-gray-500">{{ spools|length }}</span>
+        </button>
     </div>
-    <p class="text-gray-400 font-medium text-sm">No spools yet.</p>
-    <p class="text-gray-600 text-xs mt-1">Add a purchase above, then create spools from it.</p>
+
+    <!-- ── Shop Links ─────────────────────────────── -->
+    <div id="tab-shop-links" class="tab-panel">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-white">Shop Links</h2>
+            <a href="/inventory/{{ product.id }}/shop-link/new" class="btn-icon">
+                {{ icon_plus('w-3.5 h-3.5') }} Add Link
+            </a>
+        </div>
+
+        {% if shop_links %}
+        <div class="card overflow-hidden">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-800 bg-gray-900/50">
+                        <th class="text-left px-5 py-3 section-label">Shop</th>
+                        <th class="text-right px-5 py-3 section-label hidden sm:table-cell">Package</th>
+                        <th class="text-right px-5 py-3 section-label">Price</th>
+                        <th class="text-right px-5 py-3 section-label hidden sm:table-cell">Shipping</th>
+                        <th class="text-right px-5 py-3 section-label">Total</th>
+                        <th class="text-right px-5 py-3 section-label hidden md:table-cell">per kg</th>
+                        <th class="text-right px-5 py-3 section-label hidden lg:table-cell">Latest Price</th>
+                        <th class="text-center px-5 py-3 section-label">Status</th>
+                        <th class="px-3 py-3 section-label"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-800/50">
+                    {% for sl in shop_links %}
+                    <tr class="hover:bg-white/[0.015] transition-colors {% if not sl.is_active %}opacity-50{% endif %}">
+                        <td class="px-5 py-4">
+                            <a href="{{ sl.url }}" target="_blank" rel="noopener noreferrer"
+                               class="font-medium text-indigo-400 hover:text-indigo-300 transition-colors inline-flex items-center gap-1.5">
+                                {{ sl.shop_name }}
+                                {{ icon_external() }}
+                            </a>
+                            {% if sl.notes %}
+                            <p class="text-xs text-gray-600 mt-0.5 max-w-xs truncate" title="{{ sl.notes }}">{{ sl.notes }}</p>
+                            {% endif %}
+                        </td>
+                        <td class="px-5 py-4 text-right text-gray-500 text-xs tabular-nums hidden sm:table-cell">{{ sl.package_weight_g }} g</td>
+                        <td class="px-5 py-4 text-right tabular-nums">
+                            <span class="text-gray-200 font-medium">{{ "%.2f"|format(sl.manual_price) }}</span>
+                            <span class="text-gray-600 text-xs ml-0.5">{{ sl.currency }}</span>
+                        </td>
+                        <td class="px-5 py-4 text-right text-gray-500 text-xs tabular-nums hidden sm:table-cell">
+                            {% if sl.shipping_price %}{{ "%.2f"|format(sl.shipping_price) }} {{ sl.currency }}{% else %}–{% endif %}
+                        </td>
+                        <td class="px-5 py-4 text-right tabular-nums">
+                            <span class="text-white font-semibold">{{ "%.2f"|format(sl.total_price) }}</span>
+                            <span class="text-gray-600 text-xs ml-0.5">{{ sl.currency }}</span>
+                        </td>
+                        <td class="px-5 py-4 text-right tabular-nums hidden md:table-cell">
+                            <span class="text-emerald-400 font-medium">{{ sl.price_per_kg }}</span>
+                            <span class="text-gray-600 text-xs ml-0.5">{{ sl.currency }}/kg</span>
+                        </td>
+                        <td class="px-5 py-4 text-right tabular-nums hidden lg:table-cell">
+                            {% set snap = latest_snapshots.get(sl.id) %}
+                            {% if snap and snap.source != 'error' %}
+                            <span class="text-white font-medium">{{ "%.2f"|format(snap.price) }}</span>
+                            <span class="text-gray-600 text-xs ml-0.5">{{ snap.currency }}</span>
+                            <p class="text-xs text-gray-600 mt-0.5">{{ snap.captured_at.strftime('%d.%m. %H:%M') }}</p>
+                            {% set snap_total = snap.price + (snap.shipping_price or 0) %}
+                            {% if sl.target_price is not none %}
+                            {% if snap_total <= sl.target_price %}
+                            <span class="badge-green text-[10px] mt-1">Target ✓</span>
+                            {% else %}
+                            <span class="text-xs text-gray-600 block mt-0.5">Target: {{ "%.2f"|format(sl.target_price) }}</span>
+                            {% endif %}
+                            {% endif %}
+                            {% elif snap and snap.source == 'error' %}
+                            <span class="badge-red text-[10px]">Error</span>
+                            {% else %}
+                            <span class="text-gray-700 text-xs">–</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-5 py-4 text-center">
+                            <form method="POST" action="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/toggle" class="inline">
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit"
+                                        class="px-2.5 py-1 rounded-full text-xs font-medium transition-all
+                                               {% if sl.is_active %}bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25
+                                               {% else %}bg-gray-800 text-gray-600 hover:text-gray-400{% endif %}">
+                                    {% if sl.is_active %}active{% else %}inactive{% endif %}
+                                </button>
+                            </form>
+                        </td>
+                        <td class="px-3 py-4">
+                            <div class="flex items-center justify-end gap-0.5">
+                                {% if sl.id in checkable_link_ids %}
+                                {% set _has_adapter = sl.id in adapter_link_ids %}
+                                {% set _has_rule    = sl.id in rule_link_ids %}
+                                {% if _has_adapter and _has_rule %}{% set _badge = "Adapter + Rule" %}
+                                {% elif _has_adapter %}{% set _badge = "Adapter" %}
+                                {% else %}{% set _badge = "Rule" %}{% endif %}
+                                <form method="POST" action="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/check" class="inline">
+                                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" title="Check price · {{ _badge }}"
+                                            class="p-1.5 rounded-lg text-amber-500/80 hover:text-amber-300 hover:bg-amber-950/50 transition-colors">
+                                        {{ icon_refresh() }}
+                                    </button>
+                                </form>
+                                {% else %}
+                                <a href="/shop-rules/" title="No active Shop Rule or adapter – add a rule to enable"
+                                   class="p-1.5 rounded-lg text-gray-700 hover:text-gray-500 transition-colors">
+                                    {{ icon_refresh() }}
+                                </a>
+                                {% endif %}
+                                <a href="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/snapshot/new" title="Add price snapshot"
+                                   class="p-1.5 rounded-lg text-indigo-500/80 hover:text-indigo-300 hover:bg-indigo-950/50 transition-colors">
+                                    {{ icon_camera() }}
+                                </a>
+                                <a href="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/snapshots" title="Price history"
+                                   class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
+                                    {{ icon_clock() }}
+                                </a>
+                                <a href="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/edit" title="Edit"
+                                   class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
+                                    {{ icon_pencil() }}
+                                </a>
+                                <form method="POST" action="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/delete"
+                                      class="inline" onsubmit="return confirm('Delete this shop link?')">
+                                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" title="Delete"
+                                            class="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-950/30 transition-colors">
+                                        {{ icon_trash() }}
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="card p-8 text-center">
+            <p class="text-gray-500 text-sm">No shop links yet.</p>
+            <a href="/inventory/{{ product.id }}/shop-link/new" class="btn-icon mt-3">
+                {{ icon_plus('w-3.5 h-3.5') }} Add Link
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ── Purchases ──────────────────────────────── -->
+    <div id="tab-purchases" class="tab-panel hidden">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-white">
+                Purchases
+                {% if purchase_lines %}
+                <span class="text-xs font-normal text-gray-600 ml-1.5">{{ purchase_lines|length }}</span>
+                {% endif %}
+            </h2>
+            <a href="/inventory/{{ product.id }}/purchase/new" class="btn-icon">
+                {{ icon_plus('w-3.5 h-3.5') }} Add Purchase
+            </a>
+        </div>
+
+        {% if purchase_lines %}
+        <div class="card overflow-hidden">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-800 bg-gray-900/50">
+                        <th class="text-left px-5 py-3 section-label">Date</th>
+                        <th class="text-left px-5 py-3 section-label">Shop</th>
+                        <th class="text-left px-5 py-3 section-label hidden md:table-cell">Order #</th>
+                        <th class="text-right px-5 py-3 section-label">Qty</th>
+                        <th class="text-right px-5 py-3 section-label">Price / unit</th>
+                        <th class="text-right px-5 py-3 section-label hidden sm:table-cell">Weight</th>
+                        <th class="px-5 py-3 section-label"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-800/50">
+                    {% for line in purchase_lines %}
+                    <tr class="hover:bg-white/[0.015] transition-colors">
+                        <td class="px-5 py-3.5 text-gray-500 tabular-nums text-xs">{{ line.purchase.purchase_date }}</td>
+                        <td class="px-5 py-3.5 font-medium text-gray-200">{{ line.purchase.shop_name }}</td>
+                        <td class="px-5 py-3.5 text-gray-600 text-xs font-mono hidden md:table-cell">
+                            {{ line.purchase.order_number or '–' }}
+                        </td>
+                        <td class="px-5 py-3.5 text-right font-medium text-gray-200 tabular-nums">{{ line.quantity }}×</td>
+                        <td class="px-5 py-3.5 text-right tabular-nums">
+                            <span class="font-semibold text-gray-100">{{ "%.2f"|format(line.unit_price) }}</span>
+                            <span class="text-gray-600 text-xs ml-0.5">{{ line.currency }}</span>
+                        </td>
+                        <td class="px-5 py-3.5 text-right text-gray-500 text-xs tabular-nums hidden sm:table-cell">
+                            {{ line.spool_weight_g }} g
+                        </td>
+                        <td class="px-5 py-3.5 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <a href="/inventory/{{ product.id }}/purchase/{{ line.id }}/edit" title="Edit purchase"
+                                   class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
+                                    {{ icon_pencil() }}
+                                </a>
+                                {% set line_spool_count = spool_counts_by_line.get(line.id, 0) %}
+                                {% if line_spool_count < line.quantity %}
+                                <form method="POST" action="/inventory/purchase-line/{{ line.id }}/create-spools" class="inline">
+                                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn-icon px-2 py-1 text-xs rounded-lg flex items-center gap-1">
+                                        {{ icon_plus('w-3 h-3') }}
+                                        {% if line_spool_count == 0 %}
+                                            Create Spools
+                                        {% else %}
+                                            Add Missing ({{ line_spool_count }}/{{ line.quantity }})
+                                        {% endif %}
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="text-xs text-gray-700 px-2">{{ line_spool_count }}/{{ line.quantity }} spools</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="card p-8 text-center">
+            <p class="text-gray-400 font-medium text-sm">No purchases recorded.</p>
+            <p class="text-gray-600 text-xs mt-1">Add a purchase to create spools.</p>
+            <a href="/inventory/{{ product.id }}/purchase/new" class="btn-icon mt-4">
+                {{ icon_plus('w-3.5 h-3.5') }} Add Purchase
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ── Spools ──────────────────────────────────── -->
+    <div id="tab-spools" class="tab-panel hidden">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-white">
+                Spools
+                <span class="text-xs font-normal text-gray-600 ml-1.5">{{ spools|length }}</span>
+            </h2>
+            {% set active_spools = spools|selectattr('status.value', 'ne', 'archiviert')|list %}
+            {% if active_spools %}
+            <span class="text-xs text-gray-600">
+                {{ active_spools|length }} active ·
+                {{ (active_spools|sum(attribute='remaining_weight_g') / 1000)|round(2) }} kg remaining
+            </span>
+            {% endif %}
+        </div>
+
+        {% if spools %}
+        <div class="card overflow-hidden">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-800 bg-gray-900/50">
+                        <th class="text-left px-5 py-3 section-label">Code</th>
+                        <th class="text-left px-5 py-3 section-label">Status</th>
+                        <th class="text-left px-5 py-3 section-label hidden sm:table-cell">Location</th>
+                        <th class="text-left px-5 py-3 section-label hidden md:table-cell">Storage</th>
+                        <th class="text-right px-5 py-3 section-label">Remaining</th>
+                        <th class="text-right px-5 py-3 section-label hidden sm:table-cell">Fill Level</th>
+                        <th class="text-left px-5 py-3 section-label hidden lg:table-cell">Opened</th>
+                        <th class="text-left px-5 py-3 section-label hidden lg:table-cell">Last Dried</th>
+                        <th class="px-5 py-3 section-label"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-800/50">
+                    {% set status_styles = {
+                        'neu':        'badge-blue',
+                        'geöffnet':   'badge-green',
+                        'fast leer':  'badge-amber',
+                        'leer':       'badge-gray',
+                        'archiviert': 'badge'
+                    } %}
+                    {% set status_labels = {
+                        'neu':        'New',
+                        'geöffnet':   'Open',
+                        'fast leer':  'Almost empty',
+                        'leer':       'Empty',
+                        'archiviert': 'Archived'
+                    } %}
+                    {% for spool in spools %}
+                    <tr class="hover:bg-white/[0.015] transition-colors
+                        {% if spool.is_low and spool.status.value not in ('leer', 'archiviert') %}bg-orange-950/10{% endif %}">
+                        <td class="px-5 py-3.5 font-mono text-xs text-gray-500">{{ spool.spool_code }}</td>
+                        <td class="px-5 py-3.5">
+                            <span class="{{ status_styles.get(spool.status.value, 'badge-gray') }} text-[10px]">
+                                {{ status_labels.get(spool.status.value, spool.status.value) }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-3.5 text-gray-500 text-xs hidden sm:table-cell">
+                            {{ spool.storage_location or '–' }}
+                        </td>
+                        <td class="px-5 py-3.5 text-gray-500 text-xs hidden md:table-cell">
+                            {{ spool.storage_status.value }}
+                        </td>
+                        <td class="px-5 py-3.5 text-right tabular-nums font-semibold
+                                   {% if spool.is_low %}text-orange-400{% else %}text-gray-200{% endif %}">
+                            {{ spool.remaining_weight_g|int }}<span class="text-gray-600 font-normal text-xs ml-0.5">g</span>
+                        </td>
+                        <td class="px-5 py-3.5 text-right hidden sm:table-cell">
+                            <div class="flex items-center justify-end gap-2">
+                                <div class="w-20 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full transition-all
+                                        {% if spool.fill_percent < 20 %}bg-orange-500
+                                        {% elif spool.fill_percent < 50 %}bg-yellow-500
+                                        {% else %}bg-emerald-500{% endif %}"
+                                         style="width: {{ [spool.fill_percent, 100]|min }}%"></div>
+                                </div>
+                                <span class="text-xs text-gray-600 w-8 text-right tabular-nums">{{ spool.fill_percent }}%</span>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3.5 text-gray-600 text-xs hidden lg:table-cell">
+                            {{ spool.opened_at.strftime('%d.%m.%Y') if spool.opened_at else '–' }}
+                        </td>
+                        <td class="px-5 py-3.5 text-gray-600 text-xs hidden lg:table-cell">
+                            {{ spool.last_dried_at.strftime('%d.%m.%Y') if spool.last_dried_at else '–' }}
+                        </td>
+                        <td class="px-5 py-3.5 text-right">
+                            <a href="/inventory/{{ product.id }}/spool/{{ spool.id }}/edit" title="Edit spool"
+                               class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors inline-flex">
+                                {{ icon_pencil() }}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="card p-10 text-center">
+            <div class="w-12 h-12 rounded-2xl bg-gray-850 border border-gray-800 flex items-center justify-center mx-auto mb-3">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-6 h-6 text-gray-600">
+                    <circle cx="12" cy="12" r="9"/>
+                    <circle cx="12" cy="12" r="3"/>
+                    <path stroke-linecap="round" d="M12 3v6M12 15v6M3 12h6M15 12h6"/>
+                </svg>
+            </div>
+            <p class="text-gray-400 font-medium text-sm">No spools yet.</p>
+            <p class="text-gray-600 text-xs mt-1">Add a purchase, then create spools from it.</p>
+        </div>
+        {% endif %}
+    </div>
 </div>
-{% endif %}
+
+<script>
+(function () {
+    var ACTIVE = 'border-indigo-500 text-white';
+    var INACTIVE = 'border-transparent text-gray-500 hover:text-gray-300';
+
+    function showTab(name) {
+        document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.add('hidden'); });
+        document.querySelectorAll('.tab-btn').forEach(function (b) {
+            b.className = b.className.replace(ACTIVE, '').replace(INACTIVE, '').trim();
+            b.classList.add(...INACTIVE.split(' '));
+        });
+        document.getElementById('tab-' + name).classList.remove('hidden');
+        var btn = document.getElementById('tab-btn-' + name);
+        btn.className = btn.className.replace(INACTIVE, '').trim();
+        btn.classList.add(...ACTIVE.split(' '));
+        sessionStorage.setItem('detail-tab-{{ product.id }}', name);
+    }
+
+    // Restore last tab or default to shop-links
+    var saved = sessionStorage.getItem('detail-tab-{{ product.id }}') || 'shop-links';
+    showTab(saved);
+
+    // Expose globally for onclick handlers
+    window.showTab = showTab;
+})();
+</script>
 
 {% endblock %}

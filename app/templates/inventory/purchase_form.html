@@ -43,11 +43,12 @@
 
     <!-- Purchase -->
     <div class="card p-5 space-y-4">
-        <h2 class="section-label">Purchase</h2>
-
+        <div class="pb-3 border-b border-gray-800">
+            <p class="text-sm font-medium text-gray-200">Purchase</p>
+        </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-                <label for="purchase_date" class="block text-sm text-gray-400 mb-1.5">
+                <label for="purchase_date" class="block text-xs text-gray-400 mb-1.5">
                     Purchase Date <span class="text-red-500">*</span>
                 </label>
                 <input type="date" id="purchase_date" name="purchase_date"
@@ -56,7 +57,7 @@
                               focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
             </div>
             <div>
-                <label for="currency" class="block text-sm text-gray-400 mb-1.5">Currency</label>
+                <label for="currency" class="block text-xs text-gray-400 mb-1.5">Currency</label>
                 <select id="currency" name="currency"
                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
@@ -66,9 +67,8 @@
                 </select>
             </div>
         </div>
-
         <div>
-            <label for="shop_name" class="block text-sm text-gray-400 mb-1.5">
+            <label for="shop_name" class="block text-xs text-gray-400 mb-1.5">
                 Shop Name <span class="text-red-500">*</span>
             </label>
             <input type="text" id="shop_name" name="shop_name"
@@ -78,10 +78,9 @@
                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
         </div>
-
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-                <label for="order_number" class="block text-sm text-gray-400 mb-1.5">Order Number (optional)</label>
+                <label for="order_number" class="block text-xs text-gray-400 mb-1.5">Order Number (optional)</label>
                 <input type="text" id="order_number" name="order_number"
                        value="{{ fval('order_number') }}"
                        placeholder="e.g. 123-456-7890"
@@ -89,7 +88,7 @@
                               placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
             </div>
             <div>
-                <label for="shipping_price" class="block text-sm text-gray-400 mb-1.5">Shipping (optional)</label>
+                <label for="shipping_price" class="block text-xs text-gray-400 mb-1.5">Shipping (optional)</label>
                 <input type="number" id="shipping_price" name="shipping_price"
                        value="{{ fval('shipping_price') }}"
                        step="0.01" min="0" placeholder="0.00"
@@ -97,9 +96,8 @@
                               placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
             </div>
         </div>
-
         <div>
-            <label for="purchase_notes" class="block text-sm text-gray-400 mb-1.5">Notes (optional)</label>
+            <label for="purchase_notes" class="block text-xs text-gray-400 mb-1.5">Notes (optional)</label>
             <textarea id="purchase_notes" name="purchase_notes" rows="2"
                       placeholder="e.g. discount campaign, group order …"
                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
@@ -109,16 +107,18 @@
 
     <!-- Line Item -->
     <div class="card p-5 space-y-4">
-        <h2 class="section-label">Line Item – {{ product.name }}</h2>
-
+        <div class="pb-3 border-b border-gray-800">
+            <p class="text-sm font-medium text-gray-200">Line Item</p>
+            <p class="text-xs text-gray-600 mt-0.5">{{ product.name }}</p>
+        </div>
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <label for="quantity" class="block text-sm text-gray-400 mb-1.5">
+                <label for="quantity" class="block text-xs text-gray-400 mb-1.5">
                     Quantity
                     {% if not editing or (can_edit_quantity is defined and can_edit_quantity) %}
                     <span class="text-red-500">*</span>
                     {% else %}
-                    <span class="text-gray-600 text-xs font-normal">(locked)</span>
+                    <span class="text-gray-600 font-normal">(locked)</span>
                     {% endif %}
                 </label>
                 {% set qty_locked = editing and not (can_edit_quantity is defined and can_edit_quantity) %}
@@ -134,7 +134,7 @@
                 </p>
             </div>
             <div>
-                <label for="unit_price" class="block text-sm text-gray-400 mb-1.5">
+                <label for="unit_price" class="block text-xs text-gray-400 mb-1.5">
                     Unit Price <span class="text-red-500">*</span>
                 </label>
                 <input type="number" id="unit_price" name="unit_price"
@@ -145,15 +145,14 @@
                 <p class="text-xs text-gray-600 mt-1">Price per spool</p>
             </div>
         </div>
-
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <label for="spool_weight_g" class="block text-sm text-gray-400 mb-1.5">
-                    Spool Weight (g)
+                <label for="spool_weight_g" class="block text-xs text-gray-400 mb-1.5">
+                    Spool Weight
                     {% if not editing or (can_edit_weight is defined and can_edit_weight) %}
                     <span class="text-red-500">*</span>
                     {% else %}
-                    <span class="text-gray-600 text-xs font-normal">(locked)</span>
+                    <span class="text-gray-600 font-normal">(locked)</span>
                     {% endif %}
                 </label>
                 {% set wt_locked = editing and not (can_edit_weight is defined and can_edit_weight) %}
@@ -176,7 +175,7 @@
                 {% endif %}
             </div>
             <div>
-                <label for="lot_number" class="block text-sm text-gray-400 mb-1.5">Lot / Batch (optional)</label>
+                <label for="lot_number" class="block text-xs text-gray-400 mb-1.5">Lot / Batch (optional)</label>
                 <input type="text" id="lot_number" name="lot_number"
                        value="{{ fval('lot_number') }}"
                        placeholder="e.g. L2024-03"
@@ -184,9 +183,8 @@
                               placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
             </div>
         </div>
-
         <div>
-            <label for="line_notes" class="block text-sm text-gray-400 mb-1.5">Line Notes (optional)</label>
+            <label for="line_notes" class="block text-xs text-gray-400 mb-1.5">Line Notes (optional)</label>
             <textarea id="line_notes" name="line_notes" rows="2"
                       placeholder="e.g. color slightly different from photo …"
                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
