@@ -11,6 +11,8 @@ from ._prusa import PrusaAdapter
 from ._anycubic import AnycubicAdapter
 from ._bambulab import BambuLabAdapter
 from ._esun import ESunAdapter
+from ._elegoo import ElegooAdapter
+from ._ebay import EbayAdapter
 
 _REGISTRY: dict[str, BaseAdapter] = {}
 
@@ -25,6 +27,8 @@ _reg(PrusaAdapter())          # prusa3d.com            — JSON-LD
 _reg(AnycubicAdapter())       # anycubic.com           — Shopify USD
 _reg(BambuLabAdapter())       # eu.store.bambulab.com  — JSON-LD EUR, cloudscraper
 _reg(ESunAdapter())           # esun3dstore.com        — JSON-LD USD, cloudscraper
+_reg(ElegooAdapter())         # elegoo.com             — Shopify og:price:amount USD, confirmed 2026-06-30
+_reg(EbayAdapter())           # ebay.de                — .x-price-primary, Playwright required
 
 
 def get_adapter(domain: str) -> BaseAdapter | None:
@@ -67,15 +71,6 @@ PLANNED: dict[str, str] = {
         "Alternative: Amazon Product Advertising API (requires affiliate account)."
     ),
 
-    # eBay: page responds (not blocked by Cloudflare as of 2026-06) but price
-    # extraction produces wrong values (e.g. 99132 instead of 19).
-    # Likely extracts a different price field (reserve price, listing total, etc.).
-    # A ShopRule with the correct CSS selector for the actual listing price may work.
-    "ebay.de": (
-        "wrong_price — Response received but extracted price is incorrect "
-        "(extracts wrong DOM element — e.g. reserve price or hidden field instead of listing price). "
-        "Test with ShopRule and inspect the exact price element on the listing page."
-    ),
 
     # AliExpress: HTTP 200 but entirely JS-rendered — headless Playwright returns
     # empty body (anti-bot fingerprinting or heavy lazy loading).
@@ -104,12 +99,4 @@ PLANNED: dict[str, str] = {
         "Main site returns HTTP 200. Re-test with valid product URL from store."
     ),
 
-    # Elegoo: page may return HTTP 200 with a 404-error-page body, causing false
-    # price extraction from the error page content (e.g. extracts '1 €' from placeholder).
-    # Use a ShopRule only with a confirmed working product URL.
-    "elegoo.com": (
-        "selector_failed — Product pages may return HTTP 200 with 404-error HTML body, "
-        "causing false price extraction from error page content. "
-        "Verify the product URL returns the actual product page before adding a ShopRule."
-    ),
 }
