@@ -1,5 +1,5 @@
 from quart import Blueprint, render_template, request, redirect, url_for, flash
-from quart_auth import AuthUser, login_user, logout_user, login_required
+from quart_auth import AuthUser, login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlalchemy import select, func
 
@@ -16,6 +16,8 @@ async def index():
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 async def login():
+    if await current_user.is_authenticated:
+        return redirect(url_for("dashboard.index"))
     if request.method == "POST":
         form = await request.form
         username = form.get("username", "").strip()

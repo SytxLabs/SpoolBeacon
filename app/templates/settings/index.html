@@ -4,237 +4,279 @@
 {% block content %}
 <div class="mb-8">
     <h1 class="text-2xl font-bold text-white tracking-tight">Settings</h1>
-    <p class="text-gray-500 text-sm mt-1">Configure notifications</p>
+    <p class="text-gray-500 text-sm mt-1">Price checking, notifications, and inventory configuration</p>
 </div>
 
-<div class="max-w-2xl space-y-6">
+{# Hidden forms for test actions — outside the main save form to avoid nesting #}
+<form id="form-test-discord" method="POST" action="/settings/test/discord">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+</form>
+<form id="form-test-email" method="POST" action="/settings/test/email">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+</form>
+<form id="form-regenerate" method="POST" action="/settings/spool-codes/regenerate">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+</form>
 
-    <form method="POST" action="/settings/" class="space-y-6">
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+<form method="POST" action="/settings/" class="max-w-5xl space-y-10">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
-        <!-- Scheduler -->
-        <div class="card p-5 space-y-4">
-            <div class="flex items-center justify-between">
-                <h2 class="section-label">Scheduler</h2>
-                <div class="flex items-center gap-2">
-                    <input type="hidden" name="scheduler_enabled" value="">
-                    <input type="checkbox" id="scheduler_enabled" name="scheduler_enabled" value="1"
-                           {% if s['scheduler.enabled'] == '1' %}checked{% endif %}
-                           class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
-                    <label for="scheduler_enabled" class="text-sm text-gray-300 cursor-pointer">Enabled</label>
-                </div>
+    <!-- ── Price Checker ───────────────────────────────────────────────── -->
+    <section>
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-emerald-400">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-13a.75.75 0 0 0-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 0 0 0-1.5h-3.25V5Z" clip-rule="evenodd"/>
+                </svg>
             </div>
-            <div class="grid grid-cols-2 gap-4">
+            <h2 class="text-base font-semibold text-white">Price Checker</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <!-- Scheduler -->
+            <div class="card p-5 space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-gray-800">
+                    <p class="text-sm font-medium text-gray-200">Scheduler</p>
+                    <div class="flex items-center gap-2">
+                        <input type="hidden" name="scheduler_enabled" value="">
+                        <input type="checkbox" id="scheduler_enabled" name="scheduler_enabled" value="1"
+                               {% if s['scheduler.enabled'] == '1' %}checked{% endif %}
+                               class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
+                        <label for="scheduler_enabled" class="text-xs text-gray-400 cursor-pointer">Enabled</label>
+                    </div>
+                </div>
                 <div>
-                    <label for="scheduler_interval_minutes" class="block text-sm text-gray-400 mb-1.5">
-                        Check Interval (minutes)
-                    </label>
+                    <label for="scheduler_interval_minutes" class="block text-xs text-gray-400 mb-1.5">Check interval (minutes)</label>
                     <input type="number" id="scheduler_interval_minutes" name="scheduler_interval_minutes"
-                           value="{{ s['scheduler.interval_minutes'] }}"
-                           min="5"
+                           value="{{ s['scheduler.interval_minutes'] }}" min="5"
                            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                   focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
                     <p class="text-xs text-gray-600 mt-1">Time between complete check runs.</p>
                 </div>
                 <div>
-                    <label for="scheduler_min_interval_minutes" class="block text-sm text-gray-400 mb-1.5">
-                        Min. interval per link (minutes)
-                    </label>
+                    <label for="scheduler_min_interval_minutes" class="block text-xs text-gray-400 mb-1.5">Min. interval per link (minutes)</label>
                     <input type="number" id="scheduler_min_interval_minutes" name="scheduler_min_interval_minutes"
-                           value="{{ s['scheduler.min_interval_minutes'] }}"
-                           min="0"
+                           value="{{ s['scheduler.min_interval_minutes'] }}" min="0"
                            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                   focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-                    <p class="text-xs text-gray-600 mt-1">A link is rechecked no sooner than this interval.</p>
+                    <p class="text-xs text-gray-600 mt-1">A link is rechecked no sooner than this.</p>
                 </div>
             </div>
-        </div>
 
-        <!-- Price Check Engine -->
-        <div class="card p-5 space-y-4">
-            <h2 class="section-label">Price Check Engine</h2>
-            <div>
-                <label for="check_engine" class="block text-sm text-gray-400 mb-1.5">Engine</label>
-                <select id="check_engine" name="check_engine"
-                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
-                               focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-                    <option value="playwright" {% if s['check.engine'] == 'playwright' %}selected{% endif %}>
-                        Playwright (Chromium) — recommended
-                    </option>
-                    <option value="httpx" {% if s['check.engine'] == 'httpx' %}selected{% endif %}>
-                        httpx (plain HTTP)
-                    </option>
-                </select>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label for="playwright_timeout_ms" class="block text-sm text-gray-400 mb-1.5">
-                        Playwright Timeout (ms)
-                    </label>
-                    <input type="number" id="playwright_timeout_ms" name="playwright_timeout_ms"
-                           value="{{ s['playwright.timeout_ms'] }}"
-                           min="5000" step="1000"
-                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
-                                  focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+            <!-- Fetch Engine -->
+            <div class="card p-5 space-y-4">
+                <div class="pb-3 border-b border-gray-800">
+                    <p class="text-sm font-medium text-gray-200">Fetch Engine</p>
+                    <p class="text-xs text-gray-600 mt-0.5">How product pages are downloaded</p>
                 </div>
                 <div>
-                    <label for="playwright_max_concurrent" class="block text-sm text-gray-400 mb-1.5">
-                        Max. parallel checks
-                    </label>
-                    <input type="number" id="playwright_max_concurrent" name="playwright_max_concurrent"
-                           value="{{ s['playwright.max_concurrent'] }}"
-                           min="1" max="5"
-                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
-                                  focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-                    <p class="text-xs text-gray-600 mt-1">Default 1. Higher values use more RAM.</p>
+                    <label for="check_engine" class="block text-xs text-gray-400 mb-1.5">Default engine</label>
+                    <select id="check_engine" name="check_engine"
+                            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                                   focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                        <option value="playwright" {% if s['check.engine'] == 'playwright' %}selected{% endif %}>Playwright (Chromium) — recommended</option>
+                        <option value="httpx" {% if s['check.engine'] == 'httpx' %}selected{% endif %}>httpx (plain HTTP)</option>
+                    </select>
                 </div>
-            </div>
-            <div class="flex items-center gap-3">
-                <input type="hidden" name="playwright_headless" value="">
-                <input type="checkbox" id="playwright_headless" name="playwright_headless" value="1"
-                       {% if s['playwright.headless'] == '1' %}checked{% endif %}
-                       class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
-                <label for="playwright_headless" class="text-sm text-gray-300 cursor-pointer">
-                    Headless (no visible browser window)
-                </label>
-            </div>
-        </div>
-
-        <!-- Discord -->
-        <div class="card p-5 space-y-4">
-            <div class="flex items-center justify-between">
-                <h2 class="section-label">Discord</h2>
-                <div class="flex items-center gap-2">
-                    <input type="hidden" name="discord_enabled" value="">
-                    <input type="checkbox" id="discord_enabled" name="discord_enabled" value="1"
-                           {% if s['discord.enabled'] == '1' %}checked{% endif %}
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="playwright_timeout_ms" class="block text-xs text-gray-400 mb-1.5">Playwright timeout (ms)</label>
+                        <input type="number" id="playwright_timeout_ms" name="playwright_timeout_ms"
+                               value="{{ s['playwright.timeout_ms'] }}" min="5000" step="1000"
+                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                                      focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                    </div>
+                    <div>
+                        <label for="playwright_max_concurrent" class="block text-xs text-gray-400 mb-1.5">Max. parallel checks</label>
+                        <input type="number" id="playwright_max_concurrent" name="playwright_max_concurrent"
+                               value="{{ s['playwright.max_concurrent'] }}" min="1" max="5"
+                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                                      focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="hidden" name="playwright_headless" value="">
+                    <input type="checkbox" id="playwright_headless" name="playwright_headless" value="1"
+                           {% if s['playwright.headless'] == '1' %}checked{% endif %}
                            class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
-                    <label for="discord_enabled" class="text-sm text-gray-300 cursor-pointer">Enabled</label>
+                    <label for="playwright_headless" class="text-sm text-gray-300 cursor-pointer">
+                        Headless mode <span class="text-gray-600 text-xs">(no visible browser)</span>
+                    </label>
                 </div>
             </div>
 
-            <div>
-                <label for="discord_webhook_url" class="block text-sm text-gray-400 mb-1.5">
-                    Webhook URL
-                </label>
-                <input type="url" id="discord_webhook_url" name="discord_webhook_url"
-                       value=""
-                       placeholder="{% if s['discord.webhook_url'] %}••••••• (set – leave empty to keep){% else %}https://discord.com/api/webhooks/…{% endif %}"
-                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
-                              placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 font-mono">
-                {% if s['discord.webhook_url'] %}
-                <p class="text-xs text-emerald-600 mt-1">Webhook URL set. Leave empty to keep.</p>
-                {% endif %}
+        </div>
+    </section>
+
+    <!-- ── Notifications ──────────────────────────────────────────────── -->
+    <section>
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-indigo-400">
+                    <path d="M4.214 3.227a.75.75 0 0 0-1.156-.956 8.97 8.97 0 0 0-1.856 3.826.75.75 0 0 0 1.466.316 7.47 7.47 0 0 1 1.546-3.186ZM16.942 2.271a.75.75 0 0 0-1.157.956 7.47 7.47 0 0 1 1.547 3.186.75.75 0 0 0 1.466-.316 8.971 8.971 0 0 0-1.856-3.826ZM10 2a6 6 0 0 0-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 0 0 .515 1.076 32.94 32.94 0 0 0 3.256.508 3.5 3.5 0 0 0 6.972 0 32.933 32.933 0 0 0 3.256-.508.75.75 0 0 0 .515-1.076A11.448 11.448 0 0 1 16 8a6 6 0 0 0-6-6Zm0 14.5a2 2 0 0 1-1.95-1.557 33.54 33.54 0 0 0 3.9 0A2 2 0 0 1 10 16.5Z"/>
+                </svg>
             </div>
+            <h2 class="text-base font-semibold text-white">Notifications</h2>
         </div>
 
-        <!-- Email (SMTP) -->
-        <div class="card p-5 space-y-4">
-            <div class="flex items-center justify-between">
-                <h2 class="section-label">Email (SMTP)</h2>
-                <div class="flex items-center gap-2">
-                    <input type="hidden" name="smtp_enabled" value="">
-                    <input type="checkbox" id="smtp_enabled" name="smtp_enabled" value="1"
-                           {% if s['smtp.enabled'] == '1' %}checked{% endif %}
-                           class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
-                    <label for="smtp_enabled" class="text-sm text-gray-300 cursor-pointer">Enabled</label>
-                </div>
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label for="smtp_host" class="block text-sm text-gray-400 mb-1.5">SMTP Host</label>
-                    <input type="text" id="smtp_host" name="smtp_host"
-                           value="{{ s['smtp.host'] }}"
-                           placeholder="smtp.example.com"
-                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white font-mono
-                                  placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+            <!-- Discord -->
+            <div class="card p-5 space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-gray-800">
+                    <div>
+                        <p class="text-sm font-medium text-gray-200">Discord</p>
+                        <p class="text-xs text-gray-600 mt-0.5">Webhook message on price alert</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="hidden" name="discord_enabled" value="">
+                        <input type="checkbox" id="discord_enabled" name="discord_enabled" value="1"
+                               {% if s['discord.enabled'] == '1' %}checked{% endif %}
+                               class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
+                        <label for="discord_enabled" class="text-xs text-gray-400 cursor-pointer">Enabled</label>
+                    </div>
                 </div>
                 <div>
-                    <label for="smtp_port" class="block text-sm text-gray-400 mb-1.5">Port</label>
-                    <input type="number" id="smtp_port" name="smtp_port"
-                           value="{{ s['smtp.port'] }}"
-                           placeholder="587"
-                           min="1" max="65535"
+                    <label for="discord_webhook_url" class="block text-xs text-gray-400 mb-1.5">Webhook URL</label>
+                    <input type="url" id="discord_webhook_url" name="discord_webhook_url" value=""
+                           placeholder="{% if s['discord.webhook_url'] %}••••••• (set – leave empty to keep){% else %}https://discord.com/api/webhooks/…{% endif %}"
                            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
-                                  focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label for="smtp_user" class="block text-sm text-gray-400 mb-1.5">Username</label>
-                    <input type="text" id="smtp_user" name="smtp_user"
-                           value="{{ s['smtp.user'] }}"
-                           placeholder="user@example.com"
-                           autocomplete="off"
-                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
-                                  placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-                </div>
-                <div>
-                    <label for="smtp_password" class="block text-sm text-gray-400 mb-1.5">Password</label>
-                    <input type="password" id="smtp_password" name="smtp_password"
-                           value=""
-                           placeholder="{% if s['smtp.password'] %}••••••• (set – leave empty to keep){% else %}Password{% endif %}"
-                           autocomplete="new-password"
-                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
-                                  placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-                    {% if s['smtp.password'] %}
-                    <p class="text-xs text-emerald-600 mt-1">Password set. Leave empty to keep.</p>
+                                  placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 font-mono">
+                    {% if s['discord.webhook_url'] %}
+                    <p class="text-xs text-emerald-600 mt-1">Webhook set. Leave empty to keep.</p>
                     {% endif %}
                 </div>
+                <button type="submit" form="form-test-discord"
+                        {% if not s['discord.webhook_url'] %}disabled title="Webhook URL not configured"{% endif %}
+                        class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors
+                               {% if s['discord.webhook_url'] %}bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white
+                               {% else %}bg-gray-800/50 text-gray-700 cursor-not-allowed{% endif %}">
+                    <svg viewBox="0 0 16 16" fill="currentColor" class="w-3.5 h-3.5">
+                        <path fill-rule="evenodd" d="M8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.001 7.001 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.501 5.501 0 0 0 8 2.5ZM1.705 8.005a.75.75 0 0 1 .834.656 5.501 5.501 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.001 7.001 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834Z" clip-rule="evenodd"/>
+                    </svg>
+                    Send test message
+                </button>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label for="smtp_from_addr" class="block text-sm text-gray-400 mb-1.5">From Address</label>
-                    <input type="email" id="smtp_from_addr" name="smtp_from_addr"
-                           value="{{ s['smtp.from_addr'] }}"
-                           placeholder="spoolbeacon@example.com"
-                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
-                                  placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+            <!-- Email (SMTP) -->
+            <div class="card p-5 space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-gray-800">
+                    <div>
+                        <p class="text-sm font-medium text-gray-200">Email (SMTP)</p>
+                        <p class="text-xs text-gray-600 mt-0.5">Send alerts via email</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="hidden" name="smtp_enabled" value="">
+                        <input type="checkbox" id="smtp_enabled" name="smtp_enabled" value="1"
+                               {% if s['smtp.enabled'] == '1' %}checked{% endif %}
+                               class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
+                        <label for="smtp_enabled" class="text-xs text-gray-400 cursor-pointer">Enabled</label>
+                    </div>
                 </div>
-                <div>
-                    <label for="smtp_to_addr" class="block text-sm text-gray-400 mb-1.5">Recipient (To)</label>
-                    <input type="email" id="smtp_to_addr" name="smtp_to_addr"
-                           value="{{ s['smtp.to_addr'] }}"
-                           placeholder="me@example.com"
-                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
-                                  placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="col-span-2">
+                        <label for="smtp_host" class="block text-xs text-gray-400 mb-1.5">SMTP Host</label>
+                        <input type="text" id="smtp_host" name="smtp_host"
+                               value="{{ s['smtp.host'] }}" placeholder="smtp.example.com"
+                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white font-mono
+                                      placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                    </div>
+                    <div>
+                        <label for="smtp_port" class="block text-xs text-gray-400 mb-1.5">Port</label>
+                        <input type="number" id="smtp_port" name="smtp_port"
+                               value="{{ s['smtp.port'] }}" placeholder="587" min="1" max="65535"
+                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                                      focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="smtp_user" class="block text-xs text-gray-400 mb-1.5">Username</label>
+                        <input type="text" id="smtp_user" name="smtp_user"
+                               value="{{ s['smtp.user'] }}" placeholder="user@example.com" autocomplete="off"
+                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                                      placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                    </div>
+                    <div>
+                        <label for="smtp_password" class="block text-xs text-gray-400 mb-1.5">Password</label>
+                        <input type="password" id="smtp_password" name="smtp_password" value=""
+                               placeholder="{% if s['smtp.password'] %}••••••• (keep){% else %}Password{% endif %}"
+                               autocomplete="new-password"
+                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                                      placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                        {% if s['smtp.password'] %}<p class="text-xs text-emerald-600 mt-1">Set. Leave empty to keep.</p>{% endif %}
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="smtp_from_addr" class="block text-xs text-gray-400 mb-1.5">From</label>
+                        <input type="email" id="smtp_from_addr" name="smtp_from_addr"
+                               value="{{ s['smtp.from_addr'] }}" placeholder="spoolbeacon@example.com"
+                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                                      placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                    </div>
+                    <div>
+                        <label for="smtp_to_addr" class="block text-xs text-gray-400 mb-1.5">To</label>
+                        <input type="email" id="smtp_to_addr" name="smtp_to_addr"
+                               value="{{ s['smtp.to_addr'] }}" placeholder="me@example.com"
+                               class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                                      placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                    </div>
+                </div>
+                <div class="flex items-center justify-between pt-1">
+                    <div class="flex items-center gap-3">
+                        <input type="hidden" name="smtp_tls" value="">
+                        <input type="checkbox" id="smtp_tls" name="smtp_tls" value="1"
+                               {% if s['smtp.tls'] == '1' %}checked{% endif %}
+                               class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
+                        <label for="smtp_tls" class="text-sm text-gray-300 cursor-pointer">
+                            STARTTLS <span class="text-gray-600 text-xs">(port 587)</span>
+                        </label>
+                    </div>
+                    <button type="submit" form="form-test-email"
+                            {% if not s['smtp.host'] or not s['smtp.to_addr'] %}disabled title="SMTP configuration incomplete"{% endif %}
+                            class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors
+                                   {% if s['smtp.host'] and s['smtp.to_addr'] %}bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white
+                                   {% else %}bg-gray-800/50 text-gray-700 cursor-not-allowed{% endif %}">
+                        <svg viewBox="0 0 16 16" fill="currentColor" class="w-3.5 h-3.5">
+                            <path fill-rule="evenodd" d="M8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.001 7.001 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.501 5.501 0 0 0 8 2.5ZM1.705 8.005a.75.75 0 0 1 .834.656 5.501 5.501 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.001 7.001 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834Z" clip-rule="evenodd"/>
+                        </svg>
+                        Send test email
+                    </button>
                 </div>
             </div>
 
-            <div class="flex items-center gap-3">
-                <input type="hidden" name="smtp_tls" value="">
-                <input type="checkbox" id="smtp_tls" name="smtp_tls" value="1"
-                       {% if s['smtp.tls'] == '1' %}checked{% endif %}
-                       class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
-                <label for="smtp_tls" class="text-sm text-gray-300 cursor-pointer">
-                    Enable STARTTLS
-                    <span class="text-gray-600 text-xs ml-1">(port 587 / not 465)</span>
-                </label>
+        </div>
+    </section>
+
+    <!-- ── Inventory ──────────────────────────────────────────────────── -->
+    <section>
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-amber-400">
+                    <path fill-rule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clip-rule="evenodd"/>
+                </svg>
             </div>
+            <h2 class="text-base font-semibold text-white">Inventory</h2>
         </div>
 
-        <!-- Spool Code Template -->
         <div class="card p-5 space-y-4">
-            <h2 class="section-label">Spool Code Template</h2>
+            <div class="pb-3 border-b border-gray-800">
+                <p class="text-sm font-medium text-gray-200">Spool Code Template</p>
+                <p class="text-xs text-gray-600 mt-0.5">Pattern used when generating spool codes. Changes apply to new spools only.</p>
+            </div>
             <div>
-                <label for="spool_code_template" class="block text-sm text-gray-400 mb-1.5">
-                    Template
-                </label>
+                <label for="spool_code_template" class="block text-xs text-gray-400 mb-1.5">Template</label>
                 <input type="text" id="spool_code_template" name="spool_code_template"
                        value="{{ s['spool.code_template'] }}"
                        placeholder="{{ s['spool.code_template'] }}"
                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white font-mono
                               focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-                <p class="text-xs text-gray-600 mt-1.5">
-                    Changes apply to new spools. To rewrite existing codes use the regenerate button below.
-                </p>
             </div>
             <div class="rounded-lg bg-gray-850 border border-gray-800 p-3">
-                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-2">Available variables</p>
-                <div class="space-y-1">
+                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-2.5">Available variables</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1.5">
                     {% for var, desc in available_vars %}
                     <div class="flex items-baseline gap-2">
                         <code class="text-xs text-indigo-400 font-mono whitespace-nowrap">{{ var }}</code>
@@ -243,73 +285,27 @@
                     {% endfor %}
                 </div>
             </div>
+            <div class="flex items-center justify-between pt-1 border-t border-gray-800">
+                <div>
+                    <p class="text-sm font-medium text-gray-300">Regenerate all spool codes</p>
+                    <p class="text-xs text-gray-600 mt-0.5">Overwrites existing codes using the saved template above.</p>
+                </div>
+                <button type="submit" form="form-regenerate"
+                        onclick="return confirm('Regenerate all spool codes? Existing codes will be overwritten.')"
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg flex-shrink-0
+                               bg-amber-700 hover:bg-amber-600 text-white transition-colors">
+                    <svg viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+                        <path fill-rule="evenodd" d="M8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.001 7.001 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.501 5.501 0 0 0 8 2.5ZM1.705 8.005a.75.75 0 0 1 .834.656 5.501 5.501 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.001 7.001 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834Z" clip-rule="evenodd"/>
+                    </svg>
+                    Regenerate
+                </button>
+            </div>
         </div>
+    </section>
 
-        <div>
-            <button type="submit" class="btn-primary">Save</button>
-        </div>
-    </form>
-
-    <!-- Spool code regeneration -->
-    <div class="card p-5 space-y-3">
-        <h2 class="section-label">Regenerate Spool Codes</h2>
-        <p class="text-xs text-gray-500">
-            Rewrites all existing spool codes using the currently saved template.
-            Sequence numbers are reassigned per purchase line. Random values change.
-        </p>
-        <form method="POST" action="/settings/spool-codes/regenerate">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <button type="submit"
-                    onclick="return confirm('Regenerate all spool codes? Existing codes will be overwritten.')"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg
-                           bg-amber-700 hover:bg-amber-600 text-white transition-colors">
-                <svg viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-                    <path fill-rule="evenodd" d="M8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.001 7.001 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.501 5.501 0 0 0 8 2.5ZM1.705 8.005a.75.75 0 0 1 .834.656 5.501 5.501 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.001 7.001 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834Z" clip-rule="evenodd"/>
-                </svg>
-                Regenerate all spool codes
-            </button>
-        </form>
+    <div class="pt-2">
+        <button type="submit" class="btn-primary px-6 py-2.5">Save Settings</button>
     </div>
 
-    <!-- Test buttons -->
-    <div class="card p-5 space-y-3">
-        <h2 class="section-label">Tests</h2>
-        <div class="flex flex-wrap gap-3">
-
-            <form method="POST" action="/settings/test/discord">
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <button type="submit"
-                        {% if not s['discord.webhook_url'] %}disabled title="Webhook URL not configured"{% endif %}
-                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors
-                               {% if s['discord.webhook_url'] %}bg-indigo-700 hover:bg-indigo-600 text-white
-                               {% else %}bg-gray-800 text-gray-600 cursor-not-allowed{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.03.056a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
-                    </svg>
-                    Test Discord
-                </button>
-            </form>
-
-            <form method="POST" action="/settings/test/email">
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <button type="submit"
-                        {% if not s['smtp.host'] or not s['smtp.to_addr'] %}disabled title="SMTP configuration incomplete"{% endif %}
-                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors
-                               {% if s['smtp.host'] and s['smtp.to_addr'] %}bg-sky-700 hover:bg-sky-600 text-white
-                               {% else %}bg-gray-800 text-gray-600 cursor-not-allowed{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-4 h-4">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/>
-                    </svg>
-                    Test Email
-                </button>
-            </form>
-
-        </div>
-        <p class="text-xs text-gray-600">
-            Tests send messages using the currently saved settings.
-        </p>
-    </div>
-
-</div>
+</form>
 {% endblock %}

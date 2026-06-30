@@ -23,6 +23,13 @@
     </h1>
 </div>
 
+{% if editing %}
+<form id="form-delete-filament" method="POST" action="/inventory/filament/{{ product.id }}/delete"
+      onsubmit="return confirm('Delete this filament? This cannot be undone.')">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+</form>
+{% endif %}
+
 <form method="POST"
       action="{% if editing %}/inventory/filament/{{ product.id }}/edit{% else %}/inventory/filament/new{% endif %}"
       class="max-w-2xl space-y-6">
@@ -30,10 +37,11 @@
 
     <!-- Manufacturer -->
     <div class="card p-5 space-y-4">
-        <h2 class="section-label">Manufacturer</h2>
-
+        <div class="pb-3 border-b border-gray-800">
+            <p class="text-sm font-medium text-gray-200">Manufacturer</p>
+        </div>
         <div>
-            <label for="manufacturer_id" class="block text-sm text-gray-400 mb-1.5">
+            <label for="manufacturer_id" class="block text-xs text-gray-400 mb-1.5">
                 Manufacturer <span class="text-red-500">*</span>
             </label>
             <select id="manufacturer_id" name="manufacturer_id"
@@ -55,11 +63,10 @@
                 </option>
             </select>
         </div>
-
         <div id="new-mfr"
              class="{% if not (form_data and form_data.get('manufacturer_id') == 'new') %}hidden{% endif %}
                     bg-gray-800/50 border border-gray-700/50 rounded-lg p-4">
-            <label class="block text-sm text-gray-400 mb-1.5">
+            <label class="block text-xs text-gray-400 mb-1.5">
                 New manufacturer name <span class="text-red-500">*</span>
             </label>
             <input type="text" name="new_manufacturer_name"
@@ -72,10 +79,11 @@
 
     <!-- Filament Details -->
     <div class="card p-5 space-y-4">
-        <h2 class="section-label">Filament</h2>
-
+        <div class="pb-3 border-b border-gray-800">
+            <p class="text-sm font-medium text-gray-200">Filament</p>
+        </div>
         <div>
-            <label for="name" class="block text-sm text-gray-400 mb-1.5">
+            <label for="name" class="block text-xs text-gray-400 mb-1.5">
                 Product Name <span class="text-red-500">*</span>
             </label>
             <input type="text" id="name" name="name"
@@ -85,9 +93,8 @@
                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
         </div>
-
         <div>
-            <label for="material" class="block text-sm text-gray-400 mb-1.5">
+            <label for="material" class="block text-xs text-gray-400 mb-1.5">
                 Material <span class="text-red-500">*</span>
             </label>
             <input type="text" id="material" name="material"
@@ -111,10 +118,9 @@
                 <option value="HIPS">
             </datalist>
         </div>
-
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-                <label for="color_name" class="block text-sm text-gray-400 mb-1.5">
+                <label for="color_name" class="block text-xs text-gray-400 mb-1.5">
                     Color Name <span class="text-red-500">*</span>
                 </label>
                 <input type="text" id="color_name" name="color_name"
@@ -124,9 +130,7 @@
                               placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
             </div>
             <div>
-                <label for="color_hex_text" class="block text-sm text-gray-400 mb-1.5">
-                    Color (optional)
-                </label>
+                <label for="color_hex_text" class="block text-xs text-gray-400 mb-1.5">Color (optional)</label>
                 <div class="flex items-center gap-2">
                     <input type="color" id="color_picker"
                            value="{{ field_val('color_hex', '#ffffff') }}"
@@ -142,10 +146,9 @@
                 </div>
             </div>
         </div>
-
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <label for="diameter_mm" class="block text-sm text-gray-400 mb-1.5">Diameter</label>
+                <label for="diameter_mm" class="block text-xs text-gray-400 mb-1.5">Diameter</label>
                 <select id="diameter_mm" name="diameter_mm"
                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
@@ -158,7 +161,7 @@
                 </select>
             </div>
             <div>
-                <label for="nominal_weight_g" class="block text-sm text-gray-400 mb-1.5">Nominal Weight</label>
+                <label for="nominal_weight_g" class="block text-xs text-gray-400 mb-1.5">Nominal Weight</label>
                 <select id="nominal_weight_g" name="nominal_weight_g"
                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
@@ -174,8 +177,10 @@
     </div>
 
     <!-- Notes -->
-    <div class="card p-5">
-        <label for="notes" class="block section-label mb-3">Notes (optional)</label>
+    <div class="card p-5 space-y-4">
+        <div class="pb-3 border-b border-gray-800">
+            <p class="text-sm font-medium text-gray-200">Notes <span class="text-gray-600 font-normal text-xs">(optional)</span></p>
+        </div>
         <textarea id="notes" name="notes" rows="3"
                   placeholder="Notes, print settings, …"
                   class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
@@ -191,14 +196,10 @@
         </a>
         {% if editing %}
         <div class="ml-auto">
-            <form method="POST" action="/inventory/filament/{{ product.id }}/delete" class="inline"
-                  onsubmit="return confirm('Delete this filament? This cannot be undone.')">
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <button type="submit"
-                        class="px-4 py-2 text-sm text-red-500 hover:text-red-400 hover:bg-red-950/30 rounded-lg transition-colors">
-                    Delete
-                </button>
-            </form>
+            <button type="submit" form="form-delete-filament"
+                    class="px-4 py-2 text-sm text-red-500 hover:text-red-400 hover:bg-red-950/30 rounded-lg transition-colors">
+                Delete
+            </button>
         </div>
         {% endif %}
     </div>

@@ -147,7 +147,12 @@ async def check_price(
         avail_raw = _extract(html, rule.availability_selector, rule.availability_regex)
 
         if not price_raw:
-            msg = f"Price not found (sel={rule.price_selector!r} re={rule.price_regex!r})"
+            block = ""
+            if "validateCaptcha" in html or "Robot Check" in html:
+                block = " — CAPTCHA detected, session required"
+            elif "Sign in" in html and "password" in html.lower() and len(html) < 50_000:
+                block = " — login wall detected"
+            msg = f"Price not found (sel={rule.price_selector!r} re={rule.price_regex!r}){block}"
             await _save_error(link_id, link_currency, msg)
             log.warning("check [%d] rule error: %s", link_id, msg)
             return {"ok": False, "error": msg, **_err}

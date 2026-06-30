@@ -24,13 +24,14 @@
       autocomplete="off">
     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
-    <!-- Identity -->
+    <!-- Account -->
     <div class="card p-5 space-y-4">
-        <h2 class="section-label">Account</h2>
-
+        <div class="pb-3 border-b border-gray-800">
+            <p class="text-sm font-medium text-gray-200">Account</p>
+        </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-                <label for="username" class="block text-sm text-gray-400 mb-1.5">
+                <label for="username" class="block text-xs text-gray-400 mb-1.5">
                     Username <span class="text-red-500">*</span>
                 </label>
                 <input type="text" id="username" name="username"
@@ -42,7 +43,7 @@
                               placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
             </div>
             <div>
-                <label for="email" class="block text-sm text-gray-400 mb-1.5">
+                <label for="email" class="block text-xs text-gray-400 mb-1.5">
                     Email <span class="text-red-500">*</span>
                 </label>
                 <input type="email" id="email" name="email"
@@ -57,10 +58,12 @@
 
     <!-- Password -->
     <div class="card p-5 space-y-4">
-        <h2 class="section-label">Password{% if editing %} <span class="text-gray-700 font-normal">(optional)</span>{% endif %}</h2>
-
+        <div class="pb-3 border-b border-gray-800">
+            <p class="text-sm font-medium text-gray-200">Password{% if editing %} <span class="text-gray-600 font-normal text-xs">(optional)</span>{% endif %}</p>
+            {% if editing %}<p class="text-xs text-gray-600 mt-0.5">Leave empty to keep the existing password</p>{% endif %}
+        </div>
         <div>
-            <label for="password" class="block text-sm text-gray-400 mb-1.5">
+            <label for="password" class="block text-xs text-gray-400 mb-1.5">
                 {% if editing %}New password{% else %}Password <span class="text-red-500">*</span>{% endif %}
             </label>
             <input type="password" id="password" name="password"
@@ -69,19 +72,17 @@
                    placeholder="{% if editing %}Leave empty to keep current password{% else %}Set a password{% endif %}"
                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-            {% if editing %}
-            <p class="text-xs text-gray-600 mt-1">Leave empty to keep the existing password.</p>
-            {% endif %}
         </div>
     </div>
 
     <!-- Role & Status -->
     <div class="card p-5 space-y-4">
-        <h2 class="section-label">Role &amp; Status</h2>
-
+        <div class="pb-3 border-b border-gray-800">
+            <p class="text-sm font-medium text-gray-200">Role &amp; Status</p>
+        </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-                <label for="role" class="block text-sm text-gray-400 mb-1.5">Role</label>
+                <label for="role" class="block text-xs text-gray-400 mb-1.5">Role</label>
                 <select id="role" name="role"
                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
@@ -93,12 +94,10 @@
                     <option value="member" {% if current_role == 'member' %}selected{% endif %}>Member</option>
                     <option value="viewer" {% if current_role == 'viewer' %}selected{% endif %}>Viewer</option>
                 </select>
-                <p class="text-xs text-gray-600 mt-1">
-                    Admin: full access · Member: manage inventory · Viewer: read-only
-                </p>
+                <p class="text-xs text-gray-600 mt-1">Admin: full · Member: inventory · Viewer: read-only</p>
             </div>
             <div>
-                <label class="block text-sm text-gray-400 mb-1.5">Status</label>
+                <label class="block text-xs text-gray-400 mb-1.5">Status</label>
                 {% set active_val = fval('is_active', '1') %}
                 {% if editing and form_data is none %}
                     {% set active_val = '1' if user.is_active else '0' %}
