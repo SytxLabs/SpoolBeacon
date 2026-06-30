@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}404 – Not Found – SpoolBeacon{% endblock %}
+{% block content %}
+<div class="flex flex-col items-center justify-center py-24 text-center">
+    <p class="text-8xl font-bold text-gray-800 leading-none select-none">404</p>
+    <p class="mt-4 text-lg font-semibold text-white">Page not found</p>
+    <p class="mt-1 text-sm text-gray-500 max-w-sm">
+        The page you're looking for doesn't exist or has been moved.
+    </p>
+    <div class="mt-8 flex items-center gap-3">
+        <a href="/dashboard" class="btn-primary">Go to Dashboard</a>
+        <a href="javascript:history.back()" class="btn-ghost">Go back</a>
+    </div>
+</div>
+{% endblock %}

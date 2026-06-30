@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}403 – Forbidden – SpoolBeacon{% endblock %}
+{% block content %}
+<div class="flex flex-col items-center justify-center py-24 text-center">
+    <p class="text-8xl font-bold text-gray-800 leading-none select-none">403</p>
+    <p class="mt-4 text-lg font-semibold text-white">Access denied</p>
+    <p class="mt-1 text-sm text-gray-500 max-w-sm">
+        You don't have permission to access this page.
+    </p>
+    <div class="mt-8 flex items-center gap-3">
+        <a href="/dashboard" class="btn-primary">Go to Dashboard</a>
+        <a href="javascript:history.back()" class="btn-ghost">Go back</a>
+    </div>
+</div>
+{% endblock %}
