@@ -76,6 +76,21 @@ def create_app(config_class=Config) -> Quart:
     async def handle_unauthorized(_e):
         return redirect(url_for("auth.login"))
 
+    @app.errorhandler(403)
+    async def handle_403(_e):
+        from quart import render_template
+        return await render_template("errors/403.html"), 403
+
+    @app.errorhandler(404)
+    async def handle_404(_e):
+        from quart import render_template
+        return await render_template("errors/404.html"), 404
+
+    @app.errorhandler(500)
+    async def handle_500(_e):
+        from quart import render_template
+        return await render_template("errors/500.html"), 500
+
     @app.context_processor
     async def inject_globals():
         from quart_auth import current_user
