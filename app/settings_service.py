@@ -4,6 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.app_setting import AppSetting
 
 _DEFAULTS: dict[str, str] = {
+    # spool codes
+    "spool.code_template": "SB-{product_id}-{line_id}-{timestamp}-{seq:02d}",
     # scheduler
     "scheduler.enabled": "0",
     "scheduler.interval_minutes": "360",

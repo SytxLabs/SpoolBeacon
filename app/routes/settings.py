@@ -8,6 +8,7 @@ from app.database import get_db
 from app.models.user import User, UserRole
 from app.settings_service import get_all, set_many
 from app.notification_service import send_discord, send_email
+from app.spool_code import generate_spool_code, DEFAULT_TEMPLATE, AVAILABLE_VARS
 
 settings_bp = Blueprint("settings", __name__, url_prefix="/settings")
 
@@ -31,7 +32,7 @@ def admin_required(f):
 async def index():
     async with get_db() as session:
         s = await get_all(session)
-    return await render_template("settings/index.html", s=s)
+    return await render_template("settings/index.html", s=s, available_vars=AVAILABLE_VARS)
 
 
 @settings_bp.post("/")
@@ -47,6 +48,8 @@ async def save():
             return "1" if "1" in form.getlist(name) else "0"
 
         updates: dict[str, str] = {
+            # spool codes
+            "spool.code_template": form.get("spool_code_template", "").strip() or DEFAULT_TEMPLATE,
             # scheduler
             "scheduler.enabled": cb("scheduler_enabled"),
             "scheduler.interval_minutes": form.get("scheduler_interval_minutes", "360").strip() or "360",
@@ -94,6 +97,43 @@ async def test_discord():
         await flash(f"Discord-Test fehlgeschlagen: {error}", "error")
     else:
         await flash("Discord-Test erfolgreich.", "success")
+    return redirect(url_for("settings.index"))
+
+
+@settings_bp.post("/spool-codes/regenerate")
+@login_required
+@admin_required
+async def regenerate_spool_codes():
+    from datetime import datetime
+    from sqlalchemy import select
+    from app.models.spool import Spool
+
+    async with get_db() as session:
+        s = await get_all(session)
+        template = s.get("spool.code_template", DEFAULT_TEMPLATE)
+
+        spools = (await session.execute(
+            select(Spool).order_by(Spool.purchase_line_id, Spool.created_at, Spool.id)
+        )).scalars().all()
+
+        now = datetime.utcnow()
+        seq_counters: dict[tuple, int] = {}
+        updated = 0
+        for spool in spools:
+            key = (spool.filament_product_id, spool.purchase_line_id)
+            seq_counters[key] = seq_counters.get(key, 0) + 1
+            new_code = generate_spool_code(
+                template,
+                product_id=spool.filament_product_id,
+                line_id=spool.purchase_line_id,
+                seq=seq_counters[key],
+                now=now,
+            )
+            if new_code != spool.spool_code:
+                spool.spool_code = new_code
+                updated += 1
+
+    await flash(f"Spool codes regenerated: {updated} of {len(spools)} updated.", "success")
     return redirect(url_for("settings.index"))
 
 

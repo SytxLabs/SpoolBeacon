@@ -18,6 +18,7 @@ from app.alert_service import maybe_create_alerts, dispatch_alert_notifications
 from app.models.price_alert_event import PriceAlertEvent
 from app.price_check_service import check_price
 from app.settings_service import get_all as get_settings
+from app.spool_code import generate_spool_code, DEFAULT_TEMPLATE
 
 inventory_bp = Blueprint("inventory", __name__, url_prefix="/inventory")
 
@@ -490,9 +491,17 @@ async def create_spools_from_line(line_id: int):
         if to_create <= 0:
             await flash("Alle Spulen für diese Kaufposition bereits vorhanden.", "info")
         else:
-            ts = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+            settings = await get_settings(session)
+            template = settings.get("spool.code_template", DEFAULT_TEMPLATE)
+            now = datetime.datetime.utcnow()
             for i in range(to_create):
-                code = f"SB-{line.filament_product_id}-{line_id}-{ts}-{existing_count + i + 1:02d}"
+                code = generate_spool_code(
+                    template,
+                    product_id=line.filament_product_id,
+                    line_id=line_id,
+                    seq=existing_count + i + 1,
+                    now=now,
+                )
                 session.add(Spool(
                     filament_product_id=line.filament_product_id,
                     purchase_line_id=line_id,
@@ -585,9 +594,17 @@ async def purchase_new(product_id: int):
         session.add(line)
         await session.flush()
 
-        ts = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+        settings = await get_settings(session)
+        template = settings.get("spool.code_template", DEFAULT_TEMPLATE)
+        now = datetime.datetime.utcnow()
         for i in range(quantity):
-            code = f"SB-{product_id}-{line.id}-{ts}-{i + 1:02d}"
+            code = generate_spool_code(
+                template,
+                product_id=product_id,
+                line_id=line.id,
+                seq=i + 1,
+                now=now,
+            )
             session.add(Spool(
                 filament_product_id=product_id,
                 purchase_line_id=line.id,
