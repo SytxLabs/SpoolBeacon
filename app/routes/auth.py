@@ -29,7 +29,7 @@ async def login():
             login_user(AuthUser(str(user.id)))
             return redirect(url_for("dashboard.index"))
 
-        await flash("Ungültige Anmeldedaten.", "error")
+        await flash("Invalid credentials.", "error")
 
     return await render_template("auth/login.html")
 
@@ -56,7 +56,7 @@ async def setup():
         password = form.get("password", "")
 
         if not (username and email and password):
-            await flash("Alle Felder erforderlich.", "error")
+            await flash("All fields are required.", "error")
             return await render_template("auth/setup.html")
 
         async with get_db() as session:

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% set editing = link is not none %}
-{% block title %}{% if editing %}Shop-Link bearbeiten{% else %}Shop-Link hinzufügen{% endif %} – SpoolBeacon{% endblock %}
+{% block title %}{% if editing %}Edit Shop Link{% else %}Add Shop Link{% endif %} – SpoolBeacon{% endblock %}
 
 {% macro fval(name, default='') %}
 {%- if form_data is not none -%}{{ form_data.get(name, default) }}{%- elif editing -%}{{ link[name] if link[name] is not none else default }}{%- else -%}{{ default }}{%- endif -%}
@@ -8,17 +8,16 @@
 
 {% block content %}
 
-<!-- Header -->
 <div class="mb-7">
     <nav class="flex items-center gap-1.5 text-xs text-gray-600 mb-3">
         <a href="/inventory/" class="hover:text-gray-400 transition-colors">Inventory</a>
         <span>/</span>
         <a href="/inventory/{{ product.id }}" class="hover:text-gray-400 transition-colors">{{ product.name }}</a>
         <span>/</span>
-        <span class="text-gray-400">{% if editing %}Shop-Link bearbeiten{% else %}Shop-Link hinzufügen{% endif %}</span>
+        <span class="text-gray-400">{% if editing %}Edit Shop Link{% else %}Add Shop Link{% endif %}</span>
     </nav>
     <h1 class="text-2xl font-bold text-white tracking-tight">
-        {% if editing %}Shop-Link bearbeiten{% else %}Shop-Link hinzufügen{% endif %}
+        {% if editing %}Edit Shop Link{% else %}Add Shop Link{% endif %}
     </h1>
     <p class="text-gray-500 text-sm mt-1">{{ product.name }}</p>
 </div>
@@ -34,11 +33,11 @@
 
         <div>
             <label for="shop_name" class="block text-sm text-gray-400 mb-1.5">
-                Shop-Name <span class="text-red-500">*</span>
+                Shop Name <span class="text-red-500">*</span>
             </label>
             <input type="text" id="shop_name" name="shop_name"
                    value="{{ fval('shop_name') }}"
-                   placeholder="z. B. Bambu Lab Store, Amazon, Prusa"
+                   placeholder="e.g. Bambu Lab Store, Amazon, Prusa"
                    autofocus
                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
@@ -50,20 +49,20 @@
             </label>
             <input type="url" id="url" name="url"
                    value="{{ fval('url') }}"
-                   placeholder="https://example.com/produkt"
+                   placeholder="https://example.com/product"
                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
         </div>
     </div>
 
-    <!-- Preis -->
+    <!-- Price -->
     <div class="card p-5 space-y-4">
-        <h2 class="section-label">Preis</h2>
+        <h2 class="section-label">Price</h2>
 
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <label for="manual_price" class="block text-sm text-gray-400 mb-1.5">
-                    Preis <span class="text-red-500">*</span>
+                    Price <span class="text-red-500">*</span>
                 </label>
                 <input type="number" id="manual_price" name="manual_price"
                        value="{{ fval('manual_price', '0') }}"
@@ -72,7 +71,7 @@
                               focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
             </div>
             <div>
-                <label for="currency" class="block text-sm text-gray-400 mb-1.5">Währung</label>
+                <label for="currency" class="block text-sm text-gray-400 mb-1.5">Currency</label>
                 <select id="currency" name="currency"
                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
@@ -86,7 +85,7 @@
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <label for="shipping_price" class="block text-sm text-gray-400 mb-1.5">
-                    Versandkosten (optional)
+                    Shipping (optional)
                 </label>
                 <input type="number" id="shipping_price" name="shipping_price"
                        value="{{ fval('shipping_price') }}"
@@ -97,7 +96,7 @@
             </div>
             <div>
                 <label for="package_weight_g" class="block text-sm text-gray-400 mb-1.5">
-                    Paketgewicht (g) <span class="text-red-500">*</span>
+                    Package Weight (g) <span class="text-red-500">*</span>
                 </label>
                 <select id="package_weight_g" name="package_weight_g"
                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
@@ -114,39 +113,61 @@
 
         <!-- Live price calculation -->
         <div id="price-preview" class="bg-gray-800/50 rounded-lg px-4 py-3 text-sm text-gray-400 hidden">
-            Gesamtpreis: <span id="calc-total" class="text-white font-medium">–</span>
-            &nbsp;·&nbsp; Preis/kg: <span id="calc-per-kg" class="text-white font-medium">–</span>
+            Total: <span id="calc-total" class="text-white font-medium">–</span>
+            &nbsp;·&nbsp; Price/kg: <span id="calc-per-kg" class="text-white font-medium">–</span>
         </div>
     </div>
 
-    <!-- Status + Notizen -->
+    <!-- Target Price -->
+    <div class="card p-5 space-y-4">
+        <h2 class="section-label">Target Price <span class="text-gray-700 font-normal">(optional)</span></h2>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label for="target_price" class="block text-sm text-gray-400 mb-1.5">Target Price (Total)</label>
+                <input type="number" id="target_price" name="target_price"
+                       value="{{ fval('target_price') }}"
+                       min="0" step="0.01"
+                       placeholder="e.g. 18.99"
+                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                              placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                <p class="text-xs text-gray-600 mt-1">Price + shipping ≤ target = target hit.</p>
+            </div>
+            <div>
+                <label for="target_price_per_kg" class="block text-sm text-gray-400 mb-1.5">Target Price per kg</label>
+                <input type="number" id="target_price_per_kg" name="target_price_per_kg"
+                       value="{{ fval('target_price_per_kg') }}"
+                       min="0" step="0.01"
+                       placeholder="e.g. 14.99"
+                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                              placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                <p class="text-xs text-gray-600 mt-1">Snapshot price/kg ≤ target = target hit.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status + Notes -->
     <div class="card p-5 space-y-4">
         <div class="flex items-center gap-3">
             <input type="hidden" name="is_active" value="0">
             <input type="checkbox" id="is_active" name="is_active" value="1"
                    {% if fval('is_active', '1') not in ('0', 'False', '') %}checked{% endif %}
                    class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
-            <label for="is_active" class="text-sm text-gray-300 cursor-pointer">Link aktiv</label>
+            <label for="is_active" class="text-sm text-gray-300 cursor-pointer">Link active</label>
         </div>
         <div>
-            <label for="notes" class="block section-label mb-2">Notizen (optional)</label>
+            <label for="notes" class="block section-label mb-2">Notes (optional)</label>
             <textarea id="notes" name="notes" rows="2"
-                      placeholder="z. B. nur bei Bestellungen ab 50 EUR versandkostenfrei"
+                      placeholder="e.g. free shipping on orders over 50 EUR"
                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                              placeholder-gray-600 resize-y focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">{{ fval('notes') }}</textarea>
         </div>
     </div>
 
-    <!-- Buttons -->
     <div class="flex items-center gap-3">
-        <button type="submit"
-                class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors">
-            {% if editing %}Änderungen speichern{% else %}Shop-Link speichern{% endif %}
+        <button type="submit" class="btn-primary">
+            {% if editing %}Save Changes{% else %}Save Link{% endif %}
         </button>
-        <a href="/inventory/{{ product.id }}"
-           class="px-5 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-sm font-medium rounded-lg transition-colors">
-            Abbrechen
-        </a>
+        <a href="/inventory/{{ product.id }}" class="btn-ghost">Cancel</a>
     </div>
 </form>
 

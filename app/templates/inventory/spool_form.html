@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Edit Spool {{ spool.spool_code }} – SpoolBeacon{% endblock %}
+
+{% block content %}
+
+<div class="mb-7">
+    <nav class="flex items-center gap-1.5 text-xs text-gray-600 mb-3">
+        <a href="/inventory/" class="hover:text-gray-400 transition-colors">Inventory</a>
+        <span>/</span>
+        <a href="/inventory/{{ product.id }}" class="hover:text-gray-400 transition-colors">{{ product.name }}</a>
+        <span>/</span>
+        <span class="text-gray-400 font-mono">{{ spool.spool_code }}</span>
+    </nav>
+    <h1 class="text-xl font-bold text-white tracking-tight">Edit Spool</h1>
+    <p class="text-gray-500 text-sm font-mono mt-0.5">{{ spool.spool_code }}</p>
+</div>
+
+<form method="POST" action="/inventory/{{ product.id }}/spool/{{ spool.id }}/edit" class="max-w-2xl space-y-6">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+    <!-- Condition -->
+    <div class="card p-5 space-y-4">
+        <h2 class="section-label">Condition</h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label for="status" class="block text-sm text-gray-400 mb-1.5">Status</label>
+                <select id="status" name="status"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                               focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                    {% for s in [('neu', 'New'), ('geöffnet', 'Open'), ('fast leer', 'Almost Empty'), ('leer', 'Empty'), ('archiviert', 'Archived')] %}
+                    <option value="{{ s[0] }}" {% if spool.status.value == s[0] %}selected{% endif %}>{{ s[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="remaining_weight_g" class="block text-sm text-gray-400 mb-1.5">
+                    Remaining (g) <span class="text-red-500">*</span>
+                </label>
+                <input type="number" id="remaining_weight_g" name="remaining_weight_g"
+                       value="{{ spool.remaining_weight_g|int }}"
+                       step="1" min="0" max="{{ spool.initial_weight_g|int }}"
+                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                              focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                <p class="text-xs text-gray-600 mt-1">Initial: {{ spool.initial_weight_g|int }} g</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Storage -->
+    <div class="card p-5 space-y-4">
+        <h2 class="section-label">Storage</h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label for="storage_location" class="block text-sm text-gray-400 mb-1.5">Location (optional)</label>
+                <input type="text" id="storage_location" name="storage_location"
+                       value="{{ spool.storage_location or '' }}"
+                       placeholder="e.g. Shelf A3, Drybox 1"
+                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                              placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+            </div>
+            <div>
+                <label for="storage_status" class="block text-sm text-gray-400 mb-1.5">Storage Status</label>
+                <select id="storage_status" name="storage_status"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                               focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                    {% for s in [('offen', 'Open'), ('verschlossen', 'Sealed'), ('vakuumiert', 'Vacuum-sealed'), ('Drybox', 'Drybox'), ('unbekannt', 'Unknown')] %}
+                    <option value="{{ s[0] }}" {% if spool.storage_status.value == s[0] %}selected{% endif %}>{{ s[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label for="opened_at" class="block text-sm text-gray-400 mb-1.5">Opened (optional)</label>
+                <input type="datetime-local" id="opened_at" name="opened_at"
+                       value="{{ spool.opened_at.strftime('%Y-%m-%dT%H:%M') if spool.opened_at else '' }}"
+                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                              focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+            </div>
+            <div>
+                <label for="last_dried_at" class="block text-sm text-gray-400 mb-1.5">Last Dried (optional)</label>
+                <input type="datetime-local" id="last_dried_at" name="last_dried_at"
+                       value="{{ spool.last_dried_at.strftime('%Y-%m-%dT%H:%M') if spool.last_dried_at else '' }}"
+                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                              focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="card p-5">
+        <label for="notes" class="block section-label mb-3">Notes (optional)</label>
+        <textarea id="notes" name="notes" rows="3"
+                  placeholder="Notes, print settings …"
+                  class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                         placeholder-gray-600 resize-y focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">{{ spool.notes or '' }}</textarea>
+    </div>
+
+    <div class="flex items-center gap-3">
+        <button type="submit" class="btn-primary">Save</button>
+        <a href="/inventory/{{ product.id }}" class="btn-ghost">Cancel</a>
+    </div>
+
+</form>
+{% endblock %}

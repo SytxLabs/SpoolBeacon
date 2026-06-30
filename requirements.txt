@@ -8,3 +8,6 @@ werkzeug>=3.0.0
 hypercorn>=0.17.0
 httpx>=0.27.0
 selectolax>=0.3.21
+apscheduler>=3.10,<4
+playwright>=1.49.0
+cloudscraper>=1.2.71
