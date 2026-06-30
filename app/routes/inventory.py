@@ -482,7 +482,7 @@ async def create_spools_from_line(line_id: int):
             abort(404)
 
         existing_count = await session.scalar(
-            select(func.count(Spool.id)).where(Spool.purchase_line_id == line_id)
+            select(func.count(Spool.id)).where(Spool.filament_product_id == line.filament_product_id)
         ) or 0
 
         to_create = line.quantity - existing_count
@@ -597,12 +597,15 @@ async def purchase_new(product_id: int):
         settings = await get_settings(session)
         template = settings.get("spool.code_template", DEFAULT_TEMPLATE)
         now = datetime.datetime.utcnow()
+        existing_for_seq = await session.scalar(
+            select(func.count(Spool.id)).where(Spool.filament_product_id == product_id)
+        ) or 0
         for i in range(quantity):
             code = generate_spool_code(
                 template,
                 product_id=product_id,
                 line_id=line.id,
-                seq=i + 1,
+                seq=existing_for_seq + i + 1,
                 now=now,
             )
             session.add(Spool(
