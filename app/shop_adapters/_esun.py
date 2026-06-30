@@ -1,13 +1,9 @@
 """
-eSUN store adapter — confirmed working 2026-06-30 with cloudscraper.
-Domain: esun3dstore.com (Shopify — USD store).
+eSUN store adapters — Shopify JSON-LD, cloudscraper required.
+  esun3dstore.com    — USD store, confirmed 2026-06-30
+  esun3dstoreeu.com  — EUR store, confirmed 2026-06-30
 
 Note: esun3d.com is the brand/marketing site — prices are JS-rendered there.
-      esun3dstore.com is the actual shop and has Schema.org pricing in JSON-LD.
-
-Price: Schema.org `"price" : "31.99"` — USD.
-Availability: `"http://schema.org/InStock"` in JSON-LD.
-Example: https://esun3dstore.com/products/pla-pro-2-rolls
 """
 import re
 
@@ -53,3 +49,7 @@ class ESunAdapter(BaseAdapter):
             price_parsed=price_parsed,
             availability=avail_raw,
         )
+
+
+class ESunEUAdapter(ESunAdapter):
+    domain = "esun3dstoreeu.com"
