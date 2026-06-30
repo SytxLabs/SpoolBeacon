@@ -18,6 +18,8 @@ class ShopLink(Base):
     manual_price = Column(Float, nullable=False)
     shipping_price = Column(Float, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
+    target_price = Column(Float, nullable=True)
+    target_price_per_kg = Column(Float, nullable=True)
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -25,6 +27,8 @@ class ShopLink(Base):
     filament_product = relationship("FilamentProduct", back_populates="shop_links")
     snapshots = relationship("PriceSnapshot", back_populates="shop_link",
                              cascade="all, delete-orphan", order_by="PriceSnapshot.captured_at.desc()")
+    alerts = relationship("PriceAlertEvent", back_populates="shop_link",
+                          cascade="all, delete-orphan", order_by="PriceAlertEvent.created_at.desc()")
 
     @property
     def total_price(self) -> float:

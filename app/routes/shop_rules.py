@@ -17,6 +17,44 @@ _HEADERS = {
 }
 
 
+_CURRENCY_RE = re.compile(r'[€$£¥ \s]|CHF|EUR|USD|GBP|PLN|CZK', re.IGNORECASE)
+# Strips JSON key prefixes: `"price":"`, `price: `, `"price": "`, etc.
+_JSON_KEY_RE = re.compile(r'^"?[\w]+"?\s*:\s*"?', re.IGNORECASE)
+
+
+def parse_price(raw: str) -> float:
+    """
+    Parse price strings in German or English format to float.
+      "17,99 €"              → 17.99
+      "€17.99"               → 17.99
+      "1.299,00 €"           → 1299.00
+      "1,299.00"             → 1299.00
+      "32.990000"            → 32.99  (JSON-LD plain float)
+      '"price":"32.990000"'  → 32.99  (JSON-LD key fragment from regex capture)
+      '"price": "32.990000"' → 32.99
+      'price:32.990000'      → 32.99
+    Raises ValueError for unparseable input.
+    """
+    s = raw.strip().strip('"')
+    # Strip JSON key prefix if present (only at start of string)
+    s = _JSON_KEY_RE.sub("", s, count=1).strip().strip('"')
+    s = _CURRENCY_RE.sub("", s).strip()
+
+    dot_pos   = s.rfind(".")
+    comma_pos = s.rfind(",")
+
+    if comma_pos > dot_pos:
+        # German: 1.299,00 — last separator is comma → decimal
+        s = s.replace(".", "").replace(",", ".")
+    elif dot_pos > comma_pos:
+        # English or plain float: 1,299.00 or 32.990000 — last separator is dot
+        s = s.replace(",", "")
+    else:
+        s = s.replace(",", ".")
+
+    return round(float(s), 2)
+
+
 def _extract(html: str, selector: str | None, pattern: str | None) -> str | None:
     """Apply CSS selector then optional regex to extracted text. Returns stripped text or None."""
     text = None
@@ -56,11 +94,21 @@ async def _run_test(rule: ShopRule, url: str) -> dict:
     title_raw = _extract(html, rule.title_selector, None)
     avail_raw = _extract(html, rule.availability_selector, rule.availability_regex)
 
+    price_parsed = None
+    price_parse_error = None
+    if price_raw:
+        try:
+            price_parsed = parse_price(price_raw)
+        except (ValueError, AttributeError) as e:
+            price_parse_error = str(e)
+
     return {
         "ok": True,
         "url": url,
         "status_code": resp.status_code,
         "price_raw": price_raw,
+        "price_parsed": price_parsed,
+        "price_parse_error": price_parse_error,
         "title_raw": title_raw,
         "availability_raw": avail_raw,
     }

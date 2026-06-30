@@ -5,6 +5,8 @@ from .spool import Spool, SpoolStatus, StorageStatus
 from .shoplink import ShopLink
 from .price_snapshot import PriceSnapshot
 from .shop_rule import ShopRule
+from .price_alert_event import PriceAlertEvent
+from .app_setting import AppSetting
 
 __all__ = [
     "User", "UserRole",
@@ -14,4 +16,6 @@ __all__ = [
     "ShopLink",
     "PriceSnapshot",
     "ShopRule",
+    "PriceAlertEvent",
+    "AppSetting",
 ]

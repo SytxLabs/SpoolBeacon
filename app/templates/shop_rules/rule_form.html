@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% set editing = rule is not none %}
-{% block title %}{% if editing %}Regel bearbeiten{% else %}Neue Shop-Regel{% endif %} – SpoolBeacon{% endblock %}
+{% block title %}{% if editing %}Edit Rule{% else %}New Shop Rule{% endif %} – SpoolBeacon{% endblock %}
 
 {% macro fval(name, default='') %}
 {%- if form_data is not none -%}{{ form_data.get(name, default) }}{%- elif editing -%}{{ rule[name] if rule[name] is not none else default }}{%- else -%}{{ default }}{%- endif -%}
@@ -9,12 +9,12 @@
 {% block content %}
 <div class="mb-7">
     <nav class="flex items-center gap-1.5 text-xs text-gray-600 mb-3">
-        <a href="/shop-rules/" class="hover:text-gray-400 transition-colors">Shop-Regeln</a>
+        <a href="/shop-rules/" class="hover:text-gray-400 transition-colors">Shop Rules</a>
         <span>/</span>
-        <span class="text-gray-400">{% if editing %}{{ rule.domain }}{% else %}Neue Regel{% endif %}</span>
+        <span class="text-gray-400">{% if editing %}{{ rule.domain }}{% else %}New Rule{% endif %}</span>
     </nav>
     <h1 class="text-2xl font-bold text-white tracking-tight">
-        {% if editing %}Regel bearbeiten{% else %}Neue Shop-Regel{% endif %}
+        {% if editing %}Edit Rule{% else %}New Shop Rule{% endif %}
     </h1>
 </div>
 
@@ -36,11 +36,11 @@
                    autofocus
                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white font-mono
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-            <p class="text-xs text-gray-600 mt-1">Nur Domain, kein https:// oder Pfad.</p>
+            <p class="text-xs text-gray-600 mt-1">Domain only, no https:// or path.</p>
         </div>
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <label for="currency" class="block text-sm text-gray-400 mb-1.5">Währung</label>
+                <label for="currency" class="block text-sm text-gray-400 mb-1.5">Currency</label>
                 <select id="currency" name="currency"
                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
@@ -50,21 +50,21 @@
                 </select>
             </div>
             <div>
-                <label for="test_url" class="block text-sm text-gray-400 mb-1.5">Test-URL (optional)</label>
+                <label for="test_url" class="block text-sm text-gray-400 mb-1.5">Test URL (optional)</label>
                 <input type="url" id="test_url" name="test_url"
                        value="{{ fval('test_url') }}"
-                       placeholder="https://shop.example.com/produkt"
+                       placeholder="https://shop.example.com/product"
                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                               placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
             </div>
         </div>
     </div>
 
-    <!-- Selektoren -->
+    <!-- CSS Selectors -->
     <div class="card p-5 space-y-4">
-        <h2 class="section-label">CSS-Selektoren</h2>
+        <h2 class="section-label">CSS Selectors</h2>
         <div>
-            <label for="price_selector" class="block text-sm text-gray-400 mb-1.5">Preis-Selektor</label>
+            <label for="price_selector" class="block text-sm text-gray-400 mb-1.5">Price Selector</label>
             <input type="text" id="price_selector" name="price_selector"
                    value="{{ fval('price_selector') }}"
                    placeholder=".product-price, span[itemprop='price']"
@@ -72,7 +72,7 @@
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
         </div>
         <div>
-            <label for="title_selector" class="block text-sm text-gray-400 mb-1.5">Titel-Selektor</label>
+            <label for="title_selector" class="block text-sm text-gray-400 mb-1.5">Title Selector</label>
             <input type="text" id="title_selector" name="title_selector"
                    value="{{ fval('title_selector') }}"
                    placeholder="h1.product-title"
@@ -80,7 +80,7 @@
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
         </div>
         <div>
-            <label for="availability_selector" class="block text-sm text-gray-400 mb-1.5">Verfügbarkeits-Selektor</label>
+            <label for="availability_selector" class="block text-sm text-gray-400 mb-1.5">Availability Selector</label>
             <input type="text" id="availability_selector" name="availability_selector"
                    value="{{ fval('availability_selector') }}"
                    placeholder=".availability-status"
@@ -93,7 +93,7 @@
     <div class="card p-5 space-y-4">
         <h2 class="section-label">Regex (optional)</h2>
         <div>
-            <label for="price_regex" class="block text-sm text-gray-400 mb-1.5">Preis-Regex</label>
+            <label for="price_regex" class="block text-sm text-gray-400 mb-1.5">Price Regex</label>
             <input type="text" id="price_regex" name="price_regex"
                    value="{{ fval('price_regex') }}"
                    placeholder="[\d,\.]+"
@@ -101,58 +101,53 @@
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
         </div>
         <div>
-            <label for="availability_regex" class="block text-sm text-gray-400 mb-1.5">Verfügbarkeits-Regex</label>
+            <label for="availability_regex" class="block text-sm text-gray-400 mb-1.5">Availability Regex</label>
             <input type="text" id="availability_regex" name="availability_regex"
                    value="{{ fval('availability_regex') }}"
-                   placeholder="auf lager|in stock"
+                   placeholder="in stock|auf lager"
                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white font-mono
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
         </div>
     </div>
 
-    <!-- Status + Notizen -->
+    <!-- Status + Notes -->
     <div class="card p-5 space-y-4">
         <div class="flex items-center gap-3">
             <input type="hidden" name="is_active" value="0">
             <input type="checkbox" id="is_active" name="is_active" value="1"
                    {% if fval('is_active', '1') not in ('0', 'False', '') %}checked{% endif %}
                    class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
-            <label for="is_active" class="text-sm text-gray-300 cursor-pointer">Regel aktiv</label>
+            <label for="is_active" class="text-sm text-gray-300 cursor-pointer">Rule active</label>
         </div>
         <div>
-            <label for="notes" class="block section-label mb-2">Notizen (optional)</label>
+            <label for="notes" class="block section-label mb-2">Notes (optional)</label>
             <textarea id="notes" name="notes" rows="2"
-                      placeholder="z. B. Preis steht im data-Attribut, Preis-Selektor liefert Bruttopreis inkl. MwSt."
+                      placeholder="e.g. price is in a data attribute, selector returns gross price incl. VAT"
                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                              placeholder-gray-600 resize-y focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">{{ fval('notes') }}</textarea>
         </div>
     </div>
 
-    <!-- Buttons -->
     <div class="flex items-center gap-3">
-        <button type="submit"
-                class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors">
-            {% if editing %}Änderungen speichern{% else %}Regel speichern{% endif %}
+        <button type="submit" class="btn-primary">
+            {% if editing %}Save Changes{% else %}Save Rule{% endif %}
         </button>
-        <a href="/shop-rules/"
-           class="px-5 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-sm font-medium rounded-lg transition-colors">
-            Abbrechen
-        </a>
+        <a href="/shop-rules/" class="btn-ghost">Cancel</a>
     </div>
 </form>
 
 {% if editing %}
-<!-- ── Regel testen ─────────────────────────────────────────────────────── -->
+<!-- Test Rule -->
 <div class="max-w-2xl mt-8 space-y-4">
-    <h2 class="text-base font-semibold text-white">Regel testen</h2>
+    <h2 class="text-base font-semibold text-white">Test Rule</h2>
 
     <form method="POST" action="/shop-rules/{{ rule.id }}/test" class="card p-5 space-y-4">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <div>
-            <label for="test_url_input" class="block text-sm text-gray-400 mb-1.5">Test-URL</label>
+            <label for="test_url_input" class="block text-sm text-gray-400 mb-1.5">Test URL</label>
             <input type="url" id="test_url_input" name="test_url"
                    value="{{ test_result.tested_url if test_result else (rule.test_url or '') }}"
-                   placeholder="https://{{ rule.domain }}/produkt"
+                   placeholder="https://{{ rule.domain }}/product"
                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
         </div>
@@ -161,7 +156,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"/>
             </svg>
-            Regel testen
+            Test Rule
         </button>
     </form>
 
@@ -186,35 +181,41 @@
         <table class="w-full text-sm">
             <tbody class="divide-y divide-gray-800/50">
                 <tr>
-                    <td class="py-2 pr-4 section-label w-32">Preis</td>
-                    <td class="py-2 font-mono">
+                    <td class="py-2 pr-4 section-label w-32">Price</td>
+                    <td class="py-2">
                         {% if test_result.price_raw %}
-                        <span class="text-emerald-400">{{ test_result.price_raw }}</span>
+                        <span class="font-mono text-gray-400">{{ test_result.price_raw }}</span>
+                        {% if test_result.price_parsed is not none %}
+                        <span class="ml-2 text-gray-600 text-xs">→</span>
+                        <span class="ml-1 font-mono font-semibold text-emerald-400">{{ test_result.price_parsed }} {{ rule.currency }}</span>
+                        {% elif test_result.price_parse_error %}
+                        <span class="ml-2 text-red-400 text-xs">Parse error: {{ test_result.price_parse_error }}</span>
+                        {% endif %}
                         {% else %}
-                        <span class="text-gray-600">– nicht gefunden</span>
+                        <span class="text-gray-600 font-mono">– not found</span>
                         {% if not rule.price_selector and not rule.price_regex %}
-                        <span class="text-gray-700 text-xs ml-2">(kein Selektor/Regex definiert)</span>
+                        <span class="text-gray-700 text-xs ml-2">(no selector/regex defined)</span>
                         {% endif %}
                         {% endif %}
                     </td>
                 </tr>
                 <tr>
-                    <td class="py-2 pr-4 section-label">Titel</td>
+                    <td class="py-2 pr-4 section-label">Title</td>
                     <td class="py-2 font-mono text-gray-400">
                         {% if test_result.title_raw %}
                         {{ test_result.title_raw[:120] }}{% if test_result.title_raw|length > 120 %}…{% endif %}
                         {% else %}
-                        <span class="text-gray-600">– nicht gefunden</span>
+                        <span class="text-gray-600">– not found</span>
                         {% endif %}
                     </td>
                 </tr>
                 <tr>
-                    <td class="py-2 pr-4 section-label">Verfügbarkeit</td>
+                    <td class="py-2 pr-4 section-label">Availability</td>
                     <td class="py-2 font-mono text-gray-400">
                         {% if test_result.availability_raw %}
                         {{ test_result.availability_raw }}
                         {% else %}
-                        <span class="text-gray-600">– nicht gefunden</span>
+                        <span class="text-gray-600">– not found</span>
                         {% endif %}
                     </td>
                 </tr>

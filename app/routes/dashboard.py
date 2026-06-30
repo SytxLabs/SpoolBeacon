@@ -4,8 +4,12 @@ from sqlalchemy import select, func
 
 from app.database import get_db
 from app.models.filament import FilamentProduct
+from app.models.price_alert_event import PriceAlertEvent
+from app.models.price_snapshot import PriceSnapshot
 from app.models.purchase import Purchase, PurchaseLine
+from app.models.shoplink import ShopLink
 from app.models.spool import Spool, SpoolStatus
+from app.routes.inventory import load_target_hits
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
@@ -86,6 +90,21 @@ async def index():
         )).all()
 
         total_purchases = await session.scalar(select(func.count(Purchase.id))) or 0
+        target_hits = await load_target_hits(session)
+
+        active_alert_count = await session.scalar(
+            select(func.count(PriceAlertEvent.id))
+            .where(PriceAlertEvent.resolved_at.is_(None))
+        ) or 0
+
+        recent_alerts = (await session.execute(
+            select(PriceAlertEvent, ShopLink, FilamentProduct)
+            .join(ShopLink, PriceAlertEvent.shop_link_id == ShopLink.id)
+            .join(FilamentProduct, ShopLink.filament_product_id == FilamentProduct.id)
+            .where(PriceAlertEvent.resolved_at.is_(None))
+            .order_by(PriceAlertEvent.created_at.desc())
+            .limit(10)
+        )).all()
 
     stats = {
         "total_products": total_products,
@@ -98,10 +117,15 @@ async def index():
         "total_purchases": total_purchases,
     }
 
+    from app.scheduler import get_status as scheduler_status
     return await render_template(
         "dashboard/index.html",
         stats=stats,
         by_material=by_material,
         by_color=by_color,
         low_stock=low_stock_rows,
+        target_hits=target_hits,
+        active_alert_count=active_alert_count,
+        recent_alerts=recent_alerts,
+        scheduler=scheduler_status(),
     )

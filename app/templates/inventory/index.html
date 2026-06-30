@@ -3,152 +3,180 @@
 
 {% block content %}
 
-<!-- Page header -->
 <div class="flex items-start justify-between mb-6">
     <div>
-        <h1 class="text-2xl font-bold text-white tracking-tight">Inventory</h1>
-        <p class="text-gray-500 text-sm mt-1">
+        <h1 class="page-title">Inventory</h1>
+        <p class="page-subtitle" id="inventory-subtitle">
             {% if products %}
-                {{ products|length }} Filament{% if products|length != 1 %}e{% endif %}
-                {% if current_material %} · gefiltert: {{ current_material }}{% endif %}
+                {{ products|length }} Filament{% if products|length != 1 %}s{% endif %}
+                {% if current_material %} · filtered: <span class="text-gray-400">{{ current_material }}</span>{% endif %}
             {% else %}
-                Filamentprodukte und Spulen verwalten
+                Manage filament products and spools
             {% endif %}
         </p>
     </div>
-    <a href="/inventory/filament/new"
-       class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500
-              text-white text-sm font-medium rounded-lg transition-colors flex-shrink-0">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-             class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-        Filament hinzufügen
+    <a href="/inventory/filament/new" class="btn-primary">
+        <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+            <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z"/>
+        </svg>
+        Add Filament
     </a>
 </div>
+
+<!-- Search -->
+{% if products %}
+<div class="relative mb-5">
+    <svg viewBox="0 0 20 20" fill="currentColor"
+         class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none">
+        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd"/>
+    </svg>
+    <input type="search" id="inventory-search"
+           placeholder="Search by name, color, material, manufacturer…"
+           class="w-full bg-gray-900 border border-gray-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white
+                  placeholder-gray-600 focus:outline-none focus:border-indigo-500/60
+                  focus:ring-2 focus:ring-indigo-500/15 transition-colors">
+</div>
+{% endif %}
 
 <!-- Material Filter Chips -->
 {% if materials %}
 <div class="flex items-center gap-2 mb-6 flex-wrap">
     <a href="/inventory/"
-       class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-all duration-150
-              {% if not current_material %}bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/40
-              {% else %}bg-gray-800/60 text-gray-400 hover:text-gray-200 hover:bg-gray-800{% endif %}">
-        Alle
+       class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-all
+              {% if not current_material %}bg-indigo-500/15 text-indigo-300 ring-1 ring-inset ring-indigo-500/25
+              {% else %}bg-gray-800 text-gray-400 hover:text-gray-200 hover:bg-gray-750{% endif %}">
+        All
     </a>
     {% for mat in materials %}
     <a href="/inventory/?material={{ mat }}"
-       class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-all duration-150
-              {% if current_material == mat %}bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/40
-              {% else %}bg-gray-800/60 text-gray-400 hover:text-gray-200 hover:bg-gray-800{% endif %}">
+       class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-all
+              {% if current_material == mat %}bg-indigo-500/15 text-indigo-300 ring-1 ring-inset ring-indigo-500/25
+              {% else %}bg-gray-800 text-gray-400 hover:text-gray-200 hover:bg-gray-750{% endif %}">
         {{ mat }}
     </a>
     {% endfor %}
 </div>
 {% endif %}
 
-<!-- Table or Empty State -->
 {% if products %}
-<div class="card overflow-hidden">
-    <table class="w-full text-sm">
-        <thead>
-            <tr class="border-b border-gray-800 bg-gray-900/60">
-                <th class="text-left px-5 py-3 section-label">Produkt</th>
-                <th class="text-left px-5 py-3 section-label hidden md:table-cell">Material</th>
-                <th class="text-left px-5 py-3 section-label hidden sm:table-cell">Farbe</th>
-                <th class="text-left px-5 py-3 section-label hidden lg:table-cell">Ø</th>
-                <th class="text-right px-5 py-3 section-label">Spulen</th>
-                <th class="text-right px-5 py-3 section-label hidden sm:table-cell">Restgew.</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-800/60">
-            {% for product, manufacturer_name, spool_count, total_remaining_g in products %}
-            <tr class="hover:bg-white/[0.02] transition-colors group">
-                <!-- Produkt -->
-                <td class="px-5 py-3.5">
-                    <a href="/inventory/{{ product.id }}"
-                       class="font-medium text-gray-100 hover:text-indigo-400 transition-colors">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    {% for product, manufacturer_name, spool_count, total_remaining_g in products %}
+    {% set alert_n = alert_counts_by_product.get(product.id, 0) %}
+    <a href="/inventory/{{ product.id }}"
+       class="card-hover flex flex-col group overflow-hidden"
+       data-search="{{ [product.name, product.color_name, product.material, manufacturer_name]|join(' ')|lower }}">
+
+        {% if product.color_hex %}
+        <div class="h-0.5 w-full" style="background: linear-gradient(90deg, {{ product.color_hex }}99 0%, transparent 70%)"></div>
+        {% else %}
+        <div class="h-0.5 w-full bg-gradient-to-r from-gray-700 to-transparent"></div>
+        {% endif %}
+
+        <div class="p-4 flex items-start gap-3">
+            <div class="w-10 h-10 rounded-lg ring-1 ring-white/10 flex-shrink-0 mt-0.5"
+                 style="{% if product.color_hex %}background-color: {{ product.color_hex }}{% else %}background: #27272a{% endif %}"></div>
+            <div class="min-w-0 flex-1">
+                <div class="flex items-start justify-between gap-2">
+                    <p class="font-semibold text-sm text-gray-100 group-hover:text-indigo-300 transition-colors leading-snug truncate">
                         {{ product.name }}
-                    </a>
-                    <p class="text-xs text-gray-600 mt-0.5">{{ manufacturer_name }}</p>
-                </td>
-                <!-- Material -->
-                <td class="px-5 py-3.5 hidden md:table-cell">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs
-                                 bg-gray-800 text-gray-400">
-                        {{ product.material }}
-                    </span>
-                </td>
-                <!-- Farbe -->
-                <td class="px-5 py-3.5 hidden sm:table-cell">
-                    <div class="flex items-center gap-2">
-                        <span class="w-3 h-3 rounded-full flex-shrink-0 ring-1 ring-white/10
-                                     {% if not product.color_hex %}bg-gray-700{% endif %}"
-                              {% if product.color_hex %}style="background-color: {{ product.color_hex }}"{% endif %}></span>
-                        <span class="text-gray-400 text-xs">{{ product.color_name }}</span>
-                    </div>
-                </td>
-                <!-- Durchmesser -->
-                <td class="px-5 py-3.5 text-gray-600 text-xs hidden lg:table-cell">
-                    {{ product.diameter_mm }} mm
-                </td>
-                <!-- Spulen -->
-                <td class="px-5 py-3.5 text-right">
-                    {% if spool_count > 0 %}
-                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold
-                                 bg-emerald-500/15 text-emerald-400">
-                        {{ spool_count }}
-                    </span>
-                    {% else %}
-                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs
-                                 bg-gray-800 text-gray-600">
-                        0
-                    </span>
+                    </p>
+                    {% if alert_n > 0 %}
+                    <span class="badge-amber flex-shrink-0 text-[10px]">{{ alert_n }}</span>
                     {% endif %}
-                </td>
-                <!-- Restgewicht -->
-                <td class="px-5 py-3.5 text-right text-sm hidden sm:table-cell tabular-nums">
-                    {% if total_remaining_g > 0 %}
-                    <span class="text-gray-300 font-medium">{{ (total_remaining_g / 1000)|round(2) }}</span>
-                    <span class="text-gray-600 text-xs ml-0.5">kg</span>
-                    {% else %}
-                    <span class="text-gray-700">–</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                </div>
+                <p class="text-xs text-gray-500 mt-0.5 truncate">{{ manufacturer_name }}</p>
+            </div>
+        </div>
+
+        <div class="px-4 pb-3 flex items-center gap-1.5 flex-wrap">
+            <span class="badge-gray text-[10px]">{{ product.material }}</span>
+            <span class="text-[10px] text-gray-600">{{ product.diameter_mm }} mm</span>
+            {% if product.id in target_hit_product_ids %}
+            <span class="badge-green text-[10px] ml-auto">Target ↓</span>
+            {% endif %}
+        </div>
+
+        <div class="px-4 py-3 mt-auto border-t border-gray-800 flex items-end justify-between gap-4">
+            <div>
+                <p class="text-2xl font-bold text-white tabular-nums leading-none
+                          {% if spool_count == 0 %}text-gray-700{% endif %}">
+                    {{ spool_count }}
+                </p>
+                <p class="text-[10px] text-gray-600 mt-0.5 uppercase tracking-wide">
+                    Spool{{ 's' if spool_count != 1 else '' }}
+                </p>
+            </div>
+            {% if total_remaining_g > 0 %}
+            <div class="text-right">
+                <p class="text-base font-semibold text-gray-200 tabular-nums leading-none">
+                    {{ (total_remaining_g / 1000)|round(2) }}<span class="text-xs font-normal text-gray-500 ml-0.5">kg</span>
+                </p>
+                <p class="text-[10px] text-gray-600 mt-0.5 uppercase tracking-wide">Remaining</p>
+            </div>
+            {% else %}
+            <div class="text-right">
+                <p class="text-sm text-gray-700">–</p>
+                <p class="text-[10px] text-gray-700 mt-0.5 uppercase tracking-wide">Remaining</p>
+            </div>
+            {% endif %}
+        </div>
+
+    </a>
+    {% endfor %}
 </div>
 
 {% else %}
-<!-- Empty State -->
-<div class="card p-12 text-center">
-    <div class="w-14 h-14 rounded-2xl bg-gray-800 flex items-center justify-center mx-auto mb-4">
+<div class="card p-16 text-center">
+    <div class="w-16 h-16 rounded-2xl bg-gray-850 border border-gray-800 flex items-center justify-center mx-auto mb-5">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-             class="w-7 h-7 text-gray-500">
+             class="w-8 h-8 text-gray-600">
             <path stroke-linecap="round" stroke-linejoin="round"
                   d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/>
         </svg>
     </div>
     {% if current_material %}
-    <p class="text-gray-300 font-medium">Keine Filamente für „{{ current_material }}"</p>
-    <p class="text-gray-600 text-sm mt-1">
-        Filterung aufheben?
-        <a href="/inventory/" class="text-indigo-400 hover:text-indigo-300 ml-1">Alle anzeigen</a>
+    <p class="text-gray-200 font-semibold">No filaments for "{{ current_material }}"</p>
+    <p class="text-gray-500 text-sm mt-2">
+        <a href="/inventory/" class="text-indigo-400 hover:text-indigo-300 transition-colors">Clear filter</a>
     </p>
     {% else %}
-    <p class="text-gray-300 font-medium">Noch keine Filamentprodukte vorhanden.</p>
-    <p class="text-gray-600 text-sm mt-2 max-w-sm mx-auto">
-        Lege dein erstes Filament an, um Bestand und Spulen zu verwalten.
+    <p class="text-gray-200 font-semibold text-lg">No filaments yet</p>
+    <p class="text-gray-500 text-sm mt-2 max-w-xs mx-auto">
+        Add your first filament to manage purchases, spools, and prices.
     </p>
-    <a href="/inventory/filament/new"
-       class="inline-flex items-center gap-2 mt-5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500
-              text-white text-sm font-medium rounded-lg transition-colors">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-             class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-        Erstes Filament anlegen
+    <a href="/inventory/filament/new" class="btn-primary mt-6">
+        <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+            <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z"/>
+        </svg>
+        Add First Filament
     </a>
     {% endif %}
 </div>
 {% endif %}
+
+<script>
+(function() {
+    const input = document.getElementById('inventory-search');
+    if (!input) return;
+    const subtitle = document.getElementById('inventory-subtitle');
+    const cards = Array.from(document.querySelectorAll('[data-search]'));
+    const total = cards.length;
+
+    input.addEventListener('input', function() {
+        const q = this.value.toLowerCase().trim();
+        let visible = 0;
+        cards.forEach(function(card) {
+            const match = !q || card.dataset.search.includes(q);
+            card.style.display = match ? '' : 'none';
+            if (match) visible++;
+        });
+        if (subtitle) {
+            subtitle.textContent = q
+                ? visible + ' of ' + total + ' filament' + (total !== 1 ? 's' : '') + ' matching “' + q + '”'
+                : total + ' filament' + (total !== 1 ? 's' : '');
+        }
+    });
+})();
+</script>
 
 {% endblock %}
