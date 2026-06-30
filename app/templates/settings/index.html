@@ -216,10 +216,60 @@
             </div>
         </div>
 
+        <!-- Spool Code Template -->
+        <div class="card p-5 space-y-4">
+            <h2 class="section-label">Spool Code Template</h2>
+            <div>
+                <label for="spool_code_template" class="block text-sm text-gray-400 mb-1.5">
+                    Template
+                </label>
+                <input type="text" id="spool_code_template" name="spool_code_template"
+                       value="{{ s['spool.code_template'] }}"
+                       placeholder="{{ s['spool.code_template'] }}"
+                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white font-mono
+                              focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                <p class="text-xs text-gray-600 mt-1.5">
+                    Changes apply to new spools. To rewrite existing codes use the regenerate button below.
+                </p>
+            </div>
+            <div class="rounded-lg bg-gray-850 border border-gray-800 p-3">
+                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-2">Available variables</p>
+                <div class="space-y-1">
+                    {% for var, desc in available_vars %}
+                    <div class="flex items-baseline gap-2">
+                        <code class="text-xs text-indigo-400 font-mono whitespace-nowrap">{{ var }}</code>
+                        <span class="text-xs text-gray-600">{{ desc }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
         <div>
             <button type="submit" class="btn-primary">Save</button>
         </div>
     </form>
+
+    <!-- Spool code regeneration -->
+    <div class="card p-5 space-y-3">
+        <h2 class="section-label">Regenerate Spool Codes</h2>
+        <p class="text-xs text-gray-500">
+            Rewrites all existing spool codes using the currently saved template.
+            Sequence numbers are reassigned per purchase line. Random values change.
+        </p>
+        <form method="POST" action="/settings/spool-codes/regenerate">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <button type="submit"
+                    onclick="return confirm('Regenerate all spool codes? Existing codes will be overwritten.')"
+                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg
+                           bg-amber-700 hover:bg-amber-600 text-white transition-colors">
+                <svg viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+                    <path fill-rule="evenodd" d="M8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.001 7.001 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.501 5.501 0 0 0 8 2.5ZM1.705 8.005a.75.75 0 0 1 .834.656 5.501 5.501 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.001 7.001 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834Z" clip-rule="evenodd"/>
+                </svg>
+                Regenerate all spool codes
+            </button>
+        </form>
+    </div>
 
     <!-- Test buttons -->
     <div class="card p-5 space-y-3">
