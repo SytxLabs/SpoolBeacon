@@ -2,7 +2,7 @@ services:
   web:
     build: .
     ports:
-      - "5000:5000"
+      - "${APP_PORT:-8080}:${APP_PORT:-8080}"
     env_file: .env
     restart: unless-stopped
     depends_on:
