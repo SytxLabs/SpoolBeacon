@@ -8,7 +8,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-        required: false   # only waits if db profile is active
 
   db:
     image: mariadb:11
