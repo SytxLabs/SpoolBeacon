@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% set editing = manufacturer is not none %}
+{% block title %}{% if editing %}Edit Manufacturer{% else %}New Manufacturer{% endif %} – SpoolBeacon{% endblock %}
+
+{% macro field_val(name, default='') %}
+{%- if form_data is not none -%}{{ form_data.get(name, default) }}{%- elif editing -%}{{ manufacturer[name] if manufacturer[name] is not none else default }}{%- else -%}{{ default }}{%- endif -%}
+{% endmacro %}
+
+{% block content %}
+
+<div class="mb-7">
+    <nav class="flex items-center gap-1.5 text-xs text-gray-600 mb-3">
+        <a href="/manufacturers/" class="hover:text-gray-400 transition-colors">Manufacturers</a>
+        <span>/</span>
+        <span class="text-gray-400">{% if editing %}{{ manufacturer.name }}{% else %}New Manufacturer{% endif %}</span>
+    </nav>
+    <h1 class="text-2xl font-bold text-white tracking-tight">
+        {% if editing %}Edit Manufacturer{% else %}New Manufacturer{% endif %}
+    </h1>
+</div>
+
+<form method="POST"
+      action="{% if editing %}/manufacturers/{{ manufacturer.id }}/edit{% else %}/manufacturers/new{% endif %}"
+      class="max-w-2xl space-y-5">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+    <div class="card p-5 space-y-4">
+        <div class="pb-3 border-b border-gray-800">
+            <p class="text-sm font-medium text-gray-200">Details</p>
+        </div>
+        <div>
+            <label for="name" class="block text-xs text-gray-400 mb-1.5">
+                Name <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="name" name="name"
+                   value="{{ field_val('name') }}"
+                   placeholder="e.g. Prusament"
+                   autofocus
+                   class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                          placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+        </div>
+        <div>
+            <label for="website" class="block text-xs text-gray-400 mb-1.5">Website (optional)</label>
+            <input type="url" id="website" name="website"
+                   value="{{ field_val('website') }}"
+                   placeholder="https://www.example.com"
+                   class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                          placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+        </div>
+        <div>
+            <label for="notes" class="block text-xs text-gray-400 mb-1.5">Notes (optional)</label>
+            <textarea id="notes" name="notes" rows="3"
+                      placeholder="e.g. reseller, warranty terms, shipping notes"
+                      class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                             placeholder-gray-600 resize-none focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">{{ field_val('notes') }}</textarea>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+        <button type="submit" class="btn-primary">
+            {% if editing %}Save Changes{% else %}Save Manufacturer{% endif %}
+        </button>
+        <a href="/manufacturers/" class="btn-ghost">Cancel</a>
+    </div>
+</form>
+
+{% endblock %}
