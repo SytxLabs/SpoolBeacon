@@ -45,6 +45,18 @@
 </svg>
 {% endmacro %}
 
+{% macro icon_qr(cls='w-4 h-4') %}
+<svg viewBox="0 0 16 16" fill="currentColor" class="{{ cls }}">
+  <rect x="1" y="1" width="5" height="5" rx="0.75"/>
+  <rect x="10" y="1" width="5" height="5" rx="0.75"/>
+  <rect x="1" y="10" width="5" height="5" rx="0.75"/>
+  <rect x="10" y="10" width="2" height="2"/>
+  <rect x="13" y="10" width="2" height="2"/>
+  <rect x="10" y="13" width="2" height="2"/>
+  <rect x="13" y="13" width="2" height="2"/>
+</svg>
+{% endmacro %}
+
 {% block content %}
 
 <!-- Breadcrumb + Header -->
@@ -499,8 +511,12 @@
                             {{ spool.last_dried_at.strftime('%d.%m.%Y') if spool.last_dried_at else '–' }}
                         </td>
                         <td class="px-5 py-3.5 text-right">
-                            {% if not is_viewer %}
                             <div class="flex items-center justify-end gap-0.5">
+                                <a href="/inventory/{{ product.id }}/spool/{{ spool.id }}/label" title="Print label" target="_blank"
+                                   class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
+                                    {{ icon_qr() }}
+                                </a>
+                                {% if not is_viewer %}
                                 <a href="/inventory/{{ product.id }}/spool/{{ spool.id }}/edit" title="Edit spool"
                                    class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
                                     {{ icon_pencil() }}
@@ -513,8 +529,8 @@
                                         {{ icon_trash() }}
                                     </button>
                                 </form>
+                                {% endif %}
                             </div>
-                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}

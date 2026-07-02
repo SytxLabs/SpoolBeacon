@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Label – {{ spool.spool_code }}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'] },
+                    colors: {
+                        gray: {
+                            750: '#323238', 800: '#27272a', 850: '#1e1e22',
+                            900: '#141417', 950: '#09090b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+        }
+    </style>
+</head>
+<body class="h-full bg-gray-950 text-gray-100 font-sans flex items-center justify-center px-4">
+
+<div class="no-print fixed top-4 right-4 flex gap-2">
+    <button onclick="window.print()"
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors">
+        Print
+    </button>
+    <a href="/inventory/{{ product.id }}"
+       class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm font-medium rounded-lg transition-colors">
+        Back
+    </a>
+</div>
+
+<div class="bg-white text-black rounded-xl p-6 w-full max-w-xs text-center border border-gray-300">
+    <img src="{{ url_for('inventory.spool_qr', product_id=product.id, spool_id=spool.id) }}"
+         alt="QR code" class="w-40 h-40 mx-auto mb-3">
+    <p class="font-mono text-sm font-semibold tracking-wide">{{ spool.spool_code }}</p>
+    <p class="text-sm font-medium mt-2">{{ product.name }}</p>
+    <p class="text-xs text-gray-600">
+        {{ product.manufacturer.name }} · {{ product.material }} ·
+        {{ product.color_name }}{% if product.color_name_2 %} / {{ product.color_name_2 }}{% endif %}
+    </p>
+</div>
+
+</body>
+</html>

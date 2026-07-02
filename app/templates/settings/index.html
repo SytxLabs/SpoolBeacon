@@ -17,6 +17,9 @@
 <form id="form-regenerate" method="POST" action="/settings/spool-codes/regenerate">
     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 </form>
+<form id="form-import" method="POST" action="/settings/import" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+</form>
 
 <form method="POST" action="/settings/" class="max-w-5xl space-y-10">
     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
@@ -299,6 +302,56 @@
                     </svg>
                     Regenerate
                 </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── Backup & Restore ───────────────────────────────────────────── -->
+    <section>
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-7 h-7 rounded-lg bg-sky-500/20 border border-sky-500/30 flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-sky-400">
+                    <path fill-rule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <h2 class="text-base font-semibold text-white">Backup &amp; Restore</h2>
+        </div>
+
+        <div class="card p-5 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-800">
+                <div>
+                    <p class="text-sm font-medium text-gray-200">Export data</p>
+                    <p class="text-xs text-gray-600 mt-0.5">
+                        Manufacturers, products, purchases, spools, shop links and shop rules as JSON.
+                        Users and price-check history are not included.
+                    </p>
+                </div>
+                <a href="/settings/export"
+                   class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg flex-shrink-0
+                          bg-gray-800 hover:bg-gray-750 text-gray-200 transition-colors">
+                    Export JSON
+                </a>
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+                <div>
+                    <p class="text-sm font-medium text-gray-300">Import data</p>
+                    <p class="text-xs text-gray-600 mt-0.5">
+                        Additive only — existing records (matched by name / code) are never overwritten or deleted.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <input type="file" name="import_file" form="form-import" accept="application/json,.json" required
+                           class="text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0
+                                  file:text-xs file:font-medium file:bg-gray-800 file:text-gray-300
+                                  hover:file:bg-gray-750 file:cursor-pointer cursor-pointer">
+                    <button type="submit" form="form-import"
+                            onclick="return confirm('Import data from this JSON file? Existing records will not be modified.')"
+                            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg flex-shrink-0
+                                   bg-sky-700 hover:bg-sky-600 text-white transition-colors">
+                        Import
+                    </button>
+                </div>
             </div>
         </div>
     </section>
