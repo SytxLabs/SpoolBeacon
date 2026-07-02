@@ -1,15 +1,30 @@
 import re
+from functools import wraps
 from html import escape as html_escape
 from urllib.parse import quote
 
 import httpx
 from quart import Blueprint, render_template, request, redirect, url_for, abort, flash, Response
-from quart_auth import login_required
+from quart_auth import login_required, current_user
 from selectolax.parser import HTMLParser
 from sqlalchemy import select
 
 from app.database import get_db
 from app.models.shop_rule import ShopRule
+from app.models.user import User, UserRole
+
+
+def write_required(f):
+    """Blocks viewer-role users from state-changing routes. Stack after @login_required."""
+    @wraps(f)
+    async def wrapper(*args, **kwargs):
+        async with get_db() as session:
+            user = await session.get(User, int(current_user.auth_id))
+        if not user or user.role == UserRole.viewer:
+            abort(403)
+        return await f(*args, **kwargs)
+    return wrapper
+
 
 _FETCH_TIMEOUT = 12.0
 _HEADERS = {
@@ -160,6 +175,7 @@ async def index():
 
 @shop_rules_bp.route("/new", methods=["GET", "POST"])
 @login_required
+@write_required
 async def new():
     from app.shop_adapters.registry import registered_domains
 
@@ -197,6 +213,7 @@ async def new():
 
 @shop_rules_bp.route("/<int:rule_id>/edit", methods=["GET", "POST"])
 @login_required
+@write_required
 async def edit(rule_id: int):
     from app.shop_adapters.registry import registered_domains
 
@@ -239,6 +256,7 @@ async def edit(rule_id: int):
 
 @shop_rules_bp.post("/<int:rule_id>/toggle")
 @login_required
+@write_required
 async def toggle(rule_id: int):
     async with get_db() as session:
         rule = await session.get(ShopRule, rule_id)
@@ -250,6 +268,7 @@ async def toggle(rule_id: int):
 
 @shop_rules_bp.post("/<int:rule_id>/delete")
 @login_required
+@write_required
 async def delete(rule_id: int):
     async with get_db() as session:
         rule = await session.get(ShopRule, rule_id)

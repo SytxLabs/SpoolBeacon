@@ -1,9 +1,10 @@
 import datetime
 import re
+from functools import wraps
 from urllib.parse import urlparse
 
 from quart import Blueprint, render_template, request, redirect, url_for, abort, flash
-from quart_auth import login_required
+from quart_auth import login_required, current_user
 from sqlalchemy import or_, select, func
 from sqlalchemy.orm import selectinload, contains_eager
 
@@ -14,6 +15,7 @@ from app.models.purchase import Purchase, PurchaseLine
 from app.models.shop_rule import ShopRule
 from app.models.shoplink import ShopLink
 from app.models.spool import Spool, SpoolStatus, StorageStatus
+from app.models.user import User, UserRole
 from app.alert_service import maybe_create_alerts, dispatch_alert_notifications
 from app.models.price_alert_event import PriceAlertEvent
 from app.price_check_service import check_price
@@ -23,6 +25,18 @@ from app.spool_code import generate_spool_code, DEFAULT_TEMPLATE
 inventory_bp = Blueprint("inventory", __name__, url_prefix="/inventory")
 
 _HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
+
+
+def write_required(f):
+    """Blocks viewer-role users from state-changing routes. Stack after @login_required."""
+    @wraps(f)
+    async def wrapper(*args, **kwargs):
+        async with get_db() as session:
+            user = await session.get(User, int(current_user.auth_id))
+        if not user or user.role == UserRole.viewer:
+            abort(403)
+        return await f(*args, **kwargs)
+    return wrapper
 
 
 # ── target price hits helper ───────────────────────────────────────────────
@@ -309,6 +323,7 @@ async def detail(product_id: int):
 
 @inventory_bp.route("/filament/new", methods=["GET", "POST"])
 @login_required
+@write_required
 async def filament_new():
     async with get_db() as session:
         manufacturers = await _load_manufacturers(session)
@@ -372,6 +387,7 @@ async def filament_new():
 
 @inventory_bp.route("/filament/<int:product_id>/edit", methods=["GET", "POST"])
 @login_required
+@write_required
 async def filament_edit(product_id: int):
     async with get_db() as session:
         product = (await session.execute(
@@ -440,6 +456,7 @@ async def filament_edit(product_id: int):
 
 @inventory_bp.post("/filament/<int:product_id>/delete")
 @login_required
+@write_required
 async def filament_delete(product_id: int):
     async with get_db() as session:
         product = await session.get(FilamentProduct, product_id)
@@ -470,6 +487,7 @@ async def filament_delete(product_id: int):
 
 @inventory_bp.post("/purchase-line/<int:line_id>/create-spools")
 @login_required
+@write_required
 async def create_spools_from_line(line_id: int):
     async with get_db() as session:
         line = (await session.execute(
@@ -541,6 +559,7 @@ def _validate_purchase_form(form) -> str | None:
 
 @inventory_bp.route("/<int:product_id>/purchase/new", methods=["GET", "POST"])
 @login_required
+@write_required
 async def purchase_new(product_id: int):
     async with get_db() as session:
         product = await session.get(FilamentProduct, product_id)
@@ -660,6 +679,7 @@ def _validate_purchase_edit_form(
 
 @inventory_bp.route("/<int:product_id>/purchase/<int:line_id>/edit", methods=["GET", "POST"])
 @login_required
+@write_required
 async def purchase_edit(product_id: int, line_id: int):
     async with get_db() as session:
         line = (await session.execute(
@@ -765,6 +785,7 @@ async def purchase_edit(product_id: int, line_id: int):
 
 @inventory_bp.route("/<int:product_id>/spool/<int:spool_id>/edit", methods=["GET", "POST"])
 @login_required
+@write_required
 async def spool_edit(product_id: int, spool_id: int):
     async with get_db() as session:
         spool = await session.get(Spool, spool_id)
@@ -813,6 +834,7 @@ async def spool_edit(product_id: int, spool_id: int):
 
 @inventory_bp.post("/<int:product_id>/spool/<int:spool_id>/delete")
 @login_required
+@write_required
 async def spool_delete(product_id: int, spool_id: int):
     async with get_db() as session:
         spool = await session.get(Spool, spool_id)
@@ -944,6 +966,7 @@ async def _find_shoplink_duplicate(session, product_id: int, shop_name: str, url
 
 @inventory_bp.route("/<int:product_id>/shop-link/new", methods=["GET", "POST"])
 @login_required
+@write_required
 async def shoplink_new(product_id: int):
     async with get_db() as session:
         product = await session.get(FilamentProduct, product_id)
@@ -993,6 +1016,7 @@ async def shoplink_new(product_id: int):
 
 @inventory_bp.route("/<int:product_id>/shop-link/<int:link_id>/edit", methods=["GET", "POST"])
 @login_required
+@write_required
 async def shoplink_edit(product_id: int, link_id: int):
     async with get_db() as session:
         link = await session.get(ShopLink, link_id)
@@ -1045,6 +1069,7 @@ async def shoplink_edit(product_id: int, link_id: int):
 
 @inventory_bp.post("/<int:product_id>/shop-link/<int:link_id>/delete")
 @login_required
+@write_required
 async def shoplink_delete(product_id: int, link_id: int):
     async with get_db() as session:
         link = await session.get(ShopLink, link_id)
@@ -1056,6 +1081,7 @@ async def shoplink_delete(product_id: int, link_id: int):
 
 @inventory_bp.post("/<int:product_id>/shop-link/<int:link_id>/toggle")
 @login_required
+@write_required
 async def shoplink_toggle(product_id: int, link_id: int):
     async with get_db() as session:
         link = await session.get(ShopLink, link_id)
@@ -1086,6 +1112,7 @@ def _validate_snapshot_form(form) -> str | None:
 
 @inventory_bp.route("/<int:product_id>/shop-link/<int:link_id>/snapshot/new", methods=["GET", "POST"])
 @login_required
+@write_required
 async def snapshot_new(product_id: int, link_id: int):
     async with get_db() as session:
         link = (await session.execute(
@@ -1156,6 +1183,7 @@ async def snapshot_new(product_id: int, link_id: int):
 
 @inventory_bp.post("/<int:product_id>/shop-link/<int:link_id>/check")
 @login_required
+@write_required
 async def shoplink_check(product_id: int, link_id: int):
     detail_url = url_for("inventory.detail", product_id=product_id)
 
@@ -1250,6 +1278,7 @@ async def snapshot_history(product_id: int, link_id: int):
 
 @inventory_bp.post("/alert/<int:alert_id>/resolve")
 @login_required
+@write_required
 async def alert_resolve(alert_id: int):
     from datetime import datetime as dt
     async with get_db() as session:

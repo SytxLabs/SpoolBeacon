@@ -7,6 +7,7 @@
         <h1 class="text-2xl font-bold text-white tracking-tight">Shop Rules</h1>
         <p class="text-gray-500 text-sm mt-1">CSS selectors and regex patterns for price scraping</p>
     </div>
+    {% if not is_viewer %}
     <a href="/shop-rules/new"
        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg
               bg-indigo-600 text-white hover:bg-indigo-500 transition-colors">
@@ -15,6 +16,7 @@
         </svg>
         New Rule
     </a>
+    {% endif %}
 </div>
 
 {% if rules %}
@@ -61,6 +63,13 @@
                     <span class="text-xs text-gray-500">{{ rule.currency }}</span>
                 </td>
                 <td class="px-5 py-3.5 text-center">
+                    {% if is_viewer %}
+                    <span class="px-2 py-0.5 rounded-full text-xs font-medium
+                                  {% if rule.is_active %}bg-emerald-500/15 text-emerald-400
+                                  {% else %}bg-gray-800 text-gray-600{% endif %}">
+                        {% if rule.is_active %}active{% else %}inactive{% endif %}
+                    </span>
+                    {% else %}
                     <form method="POST" action="/shop-rules/{{ rule.id }}/toggle" class="inline">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                         <button type="submit"
@@ -70,8 +79,10 @@
                             {% if rule.is_active %}active{% else %}inactive{% endif %}
                         </button>
                     </form>
+                    {% endif %}
                 </td>
                 <td class="px-5 py-3.5 text-right">
+                    {% if not is_viewer %}
                     <div class="flex items-center justify-end gap-0.5">
                         <a href="/shop-rules/{{ rule.id }}/edit" title="Edit rule"
                            class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
@@ -91,6 +102,7 @@
                             </button>
                         </form>
                     </div>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}
@@ -100,11 +112,13 @@
 {% else %}
 <div class="card p-12 text-center">
     <p class="text-gray-500 text-sm mb-3">No shop rules yet. Rules define per-domain CSS selectors for automated price scraping.</p>
+    {% if not is_viewer %}
     <a href="/shop-rules/new"
        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg
               bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 transition-all">
         Add first rule
     </a>
+    {% endif %}
 </div>
 {% endif %}
 {% endblock %}
