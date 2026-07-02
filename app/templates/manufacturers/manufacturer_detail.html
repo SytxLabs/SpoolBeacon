@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}{{ manufacturer.name }} – SpoolBeacon{% endblock %}
+
+{% block content %}
+<div class="mb-7">
+    <nav class="flex items-center gap-1.5 text-xs text-gray-600 mb-3">
+        <a href="/manufacturers/" class="hover:text-gray-400 transition-colors">Manufacturers</a>
+        <span>/</span>
+        <span class="text-gray-400">{{ manufacturer.name }}</span>
+    </nav>
+    <div class="flex items-start justify-between gap-4">
+        <div class="min-w-0">
+            <h1 class="text-2xl font-bold text-white tracking-tight">{{ manufacturer.name }}</h1>
+            {% if manufacturer.website %}
+            <a href="{{ manufacturer.website }}" target="_blank" rel="noopener noreferrer"
+               class="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">{{ manufacturer.website }} &nearr;</a>
+            {% endif %}
+            {% if manufacturer.notes %}
+            <p class="text-sm text-gray-500 mt-2 max-w-2xl">{{ manufacturer.notes }}</p>
+            {% endif %}
+        </div>
+        {% if not is_viewer %}
+        <div class="flex items-center gap-2 flex-shrink-0">
+            <a href="/manufacturers/{{ manufacturer.id }}/edit" class="btn-ghost btn-sm">Edit</a>
+            <form method="POST" action="/manufacturers/{{ manufacturer.id }}/delete"
+                  onsubmit="return confirm('Delete manufacturer {{ manufacturer.name }}?')">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-ghost btn-sm text-red-400 hover:text-red-300">Delete</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<p class="text-gray-500 text-sm mb-5">{{ products|length }} product{{ 's' if products|length != 1 }}</p>
+
+{% if products %}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    {% for product, spool_count, total_remaining_g in products %}
+    <a href="/inventory/{{ product.id }}" class="card-hover flex flex-col group overflow-hidden">
+
+        {% if product.color_hex %}
+        <div class="h-0.5 w-full" style="background: linear-gradient(90deg, {{ product.color_hex }}99 0%, transparent 70%)"></div>
+        {% else %}
+        <div class="h-0.5 w-full bg-gradient-to-r from-gray-700 to-transparent"></div>
+        {% endif %}
+
+        <div class="p-4 flex items-start gap-3">
+            <div class="w-10 h-10 rounded-lg ring-1 ring-white/10 flex-shrink-0 mt-0.5"
+                 style="{% if product.color_hex and product.color_hex_2 %}background: linear-gradient(135deg, {{ product.color_hex }} 50%, {{ product.color_hex_2 }} 50%)
+                        {% elif product.color_hex %}background-color: {{ product.color_hex }}
+                        {% else %}background: #27272a{% endif %}"
+                 title="{% if product.color_hex_2 %}{{ product.color_name }} / {{ product.color_name_2 }}{% endif %}"></div>
+            <div class="min-w-0 flex-1">
+                <p class="font-semibold text-sm text-gray-100 group-hover:text-indigo-300 transition-colors leading-snug truncate">
+                    {{ product.name }}
+                </p>
+                <p class="text-xs text-gray-500 mt-0.5 truncate">
+                    {{ product.color_name }}{% if product.color_name_2 %} / {{ product.color_name_2 }}{% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="px-4 pb-3 flex items-center gap-1.5 flex-wrap">
+            <span class="badge-gray text-[10px]">{{ product.material }}</span>
+            <span class="text-[10px] text-gray-600">{{ product.diameter_mm }} mm</span>
+        </div>
+
+        <div class="px-4 py-3 mt-auto border-t border-gray-800 flex items-end justify-between gap-4">
+            <div>
+                <p class="text-2xl font-bold text-white tabular-nums leading-none
+                          {% if spool_count == 0 %}text-gray-700{% endif %}">
+                    {{ spool_count }}
+                </p>
+                <p class="text-[10px] text-gray-600 mt-0.5 uppercase tracking-wide">
+                    Spool{{ 's' if spool_count != 1 else '' }}
+                </p>
+            </div>
+            {% if total_remaining_g > 0 %}
+            <div class="text-right">
+                <p class="text-base font-semibold text-gray-200 tabular-nums leading-none">
+                    {{ (total_remaining_g / 1000)|round(2) }}<span class="text-xs font-normal text-gray-500 ml-0.5">kg</span>
+                </p>
+                <p class="text-[10px] text-gray-600 mt-0.5 uppercase tracking-wide">Remaining</p>
+            </div>
+            {% else %}
+            <div class="text-right">
+                <p class="text-sm text-gray-700">–</p>
+                <p class="text-[10px] text-gray-700 mt-0.5 uppercase tracking-wide">Remaining</p>
+            </div>
+            {% endif %}
+        </div>
+
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card p-12 text-center">
+    <p class="text-gray-500 text-sm">No products from this manufacturer yet.</p>
+</div>
+{% endif %}
+{% endblock %}

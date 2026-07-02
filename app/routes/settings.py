@@ -1,6 +1,8 @@
+import json
+from datetime import datetime
 from functools import wraps
 
-from quart import Blueprint, render_template, request, redirect, url_for, flash, abort
+from quart import Blueprint, render_template, request, redirect, url_for, flash, abort, Response
 from quart_auth import login_required, current_user
 from sqlalchemy import select
 
@@ -9,6 +11,7 @@ from app.models.user import User, UserRole
 from app.settings_service import get_all, set_many
 from app.notification_service import send_discord, send_email, build_test_discord_embed, build_test_email_html
 from app.spool_code import generate_spool_code, DEFAULT_TEMPLATE, AVAILABLE_VARS
+from app.import_export_service import export_bundle, import_bundle
 
 settings_bp = Blueprint("settings", __name__, url_prefix="/settings")
 
@@ -134,6 +137,53 @@ async def regenerate_spool_codes():
                 updated += 1
 
     await flash(f"Spool codes regenerated: {updated} of {len(spools)} updated.", "success")
+    return redirect(url_for("settings.index"))
+
+
+@settings_bp.get("/export")
+@login_required
+@admin_required
+async def export_data():
+    async with get_db() as session:
+        data = await export_bundle(session)
+
+    payload = json.dumps(data, indent=2)
+    filename = f"spoolbeacon-export-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}.json"
+    return Response(
+        payload,
+        mimetype="application/json",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+
+@settings_bp.post("/import")
+@login_required
+@admin_required
+async def import_data():
+    files = await request.files
+    upload = files.get("import_file")
+    if not upload or not upload.filename:
+        await flash("Import failed: no file selected.", "error")
+        return redirect(url_for("settings.index"))
+
+    try:
+        data = json.loads(upload.read())
+    except (json.JSONDecodeError, UnicodeDecodeError, ValueError):
+        await flash("Import failed: file is not valid JSON.", "error")
+        return redirect(url_for("settings.index"))
+
+    async with get_db() as session:
+        counts = await import_bundle(session, data)
+
+    labels = {
+        "manufacturers": "Manufacturers", "products": "Products", "shop_links": "Shop links",
+        "purchases": "Purchases", "purchase_lines": "Purchase lines", "spools": "Spools", "shop_rules": "Shop rules",
+    }
+    summary = "; ".join(
+        f"{labels[k]}: {added} added, {skipped} skipped"
+        for k, (added, skipped) in counts.items() if added or skipped
+    )
+    await flash(f"Import complete. {summary}" if summary else "Import complete. Nothing to import.", "success")
     return redirect(url_for("settings.index"))
 
 

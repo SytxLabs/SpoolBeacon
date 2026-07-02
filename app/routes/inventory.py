@@ -1,9 +1,11 @@
 import datetime
+import io
 import re
 from functools import wraps
 from urllib.parse import urlparse
 
-from quart import Blueprint, render_template, request, redirect, url_for, abort, flash
+import qrcode
+from quart import Blueprint, render_template, request, redirect, url_for, abort, flash, Response
 from quart_auth import login_required, current_user
 from sqlalchemy import or_, select, func
 from sqlalchemy.orm import selectinload, contains_eager
@@ -843,6 +845,40 @@ async def spool_delete(product_id: int, spool_id: int):
         await session.delete(spool)
 
     return redirect(url_for("inventory.detail", product_id=product_id))
+
+
+@inventory_bp.get("/<int:product_id>/spool/<int:spool_id>/label")
+@login_required
+async def spool_label(product_id: int, spool_id: int):
+    async with get_db() as session:
+        spool = (await session.execute(
+            select(Spool)
+            .options(selectinload(Spool.filament_product).selectinload(FilamentProduct.manufacturer))
+            .where(Spool.id == spool_id, Spool.filament_product_id == product_id)
+        )).scalar_one_or_none()
+        if not spool:
+            abort(404)
+
+    return await render_template("inventory/spool_label.html", spool=spool, product=spool.filament_product)
+
+
+@inventory_bp.get("/<int:product_id>/spool/<int:spool_id>/qr.png")
+@login_required
+async def spool_qr(product_id: int, spool_id: int):
+    async with get_db() as session:
+        exists = await session.scalar(
+            select(Spool.id).where(Spool.id == spool_id, Spool.filament_product_id == product_id)
+        )
+        if not exists:
+            abort(404)
+
+    label_url = url_for("inventory.spool_label", product_id=product_id, spool_id=spool_id, _external=True)
+
+    img = qrcode.make(label_url, box_size=8, border=2)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+
+    return Response(buf.getvalue(), mimetype="image/png")
 
 
 # ── form helpers ───────────────────────────────────────────────────────────

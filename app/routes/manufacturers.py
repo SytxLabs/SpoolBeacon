@@ -6,6 +6,7 @@ from sqlalchemy import select, func
 
 from app.database import get_db
 from app.models.filament import Manufacturer, FilamentProduct
+from app.models.spool import Spool, SpoolStatus
 from app.models.user import User, UserRole
 
 manufacturers_bp = Blueprint("manufacturers", __name__, url_prefix="/manufacturers")
@@ -57,6 +58,36 @@ async def index():
             ) or 0
             rows.append({"manufacturer": mfr, "product_count": product_count})
     return await render_template("manufacturers/index.html", rows=rows)
+
+
+@manufacturers_bp.get("/<int:manufacturer_id>")
+@login_required
+async def detail(manufacturer_id: int):
+    async with get_db() as session:
+        manufacturer = await session.get(Manufacturer, manufacturer_id)
+        if not manufacturer:
+            abort(404)
+
+        q = (
+            select(
+                FilamentProduct,
+                func.count(Spool.id).label("spool_count"),
+                func.coalesce(func.sum(Spool.remaining_weight_g), 0).label("total_remaining_g"),
+            )
+            .outerjoin(
+                Spool,
+                (Spool.filament_product_id == FilamentProduct.id)
+                & (Spool.status != SpoolStatus.archived),
+            )
+            .where(FilamentProduct.manufacturer_id == manufacturer_id)
+            .group_by(FilamentProduct.id)
+            .order_by(FilamentProduct.material, FilamentProduct.name)
+        )
+        products = (await session.execute(q)).all()
+
+    return await render_template(
+        "manufacturers/manufacturer_detail.html", manufacturer=manufacturer, products=products
+    )
 
 
 @manufacturers_bp.route("/new", methods=["GET", "POST"])
