@@ -8,19 +8,19 @@ from app.database import Base
 
 
 class SpoolStatus(enum.Enum):
-    neu = "neu"
-    geoeffnet = "geöffnet"
-    fast_leer = "fast leer"
-    leer = "leer"
-    archiviert = "archiviert"
+    new = "new"
+    opened = "opened"
+    almost_empty = "almost_empty"
+    empty = "empty"
+    archived = "archived"
 
 
 class StorageStatus(enum.Enum):
-    offen = "offen"
-    verschlossen = "verschlossen"
-    vakuumiert = "vakuumiert"
-    drybox = "Drybox"
-    unbekannt = "unbekannt"
+    open = "open"
+    sealed = "sealed"
+    vacuum_sealed = "vacuum_sealed"
+    drybox = "drybox"
+    unknown = "unknown"
 
 
 class Spool(Base):
@@ -30,11 +30,11 @@ class Spool(Base):
     filament_product_id = Column(Integer, ForeignKey("filament_products.id"), nullable=False)
     purchase_line_id = Column(Integer, ForeignKey("purchase_lines.id"), nullable=True)
     spool_code = Column(String(64), unique=True, nullable=False, index=True)
-    status = Column(SAEnum(SpoolStatus), nullable=False, default=SpoolStatus.neu)
+    status = Column(SAEnum(SpoolStatus), nullable=False, default=SpoolStatus.new)
     initial_weight_g = Column(Float, nullable=False)
     remaining_weight_g = Column(Float, nullable=False)
     storage_location = Column(String(128), nullable=True)
-    storage_status = Column(SAEnum(StorageStatus), nullable=False, default=StorageStatus.unbekannt)
+    storage_status = Column(SAEnum(StorageStatus), nullable=False, default=StorageStatus.unknown)
     opened_at = Column(DateTime, nullable=True)
     last_dried_at = Column(DateTime, nullable=True)
     last_weight_update_source = Column(String(64), nullable=True)

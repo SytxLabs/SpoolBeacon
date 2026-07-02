@@ -27,6 +27,9 @@ class FilamentProduct(Base):
     material = Column(String(64), nullable=False, index=True)
     color_name = Column(String(64), nullable=False)
     color_hex = Column(String(7), nullable=True)
+    # Second color for dual-color / co-extruded filaments — both optional, independent of color_name/color_hex.
+    color_name_2 = Column(String(64), nullable=True)
+    color_hex_2 = Column(String(7), nullable=True)
     diameter_mm = Column(Float, nullable=False, default=1.75)
     nominal_weight_g = Column(Integer, nullable=False, default=1000)
     notes = Column(Text, nullable=True)

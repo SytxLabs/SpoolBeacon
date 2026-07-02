@@ -34,7 +34,7 @@
                 <select id="status" name="status"
                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-                    {% for s in [('neu', 'New'), ('geöffnet', 'Open'), ('fast leer', 'Almost Empty'), ('leer', 'Empty'), ('archiviert', 'Archived')] %}
+                    {% for s in [('new', 'New'), ('opened', 'Open'), ('almost_empty', 'Almost Empty'), ('empty', 'Empty'), ('archived', 'Archived')] %}
                     <option value="{{ s[0] }}" {% if spool.status.value == s[0] %}selected{% endif %}>{{ s[1] }}</option>
                     {% endfor %}
                 </select>
@@ -72,7 +72,7 @@
                 <select id="storage_status" name="storage_status"
                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-                    {% for s in [('offen', 'Open'), ('verschlossen', 'Sealed'), ('vakuumiert', 'Vacuum-sealed'), ('Drybox', 'Drybox'), ('unbekannt', 'Unknown')] %}
+                    {% for s in [('open', 'Open'), ('sealed', 'Sealed'), ('vacuum_sealed', 'Vacuum-sealed'), ('drybox', 'Drybox'), ('unknown', 'Unknown')] %}
                     <option value="{{ s[0] }}" {% if spool.storage_status.value == s[0] %}selected{% endif %}>{{ s[1] }}</option>
                     {% endfor %}
                 </select>
