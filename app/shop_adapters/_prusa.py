@@ -13,7 +13,7 @@ _AVAIL_MAP = {
 
 
 class PrusaAdapter(BaseAdapter):
-    domain = "prusa3d.com"
+    domains = ("prusa3d.com",)
 
     _PRICE_SEL = "script[type='application/ld+json']"
     _PRICE_RE  = r'"price"\s*:\s*"?([\d.]+)"?'

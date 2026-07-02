@@ -16,7 +16,7 @@ _AVAIL_MAP = {"InStock": "In Stock", "OutOfStock": "Out of Stock"}
 
 
 class ESunAdapter(BaseAdapter):
-    domain = "esun3dstore.com"
+    domains = ("esun3dstore.com", "esun3dstoreeu.com")
     fetch_engine = "cloudscraper"
 
     def extract(self, html: str, url: str) -> AdapterResult:
@@ -49,7 +49,3 @@ class ESunAdapter(BaseAdapter):
             price_parsed=price_parsed,
             availability=avail_raw,
         )
-
-
-class ESunEUAdapter(ESunAdapter):
-    domain = "esun3dstoreeu.com"

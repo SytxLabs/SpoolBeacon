@@ -16,7 +16,7 @@ _AVAIL_RE = re.compile(r'"availability"\s*:\s*"[^"]*/([A-Za-z]+)"', re.IGNORECAS
 
 
 class ElegooAdapter(BaseAdapter):
-    domain = "elegoo.com"
+    domains = ("elegoo.com",)
 
     def extract(self, html: str, url: str) -> AdapterResult:
         tree = HTMLParser(html)

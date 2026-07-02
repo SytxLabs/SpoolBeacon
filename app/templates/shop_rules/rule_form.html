@@ -39,6 +39,12 @@
                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white font-mono
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
             <p class="text-xs text-gray-600 mt-1">Domain only, no https:// or path.</p>
+            <div id="adapter-banner" class="hidden mt-2 flex items-start gap-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 px-3 py-2">
+                <span class="text-indigo-400 text-sm leading-none">⚡</span>
+                <p class="text-xs text-indigo-300">
+                    This shop already has built-in support — price checks for this domain use that instead of the rule below. You don't need to fill anything in on this page.
+                </p>
+            </div>
         </div>
         <div class="grid grid-cols-2 gap-4">
             <div>
@@ -59,6 +65,19 @@
                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                               placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
             </div>
+        </div>
+        <div class="pt-1">
+            <button type="button" id="open-picker-btn" disabled
+                    class="btn-icon disabled:opacity-40 disabled:cursor-not-allowed">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1" class="w-3.5 h-3.5">
+                    <path d="M1.5 8s2.5-5 6.5-5 6.5 5 6.5 5-2.5 5-6.5 5-6.5-5-6.5-5Z"/>
+                    <circle cx="8" cy="8" r="2"/>
+                </svg>
+                Open Visual Picker
+            </button>
+            <p class="text-xs text-gray-600 mt-1.5">
+                Enter a Test URL above, then click elements on the rendered page to fill the selectors below.
+            </p>
         </div>
     </div>
 
@@ -145,6 +164,220 @@
         <a href="/shop-rules/" class="btn-ghost">Cancel</a>
     </div>
 </form>
+
+<!-- Visual Picker modal — no <form>, JS only writes into the main form's inputs -->
+<div id="picker-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="card w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+    <div class="flex items-center justify-between gap-4 px-5 py-3 border-b border-gray-800 flex-shrink-0">
+      <div class="flex items-center gap-2">
+        <span class="text-sm font-medium text-gray-200">Visual Picker</span>
+        <span class="text-xs text-gray-600 hidden sm:inline">— click an element on the page to capture it</span>
+      </div>
+      <button type="button" id="picker-close-btn"
+              class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.06]">
+        <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+          <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"/>
+        </svg>
+      </button>
+    </div>
+    <div class="flex items-center gap-2 px-5 py-2.5 border-b border-gray-800 flex-shrink-0 flex-wrap">
+      <button type="button" class="picker-tab" data-target="price_selector">Price</button>
+      <button type="button" class="picker-tab" data-target="title_selector">Title</button>
+      <button type="button" class="picker-tab" data-target="availability_selector">Availability</button>
+      <span id="picker-captured" class="text-xs text-gray-500 ml-2 truncate"></span>
+      <button type="button" id="picker-done-btn" class="btn-primary btn-sm ml-auto">Done</button>
+    </div>
+    <div class="flex-1 relative bg-white">
+      <iframe id="picker-iframe" sandbox="allow-same-origin" class="w-full h-full border-0"></iframe>
+      <div id="picker-loading" class="absolute inset-0 flex items-center justify-center bg-gray-950/95 text-gray-400 text-sm">
+        Loading page…
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+    var domainInput = document.getElementById('domain');
+    var banner = document.getElementById('adapter-banner');
+    if (!domainInput || !banner) return;
+    var adapterDomains = {{ (adapter_domains | default([])) | list | tojson }};
+
+    function checkAdapter() {
+        var domain = domainInput.value.trim().toLowerCase();
+        banner.classList.toggle('hidden', adapterDomains.indexOf(domain) === -1);
+    }
+    domainInput.addEventListener('input', checkAdapter);
+    checkAdapter();
+})();
+</script>
+
+<script>
+(function () {
+    var openBtn = document.getElementById('open-picker-btn');
+    if (!openBtn) return;
+
+    var testUrlInput = document.getElementById('test_url');
+    var domainInput = document.getElementById('domain');
+    var currencySelect = document.getElementById('currency');
+    var modal = document.getElementById('picker-modal');
+    var iframe = document.getElementById('picker-iframe');
+    var loadingOverlay = document.getElementById('picker-loading');
+    var closeBtn = document.getElementById('picker-close-btn');
+    var doneBtn = document.getElementById('picker-done-btn');
+    var capturedLabel = document.getElementById('picker-captured');
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.picker-tab'));
+
+    var ACTIVE = 'picker-tab px-3 py-1 rounded-lg text-xs font-medium bg-indigo-500/15 text-indigo-400 ring-1 ring-inset ring-indigo-500/20';
+    var INACTIVE = 'picker-tab px-3 py-1 rounded-lg text-xs font-medium bg-gray-800 text-gray-400 hover:text-gray-200 transition-colors';
+    var FIELDS = ['price_selector', 'title_selector', 'availability_selector'];
+    var activeField = 'price_selector';
+    var frameDoc = null;
+    var lastHovered = null;
+
+    function setActiveTab(name) {
+        activeField = name;
+        tabs.forEach(function (btn) {
+            btn.className = btn.dataset.target === name ? ACTIVE : INACTIVE;
+        });
+    }
+
+    function firstUnfilled() {
+        for (var i = 0; i < FIELDS.length; i++) {
+            var el = document.getElementById(FIELDS[i]);
+            if (el && !el.value) return FIELDS[i];
+        }
+        return FIELDS[0];
+    }
+
+    function toggleOpenBtn() {
+        openBtn.disabled = !testUrlInput.value.trim();
+    }
+    testUrlInput.addEventListener('input', toggleOpenBtn);
+    toggleOpenBtn();
+
+    if (currencySelect) {
+        currencySelect.addEventListener('change', function () { this.dataset.touched = '1'; });
+    }
+
+    function autofillDomain() {
+        if (!domainInput || domainInput.value.trim() || !testUrlInput.value.trim()) return;
+        try {
+            domainInput.value = new URL(testUrlInput.value.trim()).hostname.replace(/^www\./i, '');
+        } catch (e) { /* not a valid URL yet, ignore */ }
+    }
+    testUrlInput.addEventListener('blur', autofillDomain);
+
+    function buildSelector(doc, el) {
+        if (el.id) {
+            var idSel = '#' + CSS.escape(el.id);
+            if (doc.querySelectorAll(idSel).length === 1) return idSel;
+        }
+        var path = [];
+        var node = el;
+        var depth = 0;
+        while (node && node.nodeType === 1 && node !== doc.body && depth < 8) {
+            var part = node.tagName.toLowerCase();
+            (node.className && typeof node.className === 'string'
+                ? node.className.trim().split(/\s+/).filter(function (c) { return c && c.indexOf('__sb-') !== 0; }).slice(0, 3)
+                : []
+            ).forEach(function (c) { part += '.' + CSS.escape(c); });
+            path.unshift(part);
+
+            if (doc.querySelectorAll(path.join(' > ')).length === 1) return path.join(' > ');
+
+            var siblings = node.parentNode
+                ? Array.prototype.filter.call(node.parentNode.children, function (s) { return s.tagName === node.tagName; })
+                : [];
+            if (siblings.length > 1) {
+                path[0] += ':nth-of-type(' + (siblings.indexOf(node) + 1) + ')';
+                if (doc.querySelectorAll(path.join(' > ')).length === 1) return path.join(' > ');
+            }
+            node = node.parentElement;
+            depth++;
+        }
+        return path.join(' > ');
+    }
+
+    function onFrameMove(e) {
+        if (lastHovered === e.target) return;
+        if (lastHovered) lastHovered.classList.remove('__sb-hover');
+        lastHovered = e.target;
+        lastHovered.classList.add('__sb-hover');
+    }
+
+    function onFrameClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        e.target.classList.remove('__sb-hover');
+        var selector = buildSelector(frameDoc, e.target);
+        var input = document.getElementById(activeField);
+        if (input) input.value = selector;
+
+        var text = (e.target.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+        capturedLabel.textContent = activeField.replace('_selector', '') + ' → ' + selector + (text ? '  ("' + text + '")' : '');
+
+        if (activeField === 'price_selector' && currencySelect && !currencySelect.dataset.touched) {
+            if (text.indexOf('€') !== -1) currencySelect.value = 'EUR';
+            else if (text.indexOf('$') !== -1) currencySelect.value = 'USD';
+            else if (text.indexOf('£') !== -1) currencySelect.value = 'GBP';
+        }
+
+        var idx = FIELDS.indexOf(activeField);
+        var next = FIELDS.slice(idx + 1).filter(function (f) {
+            var el = document.getElementById(f);
+            return el && !el.value;
+        })[0];
+        if (next) setActiveTab(next);
+    }
+
+    function openPicker() {
+        var url = testUrlInput.value.trim();
+        if (!url) return;
+        autofillDomain();
+        capturedLabel.textContent = '';
+        setActiveTab(firstUnfilled());
+        loadingOverlay.classList.remove('hidden');
+        iframe.src = '/shop-rules/picker-frame?url=' + encodeURIComponent(url);
+        modal.classList.remove('hidden');
+    }
+
+    function closePicker() {
+        modal.classList.add('hidden');
+        if (frameDoc) {
+            frameDoc.removeEventListener('mousemove', onFrameMove, true);
+            frameDoc.removeEventListener('click', onFrameClick, true);
+        }
+        frameDoc = null;
+        lastHovered = null;
+        iframe.src = 'about:blank';
+    }
+
+    iframe.addEventListener('load', function () {
+        loadingOverlay.classList.add('hidden');
+        try {
+            frameDoc = iframe.contentDocument || iframe.contentWindow.document;
+            frameDoc.addEventListener('mousemove', onFrameMove, true);
+            frameDoc.addEventListener('click', onFrameClick, true);
+            var style = frameDoc.createElement('style');
+            style.textContent = '.__sb-hover{outline:2px solid #6366f1 !important;outline-offset:-1px !important;cursor:crosshair !important;}';
+            frameDoc.head.appendChild(style);
+        } catch (err) {
+            capturedLabel.textContent = 'Could not attach picker to this page.';
+        }
+    });
+
+    openBtn.addEventListener('click', openPicker);
+    closeBtn.addEventListener('click', closePicker);
+    doneBtn.addEventListener('click', closePicker);
+    tabs.forEach(function (btn) {
+        btn.addEventListener('click', function () { setActiveTab(btn.dataset.target); });
+    });
+    setActiveTab('price_selector');
+})();
+</script>
 
 {% if editing %}
 <!-- Test Rule — separate form, outside the main save form -->

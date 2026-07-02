@@ -13,7 +13,7 @@ _PRICE_RE = re.compile(r'[\d.,]+')
 
 
 class EbayAdapter(BaseAdapter):
-    domain = "ebay.de"
+    domains = ("ebay.de",)
 
     def extract(self, html: str, url: str) -> AdapterResult:
         tree = HTMLParser(html)

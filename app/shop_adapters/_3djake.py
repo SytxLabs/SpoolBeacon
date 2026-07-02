@@ -7,7 +7,7 @@ from .base import BaseAdapter, AdapterResult
 
 
 class ThreeDJakeAdapter(BaseAdapter):
-    domain = "3djake.de"
+    domains = ("3djake.de",)
 
     _PRICE_SEL = ".price"
     _PRICE_RE  = r"\d+[,\.]\d{2}"

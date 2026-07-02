@@ -2,10 +2,9 @@
 Shop seed — ShopRules only, no filament/inventory data.
 Safe to run standalone or alongside seed.py. Idempotent (skips existing domains).
 
-Shops with a registered adapter (3djake.de, prusa3d.com, anycubic.com,
-eu.store.bambulab.com, esun3dstoreeu.com, elegoo.com) don't need a ShopRule
-for price extraction — the adapter takes priority. The rules below are included
-as fallbacks and for reference only.
+Domains with a registered adapter (see app.shop_adapters.registry.registered_domains())
+are intentionally NOT seeded here — the adapter always takes priority over a ShopRule
+for the same domain, so a rule for it would be dead weight and confusing in the UI.
 """
 import asyncio
 from dotenv import load_dotenv
@@ -19,80 +18,6 @@ from app.config import _build_database_url
 from app.models.shop_rule import ShopRule  # noqa: F401 — import ensures model is registered
 
 RULES = [
-    # ── Adapter-backed (adapter takes priority; rule is fallback/reference) ──
-    dict(
-        domain="3djake.de",
-        price_selector=".price",
-        price_regex=r"\d+[,\.]\d{2}",
-        title_selector=None,
-        availability_selector="[class*='availab']",
-        availability_regex=None,
-        currency="EUR",
-        test_url="https://www.3djake.de/bambu-lab/pla-basic-white",
-        is_active=True,
-        notes="SSR PHP. Adapter available — adapter takes priority. Confirmed 2026-06-29.",
-    ),
-    dict(
-        domain="prusa3d.com",
-        price_selector="script[type='application/ld+json']",
-        price_regex=r'"price"\s*:\s*"?([\d.]+)"?',
-        title_selector=None,
-        availability_selector="script[type='application/ld+json']",
-        availability_regex=r'"availability"\s*:\s*"[^"]*/([A-Za-z]+)"',
-        currency="EUR",
-        test_url="https://www.prusa3d.com/de/produkt/prusament-petg-prusa-orange-1kg/",
-        is_active=True,
-        notes="WooCommerce + JSON-LD. Adapter available — adapter takes priority. Confirmed 2026-06-29.",
-    ),
-    dict(
-        domain="anycubic.com",
-        price_selector=".price-item--regular.bold",
-        price_regex=r"\d+\.\d{2}",
-        title_selector=None,
-        availability_selector=None,
-        availability_regex=None,
-        currency="USD",
-        test_url="https://www.anycubic.com/products/pla-filament",
-        is_active=True,
-        notes="Shopify USD SSR. Adapter available — adapter takes priority. Confirmed 2026-06-30.",
-    ),
-    dict(
-        domain="eu.store.bambulab.com",
-        price_selector="script[type='application/ld+json']",
-        price_regex=r'"price"\s*:\s*"?([\d.]+)"?',
-        title_selector=None,
-        availability_selector="script[type='application/ld+json']",
-        availability_regex=r'"availability"\s*:\s*"[^"]*/([A-Za-z]+)"',
-        currency="EUR",
-        test_url="https://eu.store.bambulab.com/en/products/pla-basic-filament",
-        is_active=True,
-        notes="Bambu Lab EU Shopify. Cloudscraper adapter required (Cloudflare). Confirmed 2026-06-30.",
-    ),
-    dict(
-        domain="esun3dstoreeu.com",
-        price_selector="script[type='application/ld+json']",
-        price_regex=r'"price"\s*:\s*"?([\d.]+)"?',
-        title_selector=None,
-        availability_selector="script[type='application/ld+json']",
-        availability_regex=r'"availability"\s*:\s*"[^"]*/([A-Za-z]+)"',
-        currency="EUR",
-        test_url="https://esun3dstoreeu.com/products/epla?VariantsId=13401",
-        is_active=True,
-        notes="eSUN Shopify USD. Cloudscraper adapter required. Confirmed 2026-06-30.",
-    ),
-    dict(
-        domain="elegoo.com",
-        price_selector="[class*='price']",
-        price_regex=r"\d+[,\.]\d{2}",
-        title_selector=None,
-        availability_selector=None,
-        availability_regex=None,
-        currency="USD",
-        test_url="",
-        is_active=True,
-        notes="All tested product URLs return HTTP 404. Re-test with current product links.",
-    ),
-
     # ── Rule-only shops (no adapter, httpx/Playwright fetch) ─────────────────
     dict(
         domain="amazon.de",

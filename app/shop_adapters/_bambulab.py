@@ -20,7 +20,9 @@ _AVAIL_MAP = {"InStock": "In Stock", "OutOfStock": "Out of Stock", "PreOrder": "
 
 
 class BambuLabAdapter(BaseAdapter):
-    domain = "eu.store.bambulab.com"
+    # bambulab.com itself is blocked by Cloudflare — only regional storefronts work.
+    # Add more confirmed regional domains here (e.g. us.store.bambulab.com) once tested.
+    domains = ("eu.store.bambulab.com",)
     fetch_engine = "cloudscraper"
 
     def extract(self, html: str, url: str) -> AdapterResult:
