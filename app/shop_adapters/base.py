@@ -13,8 +13,9 @@ class AdapterResult:
 
 
 class BaseAdapter:
-    """One instance per shop domain. Receives already-fetched HTML, returns AdapterResult."""
-    domain: str = ""
+    """One instance per shop, registered under one or more domains (e.g. regional
+    storefronts on the same platform). Receives already-fetched HTML, returns AdapterResult."""
+    domains: tuple[str, ...] = ()
     # Override to "cloudscraper" when the shop blocks httpx and Playwright.
     # price_check_service reads this before fetching and uses the right client.
     fetch_engine: str = ""

@@ -495,41 +495,11 @@ async def seed(reset: bool = False) -> None:
                 alert_count += 1
 
         # ── ShopRules ─────────────────────────────────────────────────────────
+        # Domains with a registered adapter (app/shop_adapters/registry.py) are
+        # intentionally NOT seeded here — the adapter always takes priority over
+        # a ShopRule for the same domain, so a rule for it would be dead weight
+        # and confusing in the UI. See app.shop_adapters.registry.registered_domains().
         raw_rules = [
-            # ── Adapter-backed (adapter takes priority; rule is fallback) ─────
-            dict(
-                domain="3djake.de",
-                price_selector=".price",
-                price_regex=r"\d+[,\.]\d{2}",
-                title_selector="h1",
-                availability_selector="[class*='availab']",
-                currency="EUR",
-                test_url="https://www.3djake.de/bambu-lab/pla-basic-white",
-                is_active=True,
-                notes="SSR PHP. Adapter available — adapter takes priority. Confirmed 2026-06-29.",
-            ),
-            dict(
-                domain="prusa3d.com",
-                price_selector="script[type='application/ld+json']",
-                price_regex=r'"price"\s*:\s*"?([\d.]+)"?',
-                title_selector="h1",
-                availability_selector="script[type='application/ld+json']",
-                availability_regex=r'"availability"\s*:\s*"[^"]*/([A-Za-z]+)"',
-                currency="EUR",
-                test_url="https://www.prusa3d.com/de/produkt/prusament-petg-prusa-orange-1kg/",
-                is_active=True,
-                notes="WooCommerce + JSON-LD. Adapter available — adapter takes priority. Confirmed 2026-06-29.",
-            ),
-            dict(
-                domain="anycubic.com",
-                price_selector=".price-item--regular.bold",
-                price_regex=r"\d+\.\d{2}",
-                title_selector="h1",
-                currency="USD",
-                test_url="https://www.anycubic.com/products/pla-filament",
-                is_active=True,
-                notes="Shopify USD SSR. Adapter available — adapter takes priority. Confirmed 2026-06-30.",
-            ),
             dict(
                 domain="filamentworld.de",
                 price_selector=".price",
@@ -539,31 +509,7 @@ async def seed(reset: bool = False) -> None:
                 currency="EUR",
                 test_url="https://filamentworld.de/shop/filament-3d-drucker/pla-filament-1-75-mm-braun/?switch_shop=b2c",
                 is_active=True,
-                notes="WooCommerce EUR. Adapter handles 0,00€ placeholder. Confirmed 2026-06-30.",
-            ),
-            dict(
-                domain="eu.store.bambulab.com",
-                price_selector="script[type='application/ld+json']",
-                price_regex=r'"price"\s*:\s*"?([\d.]+)"?',
-                title_selector="h1",
-                availability_selector="script[type='application/ld+json']",
-                availability_regex=r'"availability"\s*:\s*"[^"]*/([A-Za-z]+)"',
-                currency="EUR",
-                test_url="https://eu.store.bambulab.com/en/products/pla-basic-filament",
-                is_active=True,
-                notes="Bambu Lab EU Shopify. Cloudscraper adapter required (Cloudflare). Confirmed 2026-06-30.",
-            ),
-            dict(
-                domain="esun3dstore.com",
-                price_selector="script[type='application/ld+json']",
-                price_regex=r'"price"\s*:\s*"?([\d.]+)"?',
-                title_selector="h1",
-                availability_selector="script[type='application/ld+json']",
-                availability_regex=r'"availability"\s*:\s*"[^"]*/([A-Za-z]+)"',
-                currency="USD",
-                test_url="https://esun3dstore.com/products/pla-pro-2-rolls",
-                is_active=True,
-                notes="eSUN Shopify USD. Cloudscraper adapter required. Confirmed 2026-06-30.",
+                notes="WooCommerce EUR. Confirmed 2026-06-30.",
             ),
             # ── Blocked / inactive (reference only) ───────────────────────────
             dict(
@@ -626,16 +572,6 @@ async def seed(reset: bool = False) -> None:
                 test_url="",
                 is_active=False,
                 notes="HTTP 500 on collection pages. Server instability or geo-blocking.",
-            ),
-            dict(
-                domain="elegoo.com",
-                price_selector="[class*='price']",
-                price_regex=r"\d+[,\.]\d{2}",
-                title_selector="h1",
-                currency="USD",
-                test_url="",
-                is_active=False,
-                notes="All tested product URLs return HTTP 404. Re-test with current product links.",
             ),
         ]
 
