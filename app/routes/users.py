@@ -53,7 +53,7 @@ async def create():
         email = form.get("email", "").strip()
         password = form.get("password", "")
         role_str = form.get("role", "viewer")
-        is_active = form.get("is_active") == "1"
+        is_active = "1" in form.getlist("is_active")
 
         errors = []
         if not username:
@@ -110,7 +110,7 @@ async def edit(user_id: int):
         email = form.get("email", "").strip()
         new_password = form.get("password", "").strip()
         role_str = form.get("role", "viewer")
-        is_active = form.get("is_active") == "1"
+        is_active = "1" in form.getlist("is_active")
 
         errors = []
         if not username:

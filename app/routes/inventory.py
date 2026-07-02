@@ -922,7 +922,7 @@ def _shoplink_fields(form) -> dict:
         "package_weight_g": int(form.get("package_weight_g", "1000")),
         "manual_price": float(form.get("manual_price", "0")),
         "shipping_price": float(shipping_raw) if shipping_raw else None,
-        "is_active": form.get("is_active") == "1",
+        "is_active": "1" in form.getlist("is_active"),
         "target_price": float(target_raw) if target_raw else None,
         "target_price_per_kg": float(target_kg_raw) if target_kg_raw else None,
         "notes": form.get("notes", "").strip() or None,

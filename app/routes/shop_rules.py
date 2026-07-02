@@ -139,7 +139,7 @@ def _fields(form) -> dict:
         "availability_regex": form.get("availability_regex", "").strip() or None,
         "currency": form.get("currency", "EUR").strip() or "EUR",
         "test_url": form.get("test_url", "").strip() or None,
-        "is_active": form.get("is_active") == "1",
+        "is_active": "1" in form.getlist("is_active"),
         "notes": form.get("notes", "").strip() or None,
     }
 
