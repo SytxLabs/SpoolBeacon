@@ -458,10 +458,20 @@
                             {{ spool.last_dried_at.strftime('%d.%m.%Y') if spool.last_dried_at else '–' }}
                         </td>
                         <td class="px-5 py-3.5 text-right">
-                            <a href="/inventory/{{ product.id }}/spool/{{ spool.id }}/edit" title="Edit spool"
-                               class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors inline-flex">
-                                {{ icon_pencil() }}
-                            </a>
+                            <div class="flex items-center justify-end gap-0.5">
+                                <a href="/inventory/{{ product.id }}/spool/{{ spool.id }}/edit" title="Edit spool"
+                                   class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
+                                    {{ icon_pencil() }}
+                                </a>
+                                <form method="POST" action="/inventory/{{ product.id }}/spool/{{ spool.id }}/delete"
+                                      class="inline" onsubmit="return confirm('Delete spool {{ spool.spool_code }}? This cannot be undone.')">
+                                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" title="Delete spool"
+                                            class="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-950/30 transition-colors">
+                                        {{ icon_trash() }}
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}

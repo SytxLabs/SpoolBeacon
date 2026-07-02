@@ -75,6 +75,8 @@ AppSetting (key/value table for all runtime config: scheduler, notifications, en
 
 ## Key conventions
 
+**Language:** All code and user-facing text must be English — no Other Language words anywhere in this repo (open-source on GitHub). This includes flash messages, validation errors, log messages, notification/email/Discord copy, comments, and seed data. Conversation with the user may stay in German per their global preference, but nothing written to a file in this repo may contain German. Double-check every new or edited string before finishing a task — this has been missed before (e.g. `app/notification_service.py`, `app/alert_service.py` initially shipped with German copy and had to be fixed after the fact).
+
 **CSRF:** Every state-changing form needs `<input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">`. The `before_request` hook validates it on POST/PUT/PATCH/DELETE. JSON requests (content-type contains `json`) are exempt.
 
 **Admin guard:** `@admin_required` is defined in both `routes/settings.py` and `routes/users.py`. Stack after `@login_required`. Use the one from the same file to avoid cross-import.
