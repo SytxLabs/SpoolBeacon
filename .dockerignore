@@ -1,6 +1,11 @@
-# Environment
+# Environment / secrets
 .env
 .env.local
+
+# Git
+.git/
+.github/
+.gitignore
 
 # Python
 __pycache__/
@@ -11,7 +16,6 @@ __pycache__/
 *.egg-info/
 dist/
 build/
-*.egg
 
 # Virtual environment
 .venv/
@@ -31,7 +35,7 @@ coverage.xml
 .vscode/
 *.iml
 
-# Node (Tailwind build)
+# Node (Tailwind build, if any)
 node_modules/
 npm-debug.log*
 
@@ -43,3 +47,10 @@ logs/
 *.db
 *.sqlite3
 *.sql.gz
+
+# Docs (not needed inside the image)
+README.md
+LICENSE
+
+# Claude Code project files
+.claude/

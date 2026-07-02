@@ -1,21 +1,38 @@
+<div align="center">
+
 # SpoolBeacon
 
-Self-hosted filament inventory for 3D printing. Track spools, purchases and shop prices — get notified when a filament hits your target price.
+**Self-hosted filament inventory for 3D printing.**
+Track spools, purchases and shop prices — get notified when a filament hits your target price.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Docker build](https://github.com/Erik05Master/SpoolBeacon/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/Erik05Master/SpoolBeacon/actions/workflows/docker-publish.yml)
+[![Docker Pulls](https://img.shields.io/docker/pulls/sytxlabs/spoolbeacon)](https://hub.docker.com/r/sytxlabs/spoolbeacon)
+[![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+
+[Quick Start](#quick-start-docker) · [Features](#features) · [Configuration](#configuration) · [Price Monitoring](#price-monitoring) · [Troubleshooting](#troubleshooting)
+
+</div>
 
 ---
 
-## Features
+## 📦 Features
 
-- **Inventory** — filaments by manufacturer, material, color and diameter; spools with remaining weight, fill %, storage location and status
-- **Purchase history** — price per spool, lot number, currency; spools auto-created on purchase
-- **Price monitoring** — shop links with manual prices and automated scraping via ShopRules or built-in adapters
-- **Price alerts** — alert when price ≤ target (absolute or per kg); Discord and SMTP notifications
-- **Dashboard** — overview, low-stock list, material/color breakdown, active alerts, scheduler status
-- **User management** — Admin / Member / Viewer roles
+| | |
+|---|---|
+| **Inventory** | Filaments by manufacturer, material, color and diameter — including dual-color/co-extruded filaments. Spools track remaining weight, fill %, storage location and status. |
+| **Manufacturers** | Dedicated manufacturer pages listing every product from that brand. |
+| **Purchase history** | Price per spool, lot number, currency — spools are auto-created on purchase. |
+| **Price monitoring** | Shop links with manual prices and automated scraping via ShopRules or built-in adapters. |
+| **Price alerts** | Alert when price ≤ target (absolute or per kg) — Discord and SMTP notifications. |
+| **Spool labels** | Printable QR-code labels per spool for physical tagging. |
+| **Backup & restore** | Full JSON export/import — additive, safe to re-run. |
+| **Dashboard** | Overview, low-stock list, material/color breakdown, active alerts, scheduler status. |
+| **User management** | Admin / Member / Viewer roles — Viewer is fully read-only. |
 
 ---
 
-## Requirements
+## 🔧 Requirements
 
 - Docker + Docker Compose
 
@@ -23,7 +40,7 @@ For local development: Python 3.12+
 
 ---
 
-## Quick Start (Docker)
+## 🚀 Quick Start (Docker)
 
 ```bash
 cp .env.example .env
@@ -43,15 +60,15 @@ Start everything:
 docker compose up --build -d
 ```
 
-MariaDB starts automatically, migrations run on container start. No port is exposed to the host.
+MariaDB starts automatically, migrations run on container start. The app is exposed on `APP_PORT` (default `8080`) — only that port is mapped to the host, MariaDB stays internal to the compose network.
 
 ### First admin account
 
-Open `http://your-host:5000/setup` — only available when no users exist yet.
+Open `http://your-host:8080/setup` — only available when no users exist yet.
 
 ---
 
-## Updating
+## ⬆️ Updating
 
 ```bash
 docker compose pull
@@ -62,7 +79,7 @@ Migrations run automatically on restart.
 
 ---
 
-## Local Development
+## 🛠️ Local Development
 
 ```bash
 python -m venv .venv
@@ -71,7 +88,7 @@ pip install -r requirements.txt
 playwright install --with-deps chromium
 cp .env.example .env   # fill in DB credentials
 python migration.py upgrade head
-python main.py         # runs on http://localhost:5000
+python main.py         # runs on http://localhost:8080
 ```
 
 Seed sample data:
@@ -84,7 +101,7 @@ python seed_shops.py     # ShopRules only, no inventory data
 
 ---
 
-## Configuration
+## ⚙️ Configuration
 
 All runtime settings are managed on the Settings page (`/settings`, admin only) — not via `.env`.
 
@@ -95,10 +112,11 @@ All runtime settings are managed on the Settings page (`/settings`, admin only) 
 | Discord | Webhook URL, enable/disable, test message |
 | Email (SMTP) | Host, port, credentials, TLS, from/to address, test email |
 | Spool code template | Pattern for auto-generated spool codes |
+| Backup & Restore | Export full inventory as JSON, import additively (admin only) |
 
 ---
 
-## Price Monitoring
+## 📈 Price Monitoring
 
 ### Built-in Adapters
 
@@ -118,11 +136,11 @@ To add a new adapter: subclass `BaseAdapter` in `app/shop_adapters/`, implement 
 
 ### ShopRules (generic)
 
-For any other shop: create a rule at `/shop-rules` with domain, CSS price selector, and optional regex. German (`1.299,00 €`) and English (`1,299.00`) price formats are detected automatically.
+For any other shop: create a rule at `/shop-rules` with domain, CSS price selector, and optional regex — or use the visual point-and-click picker to build one without touching CSS. German (`1.299,00 €`) and English (`1,299.00`) price formats are detected automatically.
 
 ---
 
-## Known Limitations
+## ⚠️ Known Limitations
 
 - **Amazon / eBay** not supported — Amazon requires an authenticated session or the Product Advertising API; eBay blocks scraping via Cloudflare
 - **Heavy WAFs** (Cloudflare Enterprise) block even cloudscraper — a proxy or official API is needed
@@ -131,19 +149,50 @@ For any other shop: create a rule at `/shop-rules` with domain, CSS price select
 
 ---
 
-## Troubleshooting
+## 🩺 Troubleshooting
 
-**App won't start — `Database not initialized`**
-→ Check DB credentials in `.env`. MariaDB must be reachable and the database must exist.
+<details>
+<summary><strong>App won't start — <code>Database not initialized</code></strong></summary>
 
-**Migrations fail — `Table already exists`**
-→ Run `python migration.py stamp head` to mark the current state, then migrate.
+Check DB credentials in `.env`. MariaDB must be reachable and the database must exist.
+</details>
 
-**Playwright checks time out**
-→ Increase `playwright.timeout_ms` in Settings (default: 30 000 ms).
+<details>
+<summary><strong>Migrations fail — <code>Table already exists</code></strong></summary>
 
-**Price not found**
-→ The shop's HTML structure changed. Use the Test button on `/shop-rules` and update the selector/regex.
+Run `python migration.py stamp head` to mark the current state, then migrate.
+</details>
 
-**Setup page unavailable**
-→ `/setup` is locked once a user exists. Add users via `/users` (admin only).
+<details>
+<summary><strong>Playwright checks time out</strong></summary>
+
+Increase `playwright.timeout_ms` in Settings (default: 30 000 ms).
+</details>
+
+<details>
+<summary><strong>Price not found</strong></summary>
+
+The shop's HTML structure changed. Use the Test button on `/shop-rules` and update the selector/regex.
+</details>
+
+<details>
+<summary><strong>Setup page unavailable</strong></summary>
+
+`/setup` is locked once a user exists. Add users via `/users` (admin only).
+</details>
+
+---
+
+## 🐳 Docker Image
+
+Pre-built images are published to Docker Hub on every push to `master` and on version tags:
+
+```bash
+docker pull sytxlabs/spoolbeacon:latest
+```
+
+---
+
+## 📄 License
+
+[MIT](LICENSE) — see the LICENSE file for details.
