@@ -18,6 +18,7 @@ def create_app(config_class=Config) -> Quart:
     from .routes.auth import auth_bp
     from .routes.dashboard import dashboard_bp
     from .routes.inventory import inventory_bp
+    from .routes.manufacturers import manufacturers_bp
     from .routes.health import health_bp
     from .routes.shop_rules import shop_rules_bp
     from .routes.settings import settings_bp
@@ -26,6 +27,7 @@ def create_app(config_class=Config) -> Quart:
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(inventory_bp)
+    app.register_blueprint(manufacturers_bp)
     app.register_blueprint(health_bp)
     app.register_blueprint(shop_rules_bp)
     app.register_blueprint(settings_bp)
