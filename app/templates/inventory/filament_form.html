@@ -109,6 +109,7 @@
                 <option value="PLA 2.0">
                 <option value="PLA-CF">
                 <option value="Silk PLA">
+                <option value="Matte PLA">
                 <option value="Wood PLA">
                 <option value="PETG">
                 <option value="PETG-CF">
@@ -152,6 +153,43 @@
                            placeholder="#ffffff"
                            maxlength="7"
                            oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('color_picker').value = this.value"
+                           class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                                  placeholder-gray-600 font-mono focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <input type="checkbox" id="dual_color" name="dual_color" value="1"
+                   {% if field_val('color_name_2') or field_val('color_hex_2') %}checked{% endif %}
+                   onchange="document.getElementById('dual-color-fields').classList.toggle('hidden', !this.checked)"
+                   class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
+            <label for="dual_color" class="text-sm text-gray-300 cursor-pointer">
+                Dual-color filament <span class="text-gray-600 text-xs">(two colors on one spool)</span>
+            </label>
+        </div>
+        <div id="dual-color-fields"
+             class="{% if not (field_val('color_name_2') or field_val('color_hex_2')) %}hidden{% endif %}
+                    grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-800/50 border border-gray-700/50 rounded-lg p-4">
+            <div>
+                <label for="color_name_2" class="block text-xs text-gray-400 mb-1.5">Second Color Name</label>
+                <input type="text" id="color_name_2" name="color_name_2"
+                       value="{{ field_val('color_name_2') }}"
+                       placeholder="e.g. Black"
+                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                              placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+            </div>
+            <div>
+                <label for="color_hex_text_2" class="block text-xs text-gray-400 mb-1.5">Second Color</label>
+                <div class="flex items-center gap-2">
+                    <input type="color" id="color_picker_2"
+                           value="{{ field_val('color_hex_2', '#000000') }}"
+                           oninput="document.getElementById('color_hex_text_2').value = this.value"
+                           class="h-9 w-12 rounded-lg cursor-pointer bg-gray-800 border border-gray-700 p-0.5">
+                    <input type="text" id="color_hex_text_2" name="color_hex_2"
+                           value="{{ field_val('color_hex_2') }}"
+                           placeholder="#000000"
+                           maxlength="7"
+                           oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('color_picker_2').value = this.value"
                            class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                   placeholder-gray-600 font-mono focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
                 </div>

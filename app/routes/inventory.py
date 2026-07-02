@@ -148,7 +148,7 @@ async def index():
             .outerjoin(
                 Spool,
                 (Spool.filament_product_id == FilamentProduct.id)
-                & (Spool.status != SpoolStatus.archiviert),
+                & (Spool.status != SpoolStatus.archived),
             )
             .group_by(FilamentProduct.id, Manufacturer.name)
             .order_by(Manufacturer.name, FilamentProduct.material, FilamentProduct.name)
@@ -268,7 +268,7 @@ async def detail(product_id: int):
 
             checkable_link_ids = adapter_link_ids | rule_link_ids
 
-    active_spools = [s for s in spools if s.status != SpoolStatus.archiviert]
+    active_spools = [s for s in spools if s.status != SpoolStatus.archived]
     total_remaining_g = sum(s.remaining_weight_g for s in active_spools)
     inventory_value = sum(
         s.remaining_weight_g / s.purchase_line.spool_weight_g * s.purchase_line.unit_price
@@ -337,7 +337,7 @@ async def filament_new():
         dup = await _find_duplicate(session, form, check_mfr_id)
         if dup:
             await flash(
-                f'Dieses Filament existiert bereits: "{dup.name}" ({dup.material}, {dup.color_name}, {dup.diameter_mm} mm)',
+                f'This filament already exists: "{dup.name}" ({dup.material}, {dup.color_name}, {dup.diameter_mm} mm)',
                 "error",
             )
             return await render_template(
@@ -349,7 +349,7 @@ async def filament_new():
 
         manufacturer_id = await _resolve_manufacturer(session, form)
         if manufacturer_id is None:
-            await flash("Hersteller fehlt oder Name leer.", "error")
+            await flash("Manufacturer missing or name empty.", "error")
             return await render_template(
                 "inventory/filament_form.html",
                 manufacturers=manufacturers,
@@ -409,7 +409,7 @@ async def filament_edit(product_id: int):
         dup = await _find_duplicate(session, form, check_mfr_id, exclude_id=product_id)
         if dup:
             await flash(
-                f'Ein anderes Filament mit diesen Daten existiert bereits: "{dup.name}" ({dup.material}, {dup.color_name}, {dup.diameter_mm} mm)',
+                f'Another filament with this data already exists: "{dup.name}" ({dup.material}, {dup.color_name}, {dup.diameter_mm} mm)',
                 "error",
             )
             return await render_template(
@@ -421,7 +421,7 @@ async def filament_edit(product_id: int):
 
         manufacturer_id = await _resolve_manufacturer(session, form)
         if manufacturer_id is None:
-            await flash("Hersteller fehlt oder Name leer.", "error")
+            await flash("Manufacturer missing or name empty.", "error")
             return await render_template(
                 "inventory/filament_form.html",
                 manufacturers=manufacturers,
@@ -456,7 +456,7 @@ async def filament_delete(product_id: int):
 
         if spool_count or line_count:
             await flash(
-                f"Nicht löschbar: {spool_count} Spule(n) und {line_count} Kaufposition(en) verknüpft.",
+                f"Cannot delete: {spool_count} spool(s) and {line_count} purchase line(s) linked.",
                 "error",
             )
             return redirect(url_for("inventory.detail", product_id=product_id))
@@ -489,7 +489,7 @@ async def create_spools_from_line(line_id: int):
         product_id_out = line.filament_product_id
 
         if to_create <= 0:
-            await flash("Alle Spulen für diese Kaufposition bereits vorhanden.", "info")
+            await flash("All spools for this purchase line already exist.", "info")
         else:
             settings = await get_settings(session)
             template = settings.get("spool.code_template", DEFAULT_TEMPLATE)
@@ -506,12 +506,12 @@ async def create_spools_from_line(line_id: int):
                     filament_product_id=line.filament_product_id,
                     purchase_line_id=line_id,
                     spool_code=code,
-                    status=SpoolStatus.neu,
+                    status=SpoolStatus.new,
                     initial_weight_g=float(line.spool_weight_g),
                     remaining_weight_g=float(line.spool_weight_g),
-                    storage_status=StorageStatus.unbekannt,
+                    storage_status=StorageStatus.unknown,
                 ))
-            await flash(f"{to_create} Spule(n) angelegt.", "success")
+            await flash(f"{to_create} spool(s) created.", "success")
 
     return redirect(url_for("inventory.detail", product_id=product_id_out))
 
@@ -520,22 +520,22 @@ async def create_spools_from_line(line_id: int):
 
 def _validate_purchase_form(form) -> str | None:
     if not form.get("purchase_date", "").strip():
-        return "Kaufdatum ist ein Pflichtfeld."
+        return "Purchase date is required."
     if not form.get("shop_name", "").strip():
-        return "Shopname ist ein Pflichtfeld."
+        return "Shop name is required."
     try:
         q = int(form.get("quantity", "0"))
         if q <= 0:
-            return "Menge muss mindestens 1 sein."
+            return "Quantity must be at least 1."
         float(form.get("unit_price", ""))
         w = int(form.get("spool_weight_g", "0"))
         if w <= 0:
-            return "Spulengewicht muss größer als 0 sein."
+            return "Spool weight must be greater than 0."
         s = form.get("shipping_price", "").strip()
         if s:
             float(s)
     except (ValueError, TypeError):
-        return "Ungültige Zahlenangabe."
+        return "Invalid number."
     return None
 
 
@@ -612,13 +612,13 @@ async def purchase_new(product_id: int):
                 filament_product_id=product_id,
                 purchase_line_id=line.id,
                 spool_code=code,
-                status=SpoolStatus.neu,
+                status=SpoolStatus.new,
                 initial_weight_g=float(spool_weight),
                 remaining_weight_g=float(spool_weight),
-                storage_status=StorageStatus.unbekannt,
+                storage_status=StorageStatus.unknown,
             ))
 
-    await flash(f"Kauf gespeichert. {quantity} Spule(n) angelegt.", "success")
+    await flash(f"Purchase saved. {quantity} spool(s) created.", "success")
     return redirect(url_for("inventory.detail", product_id=product_id))
 
 
@@ -628,33 +628,33 @@ def _validate_purchase_edit_form(
     form, can_edit_quantity: bool, can_edit_weight: bool
 ) -> str | None:
     if not form.get("purchase_date", "").strip():
-        return "Kaufdatum ist ein Pflichtfeld."
+        return "Purchase date is required."
     if not form.get("shop_name", "").strip():
-        return "Shopname ist ein Pflichtfeld."
+        return "Shop name is required."
     try:
         float(form.get("unit_price", ""))
     except (ValueError, TypeError):
-        return "Ungültiger Einzelpreis."
+        return "Invalid unit price."
     if can_edit_quantity:
         try:
             q = int(form.get("quantity", "0"))
             if q <= 0:
-                return "Menge muss mindestens 1 sein."
+                return "Quantity must be at least 1."
         except (ValueError, TypeError):
-            return "Ungültige Menge."
+            return "Invalid quantity."
     if can_edit_weight:
         try:
             w = int(form.get("spool_weight_g", "0"))
             if w <= 0:
-                return "Spulengewicht muss größer als 0 sein."
+                return "Spool weight must be greater than 0."
         except (ValueError, TypeError):
-            return "Ungültiges Spulengewicht."
+            return "Invalid spool weight."
     s = form.get("shipping_price", "").strip()
     if s:
         try:
             float(s)
         except ValueError:
-            return "Ungültige Versandkosten."
+            return "Invalid shipping cost."
     return None
 
 
@@ -678,7 +678,7 @@ async def purchase_edit(product_id: int, line_id: int):
 
         spool_count = len(spools_of_line)
         all_unused = spool_count > 0 and all(
-            s.status == SpoolStatus.neu and s.remaining_weight_g == s.initial_weight_g
+            s.status == SpoolStatus.new and s.remaining_weight_g == s.initial_weight_g
             for s in spools_of_line
         )
         can_edit_quantity = spool_count == 0
@@ -754,7 +754,7 @@ async def purchase_edit(product_id: int, line_id: int):
             if new_weight != line.spool_weight_g:
                 line.spool_weight_g = new_weight
                 for s in spools_of_line:
-                    if s.status == SpoolStatus.neu and s.remaining_weight_g == s.initial_weight_g:
+                    if s.status == SpoolStatus.new and s.remaining_weight_g == s.initial_weight_g:
                         s.initial_weight_g = float(new_weight)
                         s.remaining_weight_g = float(new_weight)
 
@@ -785,21 +785,21 @@ async def spool_edit(product_id: int, spool_id: int):
             if remaining < 0:
                 raise ValueError
         except (ValueError, TypeError):
-            await flash("Ungültiges Restgewicht.", "error")
+            await flash("Invalid remaining weight.", "error")
             return await render_template(
                 "inventory/spool_form.html",
                 product=product,
                 spool=spool,
             )
 
-        spool.status = SpoolStatus(form.get("status", SpoolStatus.neu.value))
+        spool.status = SpoolStatus(form.get("status", SpoolStatus.new.value))
         if remaining != spool.remaining_weight_g:
             spool.remaining_weight_g = remaining
             spool.last_weight_update_at = datetime.datetime.utcnow()
             spool.last_weight_update_source = "manual"
         spool.storage_location = form.get("storage_location", "").strip() or None
         spool.storage_status = StorageStatus(
-            form.get("storage_status", StorageStatus.unbekannt.value)
+            form.get("storage_status", StorageStatus.unknown.value)
         )
         spool.notes = form.get("notes", "").strip() or None
 
@@ -827,19 +827,22 @@ async def spool_delete(product_id: int, spool_id: int):
 
 def _validate_filament_form(form) -> str | None:
     if not form.get("name", "").strip():
-        return "Name ist ein Pflichtfeld."
+        return "Name is required."
     if not form.get("material", "").strip():
-        return "Material ist ein Pflichtfeld."
+        return "Material is required."
     if not form.get("color_name", "").strip():
-        return "Farbbezeichnung ist ein Pflichtfeld."
+        return "Color name is required."
     hex_val = form.get("color_hex", "").strip()
     if hex_val and not _HEX_RE.match(hex_val):
-        return "Farbwert muss im Format #RRGGBB angegeben werden."
+        return "Color value must be in #RRGGBB format."
+    hex_val_2 = form.get("color_hex_2", "").strip()
+    if hex_val_2 and not _HEX_RE.match(hex_val_2):
+        return "Second color value must be in #RRGGBB format."
     try:
         float(form.get("diameter_mm", "1.75"))
         int(form.get("nominal_weight_g", "1000"))
     except ValueError:
-        return "Ungültige Zahl bei Durchmesser oder Gewicht."
+        return "Invalid number for diameter or weight."
     return None
 
 
@@ -860,11 +863,14 @@ async def _resolve_manufacturer(session, form) -> int | None:
 
 def _filament_fields(form) -> dict:
     color_hex = form.get("color_hex", "").strip() or None
+    dual_color = form.get("dual_color") == "1"
     return {
         "name": form.get("name", "").strip(),
         "material": form.get("material", "").strip(),
         "color_name": form.get("color_name", "").strip(),
         "color_hex": color_hex,
+        "color_name_2": form.get("color_name_2", "").strip() or None if dual_color else None,
+        "color_hex_2": form.get("color_hex_2", "").strip() or None if dual_color else None,
         "diameter_mm": float(form.get("diameter_mm", "1.75")),
         "nominal_weight_g": int(form.get("nominal_weight_g", "1000")),
         "notes": form.get("notes", "").strip() or None,
@@ -878,30 +884,30 @@ _URL_RE = re.compile(r"^https?://", re.IGNORECASE)
 
 def _validate_shoplink_form(form) -> str | None:
     if not form.get("shop_name", "").strip():
-        return "Shop-Name ist ein Pflichtfeld."
+        return "Shop name is required."
     url = form.get("url", "").strip()
     if not url:
-        return "URL ist ein Pflichtfeld."
+        return "URL is required."
     if not _URL_RE.match(url):
-        return "URL muss mit http:// oder https:// beginnen."
+        return "URL must start with http:// or https://."
     try:
         w = int(form.get("package_weight_g", "0"))
         if w <= 0:
-            return "Paketgewicht muss groesser als 0 sein."
+            return "Package weight must be greater than 0."
         p = float(form.get("manual_price", "0"))
         if p < 0:
-            return "Preis darf nicht negativ sein."
+            return "Price must not be negative."
         s = form.get("shipping_price", "").strip()
         if s and float(s) < 0:
-            return "Versandkosten duerfen nicht negativ sein."
+            return "Shipping cost must not be negative."
         t = form.get("target_price", "").strip()
         if t and float(t) < 0:
-            return "Zielpreis darf nicht negativ sein."
+            return "Target price must not be negative."
         tk = form.get("target_price_per_kg", "").strip()
         if tk and float(tk) < 0:
-            return "Zielpreis/kg darf nicht negativ sein."
+            return "Target price/kg must not be negative."
     except ValueError:
-        return "Ungueltige Zahl bei Preis oder Gewicht."
+        return "Invalid number for price or weight."
     return None
 
 
@@ -970,7 +976,7 @@ async def shoplink_new(product_id: int):
         )
         if dup:
             await flash(
-                f'Dieser Shop-Link existiert bereits: "{dup.shop_name}" mit gleicher URL.',
+                f'This shop link already exists: "{dup.shop_name}" with the same URL.',
                 "error",
             )
             return await render_template(
@@ -1021,7 +1027,7 @@ async def shoplink_edit(product_id: int, link_id: int):
         )
         if dup:
             await flash(
-                f'Dieser Shop-Link existiert bereits: "{dup.shop_name}" mit gleicher URL.',
+                f'This shop link already exists: "{dup.shop_name}" with the same URL.',
                 "error",
             )
             return await render_template(
@@ -1065,14 +1071,14 @@ def _validate_snapshot_form(form) -> str | None:
     try:
         p = float(form.get("price", ""))
         if p < 0:
-            return "Preis darf nicht negativ sein."
+            return "Price must not be negative."
     except (ValueError, TypeError):
-        return "Preis ist ein Pflichtfeld."
+        return "Price is required."
     s = form.get("shipping_price", "").strip()
     if s:
         try:
             if float(s) < 0:
-                return "Versandkosten duerfen nicht negativ sein."
+                return "Shipping cost must not be negative."
         except ValueError:
             return "Ungueltige Versandkosten."
     return None

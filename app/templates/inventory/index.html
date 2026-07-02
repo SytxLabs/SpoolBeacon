@@ -64,7 +64,7 @@
     {% set alert_n = alert_counts_by_product.get(product.id, 0) %}
     <a href="/inventory/{{ product.id }}"
        class="card-hover flex flex-col group overflow-hidden"
-       data-search="{{ [product.name, product.color_name, product.material, manufacturer_name]|join(' ')|lower }}">
+       data-search="{{ [product.name, product.color_name, product.color_name_2, product.material, manufacturer_name]|select|join(' ')|lower }}">
 
         {% if product.color_hex %}
         <div class="h-0.5 w-full" style="background: linear-gradient(90deg, {{ product.color_hex }}99 0%, transparent 70%)"></div>
@@ -74,7 +74,10 @@
 
         <div class="p-4 flex items-start gap-3">
             <div class="w-10 h-10 rounded-lg ring-1 ring-white/10 flex-shrink-0 mt-0.5"
-                 style="{% if product.color_hex %}background-color: {{ product.color_hex }}{% else %}background: #27272a{% endif %}"></div>
+                 style="{% if product.color_hex and product.color_hex_2 %}background: linear-gradient(135deg, {{ product.color_hex }} 50%, {{ product.color_hex_2 }} 50%)
+                        {% elif product.color_hex %}background-color: {{ product.color_hex }}
+                        {% else %}background: #27272a{% endif %}"
+                 title="{% if product.color_hex_2 %}{{ product.color_name }} / {{ product.color_name_2 }}{% endif %}"></div>
             <div class="min-w-0 flex-1">
                 <div class="flex items-start justify-between gap-2">
                     <p class="font-semibold text-sm text-gray-100 group-hover:text-indigo-300 transition-colors leading-snug truncate">

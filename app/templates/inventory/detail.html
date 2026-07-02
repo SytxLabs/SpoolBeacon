@@ -64,7 +64,9 @@
 
     <div class="flex items-start gap-4">
         <div class="w-14 h-14 rounded-2xl flex-shrink-0 ring-1 ring-white/10 shadow-lg"
-             style="{% if product.color_hex %}background-color: {{ product.color_hex }}{% else %}background:#27272a{% endif %}"></div>
+             style="{% if product.color_hex and product.color_hex_2 %}background: linear-gradient(135deg, {{ product.color_hex }} 50%, {{ product.color_hex_2 }} 50%)
+                    {% elif product.color_hex %}background-color: {{ product.color_hex }}
+                    {% else %}background:#27272a{% endif %}"></div>
         <div class="min-w-0 pt-0.5">
             <div class="flex items-center gap-2.5 flex-wrap">
                 <h1 class="text-2xl font-bold text-white tracking-tight">{{ product.name }}</h1>
@@ -73,7 +75,12 @@
                 <span class="badge-gray">{{ product.diameter_mm }} mm</span>
                 {% endif %}
             </div>
-            <p class="text-gray-500 text-sm mt-1">{{ product.manufacturer.name }}</p>
+            <p class="text-gray-500 text-sm mt-1">
+                {{ product.manufacturer.name }}
+                {% if product.color_name %}
+                · {{ product.color_name }}{% if product.color_name_2 %} / {{ product.color_name_2 }}{% endif %}
+                {% endif %}
+            </p>
         </div>
     </div>
 </div>
@@ -380,7 +387,7 @@
                 Spools
                 <span class="text-xs font-normal text-gray-600 ml-1.5">{{ spools|length }}</span>
             </h2>
-            {% set active_spools = spools|selectattr('status.value', 'ne', 'archiviert')|list %}
+            {% set active_spools = spools|selectattr('status.value', 'ne', 'archived')|list %}
             {% if active_spools %}
             <span class="text-xs text-gray-600">
                 {{ active_spools|length }} active ·
@@ -407,22 +414,29 @@
                 </thead>
                 <tbody class="divide-y divide-gray-800/50">
                     {% set status_styles = {
-                        'neu':        'badge-blue',
-                        'geöffnet':   'badge-green',
-                        'fast leer':  'badge-amber',
-                        'leer':       'badge-gray',
-                        'archiviert': 'badge'
+                        'new':          'badge-blue',
+                        'opened':       'badge-green',
+                        'almost_empty': 'badge-amber',
+                        'empty':        'badge-gray',
+                        'archived':     'badge'
                     } %}
                     {% set status_labels = {
-                        'neu':        'New',
-                        'geöffnet':   'Open',
-                        'fast leer':  'Almost empty',
-                        'leer':       'Empty',
-                        'archiviert': 'Archived'
+                        'new':          'New',
+                        'opened':       'Open',
+                        'almost_empty': 'Almost empty',
+                        'empty':        'Empty',
+                        'archived':     'Archived'
+                    } %}
+                    {% set storage_status_labels = {
+                        'open':          'Open',
+                        'sealed':        'Sealed',
+                        'vacuum_sealed': 'Vacuum-sealed',
+                        'drybox':        'Drybox',
+                        'unknown':       'Unknown'
                     } %}
                     {% for spool in spools %}
                     <tr class="hover:bg-white/[0.015] transition-colors
-                        {% if spool.is_low and spool.status.value not in ('leer', 'archiviert') %}bg-orange-950/10{% endif %}">
+                        {% if spool.is_low and spool.status.value not in ('empty', 'archived') %}bg-orange-950/10{% endif %}">
                         <td class="px-5 py-3.5 font-mono text-xs text-gray-500">{{ spool.spool_code }}</td>
                         <td class="px-5 py-3.5">
                             <span class="{{ status_styles.get(spool.status.value, 'badge-gray') }} text-[10px]">
@@ -433,7 +447,7 @@
                             {{ spool.storage_location or '–' }}
                         </td>
                         <td class="px-5 py-3.5 text-gray-500 text-xs hidden md:table-cell">
-                            {{ spool.storage_status.value }}
+                            {{ storage_status_labels.get(spool.storage_status.value, spool.storage_status.value) }}
                         </td>
                         <td class="px-5 py-3.5 text-right tabular-nums font-semibold
                                    {% if spool.is_low %}text-orange-400{% else %}text-gray-200{% endif %}">

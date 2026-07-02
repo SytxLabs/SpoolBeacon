@@ -13,7 +13,7 @@ from app.routes.inventory import load_target_hits
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
-_ACTIVE = Spool.status != SpoolStatus.archiviert
+_ACTIVE = Spool.status != SpoolStatus.archived
 
 
 @dashboard_bp.get("/dashboard")
