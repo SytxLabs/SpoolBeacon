@@ -28,7 +28,10 @@ async def dispatch_alert_notifications(
     try:
         from app.database import get_db
         from app.settings_service import get_all
-        from app.notification_service import send_discord, send_email
+        from app.notification_service import (
+            send_discord, send_email,
+            build_price_alert_discord_embed, build_price_alert_email_html,
+        )
 
         async with get_db() as session:
             s = await get_all(session)
@@ -47,26 +50,32 @@ async def dispatch_alert_notifications(
         for alert_type in alert_types:
             if alert_type == "target_price" and target_price is not None:
                 target_str = f"{target_price:.2f} {currency}"
-                type_label = "Zielpreis"
+                type_label = "Target price"
             elif alert_type == "target_price_per_kg" and target_price_per_kg is not None:
                 target_str = f"{target_price_per_kg:.2f} {currency}/kg"
-                type_label = "Zielpreis/kg"
+                type_label = "Target price/kg"
             else:
                 continue
 
             message = (
-                f"Zielpreis erreicht: {filament_name}\n"
+                f"Target price reached: {filament_name}\n"
                 f"Shop: {shop_name}\n"
-                f"Preis: {snap_total:.2f} {currency}  |  {type_label}: {target_str}\n"
+                f"Price: {snap_total:.2f} {currency}  |  {type_label}: {target_str}\n"
                 f"{shop_url}"
             )
 
             if discord_on:
-                err = await send_discord(s["discord.webhook_url"], message)
+                embed = build_price_alert_discord_embed(
+                    filament_name, shop_name, shop_url, snap_total, currency, type_label, target_str,
+                )
+                err = await send_discord(s["discord.webhook_url"], embeds=[embed])
                 if err:
                     log.error("discord notify failed (type=%s): %s", alert_type, err)
 
             if smtp_on:
+                html_body = build_price_alert_email_html(
+                    filament_name, shop_name, shop_url, snap_total, currency, type_label, target_str,
+                )
                 err = await send_email(
                     host=s["smtp.host"],
                     port=int(s["smtp.port"] or "587"),
@@ -74,8 +83,9 @@ async def dispatch_alert_notifications(
                     password=s["smtp.password"],
                     from_addr=s["smtp.from_addr"],
                     to_addr=s["smtp.to_addr"],
-                    subject=f"SpoolBeacon: {type_label} erreicht – {filament_name}",
+                    subject=f"SpoolBeacon: {type_label} reached – {filament_name}",
                     body=message,
+                    html_body=html_body,
                     use_tls=s["smtp.tls"] == "1",
                 )
                 if err:
@@ -126,12 +136,12 @@ async def maybe_create_alerts(
     if target_price is not None and snap_total <= target_price:
         candidates.append((
             "target_price",
-            f"Preis {snap_total:.2f} {currency} <= Ziel {target_price:.2f} {currency}",
+            f"Price {snap_total:.2f} {currency} <= target {target_price:.2f} {currency}",
         ))
     if target_price_per_kg is not None and snap_per_kg is not None and snap_per_kg <= target_price_per_kg:
         candidates.append((
             "target_price_per_kg",
-            f"Preis/kg {snap_per_kg:.2f} {currency} <= Ziel {target_price_per_kg:.2f} {currency}/kg",
+            f"Price/kg {snap_per_kg:.2f} {currency} <= target {target_price_per_kg:.2f} {currency}/kg",
         ))
 
     created = []

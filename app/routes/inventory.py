@@ -811,6 +811,18 @@ async def spool_edit(product_id: int, spool_id: int):
     return redirect(url_for("inventory.detail", product_id=product_id))
 
 
+@inventory_bp.post("/<int:product_id>/spool/<int:spool_id>/delete")
+@login_required
+async def spool_delete(product_id: int, spool_id: int):
+    async with get_db() as session:
+        spool = await session.get(Spool, spool_id)
+        if not spool or spool.filament_product_id != product_id:
+            abort(404)
+        await session.delete(spool)
+
+    return redirect(url_for("inventory.detail", product_id=product_id))
+
+
 # ── form helpers ───────────────────────────────────────────────────────────
 
 def _validate_filament_form(form) -> str | None:

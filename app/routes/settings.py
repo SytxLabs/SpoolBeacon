@@ -7,7 +7,7 @@ from sqlalchemy import select
 from app.database import get_db
 from app.models.user import User, UserRole
 from app.settings_service import get_all, set_many
-from app.notification_service import send_discord, send_email
+from app.notification_service import send_discord, send_email, build_test_discord_embed, build_test_email_html
 from app.spool_code import generate_spool_code, DEFAULT_TEMPLATE, AVAILABLE_VARS
 
 settings_bp = Blueprint("settings", __name__, url_prefix="/settings")
@@ -92,11 +92,11 @@ async def test_discord():
         s = await get_all(session)
 
     webhook_url = s["discord.webhook_url"]
-    error = await send_discord(webhook_url, "SpoolBeacon Test-Nachricht: Discord-Integration funktioniert.")
+    error = await send_discord(webhook_url, embeds=[build_test_discord_embed()])
     if error:
-        await flash(f"Discord-Test fehlgeschlagen: {error}", "error")
+        await flash(f"Discord test failed: {error}", "error")
     else:
-        await flash("Discord-Test erfolgreich.", "success")
+        await flash("Discord test successful.", "success")
     return redirect(url_for("settings.index"))
 
 
@@ -151,12 +151,13 @@ async def test_email():
         password=s["smtp.password"],
         from_addr=s["smtp.from_addr"],
         to_addr=s["smtp.to_addr"],
-        subject="SpoolBeacon Test-E-Mail",
-        body="SpoolBeacon Test-Nachricht: E-Mail-Integration funktioniert.",
+        subject="SpoolBeacon Test Email",
+        body="SpoolBeacon test message: email integration is working.",
+        html_body=build_test_email_html("emails via your SMTP server"),
         use_tls=s["smtp.tls"] == "1",
     )
     if error:
-        await flash(f"E-Mail-Test fehlgeschlagen: {error}", "error")
+        await flash(f"Email test failed: {error}", "error")
     else:
-        await flash("E-Mail-Test erfolgreich.", "success")
+        await flash("Email test successful.", "success")
     return redirect(url_for("settings.index"))
