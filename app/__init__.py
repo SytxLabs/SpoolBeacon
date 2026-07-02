@@ -98,6 +98,7 @@ def create_app(config_class=Config) -> Quart:
         from quart_auth import current_user
         nav_alert_count = 0
         is_admin = False
+        is_viewer = False
         if await current_user.is_authenticated:
             from sqlalchemy import select, func
             from app.models.price_alert_event import PriceAlertEvent
@@ -110,11 +111,13 @@ def create_app(config_class=Config) -> Quart:
                 ) or 0
                 db_user = await session.get(User, int(current_user.auth_id))
                 is_admin = db_user is not None and db_user.role == UserRole.admin
+                is_viewer = db_user is not None and db_user.role == UserRole.viewer
         return {
             "current_user": current_user,
             "csrf_token": generate_csrf_token,
             "nav_alert_count": nav_alert_count,
             "is_admin": is_admin,
+            "is_viewer": is_viewer,
         }
 
     return app

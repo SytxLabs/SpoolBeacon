@@ -7,6 +7,7 @@
         <h1 class="text-2xl font-bold text-white tracking-tight">Manufacturers</h1>
         <p class="text-gray-500 text-sm mt-1">Filament brands used across your inventory</p>
     </div>
+    {% if not is_viewer %}
     <a href="/manufacturers/new"
        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg
               bg-indigo-600 text-white hover:bg-indigo-500 transition-colors">
@@ -15,6 +16,7 @@
         </svg>
         New Manufacturer
     </a>
+    {% endif %}
 </div>
 
 {% if rows %}
@@ -57,6 +59,7 @@
                     {% endif %}
                 </td>
                 <td class="px-5 py-3.5 text-right">
+                    {% if not is_viewer %}
                     <div class="flex items-center justify-end gap-0.5">
                         <a href="/manufacturers/{{ mfr.id }}/edit" title="Edit manufacturer"
                            class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
@@ -76,6 +79,7 @@
                             </button>
                         </form>
                     </div>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}
@@ -85,11 +89,13 @@
 {% else %}
 <div class="card p-12 text-center">
     <p class="text-gray-500 text-sm mb-3">No manufacturers yet.</p>
+    {% if not is_viewer %}
     <a href="/manufacturers/new"
        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg
               bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 transition-all">
         Add first manufacturer
     </a>
+    {% endif %}
 </div>
 {% endif %}
 {% endblock %}

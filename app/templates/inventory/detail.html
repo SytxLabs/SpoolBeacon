@@ -57,9 +57,11 @@
             <span>/</span>
             <span class="text-gray-400">{{ product.name }}</span>
         </nav>
+        {% if not is_viewer %}
         <a href="/inventory/filament/{{ product.id }}/edit" class="btn-ghost btn-sm flex items-center gap-1.5">
             {{ icon_pencil() }} Edit
         </a>
+        {% endif %}
     </div>
 
     <div class="flex items-start gap-4">
@@ -157,9 +159,11 @@
     <div id="tab-shop-links" class="tab-panel">
         <div class="flex items-center justify-between mb-3">
             <h2 class="text-sm font-semibold text-white">Shop Links</h2>
+            {% if not is_viewer %}
             <a href="/inventory/{{ product.id }}/shop-link/new" class="btn-icon">
                 {{ icon_plus('w-3.5 h-3.5') }} Add Link
             </a>
+            {% endif %}
         </div>
 
         {% if shop_links %}
@@ -228,6 +232,13 @@
                             {% endif %}
                         </td>
                         <td class="px-5 py-4 text-center">
+                            {% if is_viewer %}
+                            <span class="px-2.5 py-1 rounded-full text-xs font-medium
+                                         {% if sl.is_active %}bg-emerald-500/15 text-emerald-400
+                                         {% else %}bg-gray-800 text-gray-600{% endif %}">
+                                {% if sl.is_active %}active{% else %}inactive{% endif %}
+                            </span>
+                            {% else %}
                             <form method="POST" action="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/toggle" class="inline">
                                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit"
@@ -237,9 +248,11 @@
                                     {% if sl.is_active %}active{% else %}inactive{% endif %}
                                 </button>
                             </form>
+                            {% endif %}
                         </td>
                         <td class="px-3 py-4">
                             <div class="flex items-center justify-end gap-0.5">
+                                {% if not is_viewer %}
                                 {% if sl.id in checkable_link_ids %}
                                 {% set _has_adapter = sl.id in adapter_link_ids %}
                                 {% set _has_rule    = sl.id in rule_link_ids %}
@@ -263,10 +276,12 @@
                                    class="p-1.5 rounded-lg text-indigo-500/80 hover:text-indigo-300 hover:bg-indigo-950/50 transition-colors">
                                     {{ icon_camera() }}
                                 </a>
+                                {% endif %}
                                 <a href="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/snapshots" title="Price history"
                                    class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
                                     {{ icon_clock() }}
                                 </a>
+                                {% if not is_viewer %}
                                 <a href="/inventory/{{ product.id }}/shop-link/{{ sl.id }}/edit" title="Edit"
                                    class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
                                     {{ icon_pencil() }}
@@ -279,6 +294,7 @@
                                         {{ icon_trash() }}
                                     </button>
                                 </form>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
@@ -289,9 +305,11 @@
         {% else %}
         <div class="card p-8 text-center">
             <p class="text-gray-500 text-sm">No shop links yet.</p>
+            {% if not is_viewer %}
             <a href="/inventory/{{ product.id }}/shop-link/new" class="btn-icon mt-3">
                 {{ icon_plus('w-3.5 h-3.5') }} Add Link
             </a>
+            {% endif %}
         </div>
         {% endif %}
     </div>
@@ -305,9 +323,11 @@
                 <span class="text-xs font-normal text-gray-600 ml-1.5">{{ purchase_lines|length }}</span>
                 {% endif %}
             </h2>
+            {% if not is_viewer %}
             <a href="/inventory/{{ product.id }}/purchase/new" class="btn-icon">
                 {{ icon_plus('w-3.5 h-3.5') }} Add Purchase
             </a>
+            {% endif %}
         </div>
 
         {% if purchase_lines %}
@@ -341,6 +361,10 @@
                             {{ line.spool_weight_g }} g
                         </td>
                         <td class="px-5 py-3.5 text-right">
+                            {% if is_viewer %}
+                            {% set line_spool_count = spool_counts_by_line.get(line.id, 0) %}
+                            <span class="text-xs text-gray-700 px-2">{{ line_spool_count }}/{{ line.quantity }} spools</span>
+                            {% else %}
                             <div class="flex items-center justify-end gap-1.5">
                                 <a href="/inventory/{{ product.id }}/purchase/{{ line.id }}/edit" title="Edit purchase"
                                    class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
@@ -363,6 +387,7 @@
                                 <span class="text-xs text-gray-700 px-2">{{ line_spool_count }}/{{ line.quantity }} spools</span>
                                 {% endif %}
                             </div>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
@@ -373,9 +398,11 @@
         <div class="card p-8 text-center">
             <p class="text-gray-400 font-medium text-sm">No purchases recorded.</p>
             <p class="text-gray-600 text-xs mt-1">Add a purchase to create spools.</p>
+            {% if not is_viewer %}
             <a href="/inventory/{{ product.id }}/purchase/new" class="btn-icon mt-4">
                 {{ icon_plus('w-3.5 h-3.5') }} Add Purchase
             </a>
+            {% endif %}
         </div>
         {% endif %}
     </div>
@@ -472,6 +499,7 @@
                             {{ spool.last_dried_at.strftime('%d.%m.%Y') if spool.last_dried_at else '–' }}
                         </td>
                         <td class="px-5 py-3.5 text-right">
+                            {% if not is_viewer %}
                             <div class="flex items-center justify-end gap-0.5">
                                 <a href="/inventory/{{ product.id }}/spool/{{ spool.id }}/edit" title="Edit spool"
                                    class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
@@ -486,6 +514,7 @@
                                     </button>
                                 </form>
                             </div>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}

@@ -190,13 +190,15 @@
         {% if by_color %}
         <table class="w-full text-sm">
             <tbody class="divide-y divide-gray-800/50">
-                {% for color_name, color_hex, count, total_g in by_color %}
+                {% for color_name, color_hex, color_name_2, color_hex_2, count, total_g in by_color %}
                 <tr class="hover:bg-white/[0.015] transition-colors">
                     <td class="px-5 py-3">
                         <div class="flex items-center gap-2.5">
                             <span class="w-3.5 h-3.5 rounded-full flex-shrink-0 ring-1 ring-white/10"
-                                  style="{% if color_hex %}background-color: {{ color_hex }}{% else %}background:#3f3f46{% endif %}"></span>
-                            <span class="font-medium text-gray-200">{{ color_name }}</span>
+                                  style="{% if color_hex and color_hex_2 %}background: linear-gradient(135deg, {{ color_hex }} 50%, {{ color_hex_2 }} 50%)
+                                         {% elif color_hex %}background-color: {{ color_hex }}
+                                         {% else %}background:#3f3f46{% endif %}"></span>
+                            <span class="font-medium text-gray-200">{{ color_name }}{% if color_name_2 %} / {{ color_name_2 }}{% endif %}</span>
                         </div>
                     </td>
                     <td class="px-5 py-3 text-center">
@@ -240,6 +242,7 @@
             </div>
             <div class="flex items-center gap-3 flex-shrink-0">
                 <span class="text-xs text-gray-600 tabular-nums">{{ alert.created_at.strftime('%d.%m. %H:%M') }}</span>
+                {% if not is_viewer %}
                 <form method="POST" action="/inventory/alert/{{ alert.id }}/resolve" class="inline">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <button type="submit"
@@ -248,6 +251,7 @@
                         Dismiss
                     </button>
                 </form>
+                {% endif %}
             </div>
         </div>
         {% endfor %}

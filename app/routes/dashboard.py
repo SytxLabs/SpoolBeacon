@@ -46,12 +46,17 @@ async def index():
             select(
                 FilamentProduct.color_name,
                 FilamentProduct.color_hex,
+                FilamentProduct.color_name_2,
+                FilamentProduct.color_hex_2,
                 func.count(Spool.id).label("spool_count"),
                 func.sum(Spool.remaining_weight_g).label("total_g"),
             )
             .join(Spool, Spool.filament_product_id == FilamentProduct.id)
             .where(_ACTIVE)
-            .group_by(FilamentProduct.color_name, FilamentProduct.color_hex)
+            .group_by(
+                FilamentProduct.color_name, FilamentProduct.color_hex,
+                FilamentProduct.color_name_2, FilamentProduct.color_hex_2,
+            )
             .order_by(func.sum(Spool.remaining_weight_g).desc())
         )).all()
 

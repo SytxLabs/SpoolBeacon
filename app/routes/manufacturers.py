@@ -1,11 +1,26 @@
+from functools import wraps
+
 from quart import Blueprint, render_template, request, redirect, url_for, abort, flash
-from quart_auth import login_required
+from quart_auth import login_required, current_user
 from sqlalchemy import select, func
 
 from app.database import get_db
 from app.models.filament import Manufacturer, FilamentProduct
+from app.models.user import User, UserRole
 
 manufacturers_bp = Blueprint("manufacturers", __name__, url_prefix="/manufacturers")
+
+
+def write_required(f):
+    """Blocks viewer-role users from state-changing routes. Stack after @login_required."""
+    @wraps(f)
+    async def wrapper(*args, **kwargs):
+        async with get_db() as session:
+            user = await session.get(User, int(current_user.auth_id))
+        if not user or user.role == UserRole.viewer:
+            abort(403)
+        return await f(*args, **kwargs)
+    return wrapper
 
 
 def _validate(form) -> str | None:
@@ -46,6 +61,7 @@ async def index():
 
 @manufacturers_bp.route("/new", methods=["GET", "POST"])
 @login_required
+@write_required
 async def new():
     if request.method == "GET":
         return await render_template("manufacturers/manufacturer_form.html", manufacturer=None, form_data=None)
@@ -72,6 +88,7 @@ async def new():
 
 @manufacturers_bp.route("/<int:manufacturer_id>/edit", methods=["GET", "POST"])
 @login_required
+@write_required
 async def edit(manufacturer_id: int):
     async with get_db() as session:
         manufacturer = await session.get(Manufacturer, manufacturer_id)
@@ -103,6 +120,7 @@ async def edit(manufacturer_id: int):
 
 @manufacturers_bp.post("/<int:manufacturer_id>/delete")
 @login_required
+@write_required
 async def delete(manufacturer_id: int):
     async with get_db() as session:
         manufacturer = await session.get(Manufacturer, manufacturer_id)
