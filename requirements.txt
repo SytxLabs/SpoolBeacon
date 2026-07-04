@@ -12,3 +12,4 @@ apscheduler>=3.10,<4
 playwright>=1.49.0
 cloudscraper>=1.2.71
 qrcode[pil]>=7.4.2,<8
+pyyaml>=6.0

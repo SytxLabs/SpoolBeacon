@@ -24,6 +24,8 @@ def create_app(config_class=Config) -> Quart:
     from .routes.settings import settings_bp
     from .routes.users import users_bp
     from .routes.prints import prints_bp
+    from .routes.api import api_bp
+    from .routes.api_keys import api_keys_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -34,6 +36,8 @@ def create_app(config_class=Config) -> Quart:
     app.register_blueprint(settings_bp)
     app.register_blueprint(users_bp)
     app.register_blueprint(prints_bp)
+    app.register_blueprint(api_bp)
+    app.register_blueprint(api_keys_bp)
 
     @app.before_request
     async def validate_active_session():
