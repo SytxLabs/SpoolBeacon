@@ -61,25 +61,73 @@ For local development: Python 3.12+
 
 ---
 
-## 🚀 Quick Start (Docker)
+## 🚀 Quick Start
 
-```bash
-cp .env.example .env
+### Option A — Docker Hub (recommended, no clone needed)
+
+Create a `compose.yaml`:
+
+```yaml
+services:
+  web:
+    image: sytxlabs/spoolbeacon:latest
+    ports:
+      - "${APP_PORT:-8080}:${APP_PORT:-8080}"
+    env_file: .env
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:
 ```
 
-Edit `.env` — choose strong passwords:
+Create a `.env` next to it:
 
 ```env
 SECRET_KEY=       # generate: python -c "import secrets; print(secrets.token_hex(32))"
+APP_PORT=8080
+DB_HOST=db
+DB_PORT=3306
+DB_USER=spoolbeacon
 DB_PASSWORD=changeme
+DB_NAME=spoolbeacon
 QUART_AUTH_COOKIE_SECURE=true
 ```
 
-Start everything:
+Pull and start:
 
 ```bash
+docker compose up -d
+```
+
+### Option B — From source (GitHub)
+
+```bash
+git clone https://github.com/Sytxlabs/SpoolBeacon.git
+cd SpoolBeacon
+cp .env.example .env   # edit SECRET_KEY and DB_PASSWORD
 docker compose up --build -d
 ```
+
+---
 
 MariaDB starts automatically, migrations run on container start. The app is exposed on `APP_PORT` (default `8080`) — only that port is mapped to the host, MariaDB stays internal to the compose network.
 
@@ -91,8 +139,17 @@ Open `http://your-host:8080/setup` — only available when no users exist yet.
 
 ## ⬆️ Updating
 
+**Docker Hub install:**
+
 ```bash
 docker compose pull
+docker compose up -d
+```
+
+**From source:**
+
+```bash
+git pull
 docker compose up --build -d
 ```
 
@@ -220,7 +277,12 @@ The shop's HTML structure changed. Use the Test button on `/shop-rules` and upda
 
 ## 🐳 Docker Image
 
-Pre-built images are published to Docker Hub on every push to `master` and on version tags:
+Pre-built images are published to [Docker Hub](https://hub.docker.com/r/sytxlabs/spoolbeacon) on every push to `master` and on version tags:
+
+| Tag | Description                       |
+|---|-----------------------------------|
+| `sytxlabs/spoolbeacon:latest` | Latest stable build from `master` |
+| `sytxlabs/spoolbeacon:<version>` | Pinned release (e.g. `1.0.0`)     |
 
 ```bash
 docker pull sytxlabs/spoolbeacon:latest
