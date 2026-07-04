@@ -1,13 +1,14 @@
-from .user import User, UserRole
-from .filament import Manufacturer, FilamentProduct
-from .purchase import Purchase, PurchaseLine
-from .spool import Spool, SpoolStatus, StorageStatus
-from .shoplink import ShopLink
-from .price_snapshot import PriceSnapshot
-from .shop_rule import ShopRule
-from .price_alert_event import PriceAlertEvent
+from .api_key import ApiKey
 from .app_setting import AppSetting
+from .filament import Manufacturer, FilamentProduct
+from .price_alert_event import PriceAlertEvent
+from .price_snapshot import PriceSnapshot
 from .print_job import PrintJob, PrintJobLine
+from .purchase import Purchase, PurchaseLine
+from .shop_rule import ShopRule
+from .shoplink import ShopLink
+from .spool import Spool, SpoolStatus, StorageStatus
+from .user import User, UserRole
 
 __all__ = [
     "User", "UserRole",
@@ -20,4 +21,5 @@ __all__ = [
     "PriceAlertEvent",
     "AppSetting",
     "PrintJob", "PrintJobLine",
+    "ApiKey",
 ]
