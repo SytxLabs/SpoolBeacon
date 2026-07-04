@@ -28,7 +28,7 @@ RUN playwright install --with-deps chromium \
     && chown -R appuser:appuser /app/.playwright
 
 COPY --chown=appuser:appuser . .
-RUN chmod +x entrypoint.sh
+RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
 
 USER appuser
 

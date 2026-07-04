@@ -16,11 +16,32 @@ Track spools, purchases and shop prices — get notified when a filament hits yo
 
 ---
 
+## Screenshots
+
+| Dashboard | Inventory |
+|---|---|
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Inventory](docs/screenshots/inventory_list.png) |
+
+| Filament Detail | Spools |
+|---|---|
+| ![Filament Detail](docs/screenshots/inventory_detail.png) | ![Spools](docs/screenshots/inventory_detail_spools.png) |
+
+| Print Log | Log Print Form |
+|---|---|
+| ![Print Log](docs/screenshots/prints_list.png) | ![Log Print](docs/screenshots/prints_new.png) |
+
+| Shop Rules | Manufacturers |
+|---|---|
+| ![Shop Rules](docs/screenshots/shop_rules.png) | ![Manufacturers](docs/screenshots/manufacturers.png) |
+
+---
+
 ## 📦 Features
 
 | | |
 |---|---|
 | **Inventory** | Filaments by manufacturer, material, color and diameter — including dual-color/co-extruded filaments. Spools track remaining weight, fill %, storage location and status. |
+| **Print Log** | Log every print job with name, notes and one or more filament lines. Each line deducts used grams from the spool and auto-updates its status (opened → almost empty → empty). |
 | **Manufacturers** | Dedicated manufacturer pages listing every product from that brand. |
 | **Purchase history** | Price per spool, lot number, currency — spools are auto-created on purchase. |
 | **Price monitoring** | Shop links with manual prices and automated scraping via ShopRules or built-in adapters. |
@@ -140,12 +161,26 @@ For any other shop: create a rule at `/shop-rules` with domain, CSS price select
 
 ---
 
+## ## 🖨️ Print Log
+
+Navigate to **Prints** in the nav bar (or `/prints/`) to see all logged print jobs.
+
+Hit **+ Log Print** to record a new job:
+
+1. Enter an optional print name and notes.
+2. Add one or more filament lines — select a spool from the grouped dropdown, enter grams used. The live preview shows how much is left on that spool.
+3. Hit **Save Print Log** — remaining weight is deducted from each spool immediately and spool status updates automatically (new → opened → almost empty → empty).
+
+Supports multi-filament prints (e.g. dual-extrusion or colour changes mid-print) by adding multiple lines.
+
+---
+
 ## ⚠️ Known Limitations
 
 - **Amazon / eBay** not supported — Amazon requires an authenticated session or the Product Advertising API; eBay blocks scraping via Cloudflare
 - **Heavy WAFs** (Cloudflare Enterprise) block even cloudscraper — a proxy or official API is needed
-- **No printer / slicer integration** — no Klipper, OrcaSlicer or print job tracking; inventory only
-- **No mobile app** — web only, but responsive layout
+- **No printer / slicer integration** — no Klipper, OrcaSlicer or automatic print job import; usage is logged manually
+- **No mobile app** — web only, mobile-optimised responsive layout
 
 ---
 

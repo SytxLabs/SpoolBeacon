@@ -7,6 +7,7 @@ from .price_snapshot import PriceSnapshot
 from .shop_rule import ShopRule
 from .price_alert_event import PriceAlertEvent
 from .app_setting import AppSetting
+from .print_job import PrintJob, PrintJobLine
 
 __all__ = [
     "User", "UserRole",
@@ -18,4 +19,5 @@ __all__ = [
     "ShopRule",
     "PriceAlertEvent",
     "AppSetting",
+    "PrintJob", "PrintJobLine",
 ]
