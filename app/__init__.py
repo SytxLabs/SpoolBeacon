@@ -23,6 +23,7 @@ def create_app(config_class=Config) -> Quart:
     from .routes.shop_rules import shop_rules_bp
     from .routes.settings import settings_bp
     from .routes.users import users_bp
+    from .routes.prints import prints_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -32,6 +33,7 @@ def create_app(config_class=Config) -> Quart:
     app.register_blueprint(shop_rules_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(users_bp)
+    app.register_blueprint(prints_bp)
 
     @app.before_request
     async def validate_active_session():
