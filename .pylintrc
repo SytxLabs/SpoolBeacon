@@ -1,0 +1,41 @@
+[MAIN]
+jobs=1
+
+[MESSAGES CONTROL]
+disable=
+    C0114,
+    C0115,
+    C0116,
+    C0103,
+    C0302,
+    C0415,
+    R0801,
+    R0903,
+    R0911,
+    R0401,
+    R0914,
+    R0915,
+    R0917,
+    W0212,
+    W0404,
+    W0603,
+    W0611,
+    W0613,
+    W0718,
+    E0401,
+    E1102
+
+[FORMAT]
+max-line-length=120
+
+[DESIGN]
+max-args=11
+max-attributes=15
+max-bool-expr=5
+max-branches=16
+max-locals=26
+max-returns=6
+max-statements=70
+
+[SIMILARITIES]
+min-similarity-lines=6

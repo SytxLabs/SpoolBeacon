@@ -49,7 +49,7 @@ async def load_target_hits(session) -> list[dict]:
         select(ShopLink)
         .options(selectinload(ShopLink.filament_product))
         .where(
-            ShopLink.is_active == True,
+            ShopLink.is_active.is_(True),
             or_(ShopLink.target_price.isnot(None), ShopLink.target_price_per_kg.isnot(None)),
         )
     )).scalars().all()
@@ -275,7 +275,7 @@ async def detail(product_id: int):
             active_domains = (await session.execute(
                 select(ShopRule.domain).where(
                     ShopRule.domain.in_(domain_to_ids.keys()),
-                    ShopRule.is_active == True,
+                    ShopRule.is_active.is_(True),
                 )
             )).scalars().all()
 
@@ -427,7 +427,8 @@ async def filament_edit(product_id: int):
         dup = await _find_duplicate(session, form, check_mfr_id, exclude_id=product_id)
         if dup:
             await flash(
-                f'Another filament with this data already exists: "{dup.name}" ({dup.material}, {dup.color_name}, {dup.diameter_mm} mm)',
+                f'Another filament with this data already exists: '
+                f'"{dup.name}" ({dup.material}, {dup.color_name}, {dup.diameter_mm} mm)',
                 "error",
             )
             return await render_template(
@@ -1235,7 +1236,7 @@ async def shoplink_check(product_id: int, link_id: int):
         host = urlparse(link.url).hostname or ""
         domain = host.removeprefix("www.")
         rule = (await session.execute(
-            select(ShopRule).where(ShopRule.domain == domain, ShopRule.is_active == True)
+            select(ShopRule).where(ShopRule.domain == domain, ShopRule.is_active.is_(True))
         )).scalar_one_or_none()
         if not rule:
             from app.shop_adapters.registry import get_adapter
