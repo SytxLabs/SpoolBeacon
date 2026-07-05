@@ -34,6 +34,10 @@ Track spools, purchases and shop prices — get notified when a filament hits yo
 |---|---|
 | ![Shop Rules](docs/screenshots/shop_rules.png) | ![Manufacturers](docs/screenshots/manufacturers.png) |
 
+| API Keys |
+|---|
+| ![API Keys](docs/screenshots/api_keys.png) |
+
 ---
 
 ## 📦 Features
