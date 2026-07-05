@@ -60,6 +60,8 @@ def create_app(config_class=Config) -> Quart:
     async def csrf_protect():
         if request.method not in ("POST", "PUT", "PATCH", "DELETE"):
             return
+        if request.path.startswith("/api/"):
+            return
         content_type = request.content_type or ""
         if "json" in content_type:
             return

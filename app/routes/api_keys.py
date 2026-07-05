@@ -1,6 +1,6 @@
 from functools import wraps
 
-from quart import Blueprint, render_template, request, redirect, url_for, abort, flash
+from quart import Blueprint, render_template, request, redirect, url_for, abort, flash, session
 from quart_auth import login_required, current_user
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -28,9 +28,9 @@ def admin_required(f):
 @login_required
 @admin_required
 async def index():
-    new_token = request.args.get("new_token")
-    async with get_db() as session:
-        keys = (await session.execute(
+    new_token = session.pop("new_api_token", None)
+    async with get_db() as db:
+        keys = (await db.execute(
             select(ApiKey)
             .options(selectinload(ApiKey.user))
             .order_by(ApiKey.created_at.desc())
@@ -51,15 +51,16 @@ async def create():
     token = ApiKey.generate_token()
     token_hash = ApiKey.hash_token(token)
 
-    async with get_db() as session:
+    async with get_db() as db:
         key = ApiKey(
             name=name,
             token_hash=token_hash,
             user_id=int(current_user.auth_id),
         )
-        session.add(key)
+        db.add(key)
 
-    return redirect(url_for("api_keys.index", new_token=token))
+    session["new_api_token"] = token
+    return redirect(url_for("api_keys.index"))
 
 
 @api_keys_bp.post("/<int:key_id>/delete")
