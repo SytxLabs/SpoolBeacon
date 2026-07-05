@@ -72,7 +72,10 @@ class EbayAdapter(BaseAdapter):
             )
 
         # Availability
-        avail_node = tree.css_first(".d-quantity__availability") or tree.css_first("[data-testid='ux-seller-section__item--seller-info']")
+        avail_node = (
+            tree.css_first(".d-quantity__availability")
+            or tree.css_first("[data-testid='ux-seller-section__item--seller-info']")
+        )
         availability = avail_node.text(strip=True) if avail_node else None
 
         return AdapterResult(

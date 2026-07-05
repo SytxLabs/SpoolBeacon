@@ -7,8 +7,8 @@ Note: esun3d.com is the brand/marketing site — prices are JS-rendered there.
 """
 import re
 
-from .base import BaseAdapter, AdapterResult
 from app.routes.shop_rules import parse_price
+from .base import BaseAdapter, AdapterResult
 
 _PRICE_RE = re.compile(r'"price"\s*:\s*"?([\d.]+)"?')
 _AVAIL_RE = re.compile(r'"availability"\s*:\s*"[^"]*/([A-Za-z]+)"')

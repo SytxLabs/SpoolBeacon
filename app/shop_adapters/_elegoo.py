@@ -36,7 +36,7 @@ class ElegooAdapter(BaseAdapter):
         currency_node = tree.css_first('meta[property="og:price:currency"]')
 
         price_raw = price_node.attributes.get("content") if price_node else None
-        currency = currency_node.attributes.get("content") if currency_node else None
+        _ = currency_node.attributes.get("content") if currency_node else None
 
         if not price_raw:
             return AdapterResult(

@@ -229,7 +229,10 @@ async def _upsert_spool(session, product_id: int, purchase_line_id: int | None, 
         opened_at=datetime.fromisoformat(data["opened_at"]) if data.get("opened_at") else None,
         last_dried_at=datetime.fromisoformat(data["last_dried_at"]) if data.get("last_dried_at") else None,
         last_weight_update_source=data.get("last_weight_update_source"),
-        last_weight_update_at=datetime.fromisoformat(data["last_weight_update_at"]) if data.get("last_weight_update_at") else None,
+        last_weight_update_at=(
+            datetime.fromisoformat(data["last_weight_update_at"])
+            if data.get("last_weight_update_at") else None
+        ),
         notes=data.get("notes"),
     )
     session.add(sp)

@@ -1,10 +1,9 @@
 import datetime
 import hashlib
-from pathlib import Path
 from functools import wraps
+from pathlib import Path
 
 import yaml
-
 from quart import Blueprint, request, jsonify, Response
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
@@ -16,9 +15,6 @@ from app.models.print_job import PrintJob, PrintJobLine
 from app.models.spool import Spool, SpoolStatus
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
-
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
 
 async def _json_error(status: int, message: str):
     return jsonify({"error": message}), status
@@ -336,7 +332,7 @@ _SPEC_PATH = Path(__file__).parent.parent / "openapi.yaml"
 _openapi_cache: dict | None = None
 
 
-def _load_spec() -> dict:
+def _load_spec() -> dict | None:
     global _openapi_cache
     if _openapi_cache is None:
         with open(_SPEC_PATH, encoding="utf-8") as f:
