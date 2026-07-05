@@ -127,13 +127,17 @@ async def edit(manufacturer_id: int):
             abort(404)
 
         if request.method == "GET":
-            return await render_template("manufacturers/manufacturer_form.html", manufacturer=manufacturer, form_data=None)
+            return await render_template(
+                "manufacturers/manufacturer_form.html", manufacturer=manufacturer, form_data=None
+            )
 
         form = await request.form
         error = _validate(form)
         if error:
             await flash(error, "error")
-            return await render_template("manufacturers/manufacturer_form.html", manufacturer=manufacturer, form_data=form)
+            return await render_template(
+                "manufacturers/manufacturer_form.html", manufacturer=manufacturer, form_data=form
+            )
 
         name = form.get("name", "").strip()
         dup = (await session.execute(
@@ -141,7 +145,9 @@ async def edit(manufacturer_id: int):
         )).scalar_one_or_none()
         if dup:
             await flash(f'Manufacturer "{name}" already exists.', "error")
-            return await render_template("manufacturers/manufacturer_form.html", manufacturer=manufacturer, form_data=form)
+            return await render_template(
+                "manufacturers/manufacturer_form.html", manufacturer=manufacturer, form_data=form
+            )
 
         for k, v in _fields(form).items():
             setattr(manufacturer, k, v)

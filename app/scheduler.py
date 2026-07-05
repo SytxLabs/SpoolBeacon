@@ -72,11 +72,11 @@ async def run_price_checks() -> None:
         links = (await session.execute(
             select(ShopLink)
             .options(selectinload(ShopLink.filament_product))
-            .where(ShopLink.is_active == True)
+            .where(ShopLink.is_active.is_(True))
         )).scalars().all()
 
         rules_list = (await session.execute(
-            select(ShopRule).where(ShopRule.is_active == True)
+            select(ShopRule).where(ShopRule.is_active.is_(True))
         )).scalars().all()
 
         link_ids = [lnk.id for lnk in links]

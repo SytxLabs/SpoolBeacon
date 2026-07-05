@@ -128,7 +128,8 @@ def _email_card_html(*, badge: str, badge_color: str, title: str, intro: str,
         row_items = "".join(
             f'<tr>'
             f'<td style="padding:9px 0;color:#8b8b93;font-size:13px;border-top:1px solid #27272a;">{name}</td>'
-            f'<td style="padding:9px 0;color:#f4f4f5;font-size:13px;font-weight:600;text-align:right;border-top:1px solid #27272a;">{value}</td>'
+            f'<td style="padding:9px 0;color:#f4f4f5;font-size:13px;font-weight:600;'
+            f'text-align:right;border-top:1px solid #27272a;">{value}</td>'
             f'</tr>'
             for name, value in rows
         )

@@ -25,7 +25,7 @@ def admin_required(f):
 async def _active_admin_count(session, exclude_id: int | None = None) -> int:
     q = select(func.count(User.id)).where(
         User.role == UserRole.admin,
-        User.is_active == True,
+        User.is_active.is_(True),
     )
     if exclude_id is not None:
         q = q.where(User.id != exclude_id)
