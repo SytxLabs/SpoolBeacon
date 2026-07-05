@@ -151,7 +151,9 @@ async def patch_spool(spool_id: int):
         return await _json_error(400, "'remaining_g' must be a non-negative number")
 
     async with get_db() as session:
-        spool = await session.get(Spool, spool_id)
+        spool = (await session.execute(
+            select(Spool).where(Spool.id == spool_id).with_for_update()
+        )).scalar_one_or_none()
         if not spool:
             return await _json_error(404, "Spool not found")
         spool.remaining_weight_g = remaining
@@ -238,6 +240,7 @@ async def create_print():
             select(Spool)
             .options(selectinload(Spool.filament_product).selectinload(FilamentProduct.manufacturer))
             .where(Spool.status.notin_([SpoolStatus.archived, SpoolStatus.empty]))
+            .with_for_update()
         )).scalars().all()
         spool_map = {s.id: s for s in spools_q}
 
