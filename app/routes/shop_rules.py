@@ -132,7 +132,10 @@ async def _run_test(rule: ShopRule, url: str) -> dict:
 
 shop_rules_bp = Blueprint("shop_rules", __name__, url_prefix="/shop-rules")
 
-_DOMAIN_RE = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)+$")
+_DOMAIN_RE = re.compile(
+    r"^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?"
+    r"(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)+$"
+)
 
 
 def _validate(form) -> str | None:
@@ -299,7 +302,8 @@ def _picker_message_page(url: str, message: str) -> Response:
     <p style="color:#f87171;font-size:.875rem;font-weight:600;margin-bottom:.5rem;">Could not load page</p>
     <p style="font-size:.8rem;word-break:break-word;">{html_escape(message)}</p>
     <p style="font-size:.75rem;margin-top:1rem;color:#52525b;">Check the Test URL, or the check engine in Settings.</p>
-    {'<a href="' + html_escape(retry_href) + '" style="display:inline-block;margin-top:1rem;color:#818cf8;font-size:.8rem;">Retry</a>' if url else ''}
+    {('<a href="' + html_escape(retry_href) + '" style="display:inline-block;'
+       'margin-top:1rem;color:#818cf8;font-size:.8rem;">Retry</a>') if url else ''}
   </div>
 </body></html>""")
 

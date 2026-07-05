@@ -10,6 +10,7 @@ from app.database import get_db
 from app.models.user import User, UserRole
 from app.settings_service import get_all, set_many
 from app.notification_service import send_discord, send_email, build_test_discord_embed, build_test_email_html
+from app.models.spool import Spool
 from app.spool_code import generate_spool_code, DEFAULT_TEMPLATE, AVAILABLE_VARS
 from app.import_export_service import export_bundle, import_bundle
 
@@ -107,10 +108,6 @@ async def test_discord():
 @login_required
 @admin_required
 async def regenerate_spool_codes():
-    from datetime import datetime
-    from sqlalchemy import select
-    from app.models.spool import Spool
-
     async with get_db() as session:
         s = await get_all(session)
         template = s.get("spool.code_template", DEFAULT_TEMPLATE)
