@@ -22,3 +22,8 @@ class BaseAdapter:
 
     def extract(self, html: str, url: str) -> AdapterResult:
         raise NotImplementedError
+
+    def fetch_headers(self, url: str) -> dict | None:
+        """Optional per-request header overrides, merged over the engine's
+        default headers (httpx engine only). Return None to use the defaults."""
+        return None
