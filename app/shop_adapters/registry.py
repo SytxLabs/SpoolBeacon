@@ -9,6 +9,7 @@ To add a new adapter:
   2. Import and register it below.
 """
 from .base import BaseAdapter
+from ._amazon import AmazonAdapter
 from ._3djake import ThreeDJakeAdapter
 from ._prusa import PrusaAdapter
 from ._anycubic import AnycubicAdapter
@@ -25,6 +26,7 @@ def _reg(adapter: BaseAdapter) -> None:
 
 
 # ── Confirmed working adapters ────────────────────────────────────────────────
+_reg(AmazonAdapter())         # amazon.com/.de/.co.uk/.fr/.it/.es/.nl/.se/.pl/.co.jp/.ca/.com.au/.in — httpx (cloudscraper gets CAPTCHA'd), confirmed 2026-07-06
 _reg(ThreeDJakeAdapter())     # 3djake.de             — SSR PHP
 _reg(PrusaAdapter())          # prusa3d.com            — JSON-LD
 _reg(AnycubicAdapter())       # anycubic.com           — Shopify USD
