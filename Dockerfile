@@ -23,7 +23,7 @@ RUN useradd --create-home --shell /bin/bash appuser
 COPY --from=builder /install /usr/local
 
 ENV PLAYWRIGHT_BROWSERS_PATH=/app/.playwright
-RUN playwright install --with-deps chromium \
+RUN playwright install --with-deps --only-shell chromium \
     && rm -rf /var/lib/apt/lists/* \
     && chown -R appuser:appuser /app/.playwright
 
