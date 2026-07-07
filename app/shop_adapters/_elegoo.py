@@ -2,6 +2,8 @@
 Elegoo Shop adapter — Shopify store, confirmed working 2026-06-30.
 Price from <meta property="og:price:amount"> (already decimal, USD).
 Availability from JSON-LD schema.org/InStock|OutOfStock.
+Plain httpx works fine (~2MB SSR page, including regional subdomains like
+de.elegoo.com), no need for Playwright.
 """
 import re
 from selectolax.parser import HTMLParser
@@ -17,6 +19,7 @@ _AVAIL_RE = re.compile(r'"availability"\s*:\s*"[^"]*/([A-Za-z]+)"', re.IGNORECAS
 
 class ElegooAdapter(BaseAdapter):
     domains = ("elegoo.com",)
+    fetch_engine = "httpx"
 
     def extract(self, html: str, url: str) -> AdapterResult:
         tree = HTMLParser(html)

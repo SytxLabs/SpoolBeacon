@@ -69,13 +69,13 @@ AppSetting (key/value table for all runtime config: scheduler, notifications, en
 
 **Shop adapters** (`app/shop_adapters/`): Subclass `BaseAdapter`, set `domain` and optionally `fetch_engine = "cloudscraper"`, implement `extract(html, url) → AdapterResult`. Register in `registry.py` via `_reg(YourAdapter())`. Currently registered: `3djake.de`, `prusa3d.com`, `anycubic.com`, `eu.store.bambulab.com`, `esun3dstore.com`, `esun3dstoreeu.com`, `elegoo.com`.
 
-**Price parsing:** `parse_price()` in `routes/shop_rules.py` handles German (`1.299,00 €`) and English (`1,299.00`) formats, plus JSON-LD key fragments. Import from there when needed elsewhere.
+**Price parsing:** `parse_price()` in `routes/shop_rules.py` handles Currency formats, plus JSON-LD key fragments. Import from there when needed elsewhere.
 
 **Notification settings:** Stored in `AppSetting` key/value rows. Access via `app/settings_service.py` (`get_all` / `set_many`). Send via `app/notification_service.py`. Keys: `discord.enabled`, `discord.webhook_url`, `smtp.*`.
 
 ## Key conventions
 
-**Language:** All code and user-facing text must be English — no Other Language words anywhere in this repo (open-source on GitHub). This includes flash messages, validation errors, log messages, notification/email/Discord copy, comments, and seed data. Conversation with the user may stay in German per their global preference, but nothing written to a file in this repo may contain German. Double-check every new or edited string before finishing a task — this has been missed before (e.g. `app/notification_service.py`, `app/alert_service.py` initially shipped with German copy and had to be fixed after the fact).
+**Language:** All code and user-facing text must be English — no Other Language words anywhere in this repo (open-source on GitHub). This includes flash messages, validation errors, log messages, notification/email/Discord copy, comments, and seed data.
 
 **CSRF:** Every state-changing form needs `<input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">`. The `before_request` hook validates it on POST/PUT/PATCH/DELETE. JSON requests (content-type contains `json`) are exempt.
 

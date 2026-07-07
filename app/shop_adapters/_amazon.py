@@ -1,11 +1,5 @@
 """
 Amazon adapter — all major Amazon marketplaces, confirmed working via plain httpx.
-
-cloudscraper's Chrome-impersonation TLS fingerprint gets flagged by Amazon
-(CAPTCHA wall on every request). Plain httpx with a normal browser
-User-Agent + Accept-Language sails through instead — do not switch this
-adapter's fetch_engine to "cloudscraper" or "playwright" without
-re-confirming manually first.
 """
 from urllib.parse import urlparse
 
@@ -14,12 +8,6 @@ from selectolax.parser import HTMLParser
 from app.routes.shop_rules import parse_price
 from .base import BaseAdapter, AdapterResult
 
-# Locale per marketplace — keeps scraped titles/availability in the language
-# a visitor of that storefront would actually see (this repo is English-only,
-# so amazon.com must not come back German just because the global httpx
-# default Accept-Language is de-DE). Confirmed no CAPTCHA on any of these
-# domains 2026-07-06; 404s during testing were just ASIN-not-in-marketplace,
-# not a block.
 _ACCEPT_LANGUAGE = {
     "amazon.com": "en-US,en;q=0.9",
     "amazon.de": "de-DE,de;q=0.9,en;q=0.8",

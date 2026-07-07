@@ -3,7 +3,6 @@ eSUN store adapters — Shopify JSON-LD, cloudscraper required.
   esun3dstore.com    — USD store, confirmed 2026-06-30
   esun3dstoreeu.com  — EUR store, confirmed 2026-06-30
 
-Note: esun3d.com is the brand/marketing site — prices are JS-rendered there.
 """
 import re
 
