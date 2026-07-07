@@ -219,7 +219,7 @@ To add a new adapter: subclass `BaseAdapter` in `app/shop_adapters/`, implement 
 
 ### ShopRules (generic)
 
-For any other shop: create a rule at `/shop-rules` with domain, CSS price selector, and optional regex — or use the visual point-and-click picker to build one without touching CSS. German (`1.299,00 €`) and English (`1,299.00`) price formats are detected automatically.
+For any other shop: create a rule at `/shop-rules` with domain, CSS price selector, and optional regex — or use the visual point-and-click picker to build one without touching CSS.
 
 ---
 

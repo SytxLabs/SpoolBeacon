@@ -1,6 +1,7 @@
 """
 Prusa Shop adapter — WooCommerce + JSON-LD, confirmed working 2026-06-29.
 Price extracted from <script type="application/ld+json"> as float string (e.g. "29.990000").
+Plain httpx works fine (~650KB SSR page), no need for Playwright.
 """
 from app.routes.shop_rules import _extract, parse_price
 from .base import BaseAdapter, AdapterResult
@@ -14,6 +15,7 @@ _AVAIL_MAP = {
 
 class PrusaAdapter(BaseAdapter):
     domains = ("prusa3d.com",)
+    fetch_engine = "httpx"
 
     _PRICE_SEL = "script[type='application/ld+json']"
     _PRICE_RE  = r'"price"\s*:\s*"?([\d.]+)"?'
