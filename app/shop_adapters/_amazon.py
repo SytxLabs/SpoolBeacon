@@ -37,7 +37,13 @@ class AmazonAdapter(BaseAdapter):
     def extract(self, html: str, url: str) -> AdapterResult:
         tree = HTMLParser(html)
 
-        if tree.css_first("form[action*='validateCaptcha']"):
+        is_captcha = (
+            tree.css_first("form[action*='validateCaptcha']") is not None
+            or "/errors/validateCaptcha" in url
+            or "Enter the characters you see below" in html
+            or "Type the characters you see in this image" in html
+        )
+        if is_captcha:
             return AdapterResult(
                 status="blocked",
                 error_message="Amazon returned a CAPTCHA challenge page.",
