@@ -22,3 +22,14 @@ class BaseAdapter:
 
     def extract(self, html: str, url: str) -> AdapterResult:
         raise NotImplementedError
+
+    def fetch_headers(self, url: str) -> dict | None:
+        """Optional per-request header overrides, merged over the engine's
+        default headers (httpx engine only). Return None to use the defaults."""
+        return None
+
+    def warmup_url(self, url: str) -> str | None:
+        """Optional URL to GET first, in the same client session, before fetching
+        `url` — used to pick up cookies the target page requires (httpx engine
+        only). Return None to skip the warmup request."""
+        return None

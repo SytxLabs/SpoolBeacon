@@ -28,12 +28,17 @@ _HTTPX_HEADERS = {
 _HTTPX_TIMEOUT = 12.0
 
 
-async def _fetch_httpx(url: str) -> tuple[str | None, str | None]:
+async def _fetch_httpx(
+    url: str, extra_headers: dict | None = None, warmup_url: str | None = None
+) -> tuple[str | None, str | None]:
     import httpx
+    headers = {**_HTTPX_HEADERS, **extra_headers} if extra_headers else _HTTPX_HEADERS
     try:
         async with httpx.AsyncClient(
-            follow_redirects=True, timeout=_HTTPX_TIMEOUT, headers=_HTTPX_HEADERS
+            follow_redirects=True, timeout=_HTTPX_TIMEOUT, headers=headers
         ) as client:
+            if warmup_url:
+                await client.get(warmup_url)
             resp = await client.get(url)
             resp.raise_for_status()
             return resp.text, None
@@ -124,7 +129,11 @@ async def check_price(
     elif effective_engine == "playwright":
         html, fetch_error = await _fetch_playwright(link_url, settings)
     else:
-        html, fetch_error = await _fetch_httpx(link_url)
+        html, fetch_error = await _fetch_httpx(
+            link_url,
+            adapter.fetch_headers(link_url) if adapter else None,
+            adapter.warmup_url(link_url) if adapter else None,
+        )
 
     if fetch_error:
         await _save_error(link_id, link_currency, fetch_error)

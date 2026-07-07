@@ -18,6 +18,7 @@ _PRICE_RE = r"\d+\.\d{2}"
 
 class AnycubicAdapter(BaseAdapter):
     domains = ("anycubic.com",)
+    fetch_engine = "httpx"
 
     def extract(self, html: str, url: str) -> AdapterResult:
         title = _extract(html, "h1", None)

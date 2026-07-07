@@ -79,9 +79,101 @@
 
 </div>
 
-<!-- Price Overview + Low Stock -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+<!-- Active Alerts -->
+{% if recent_alerts %}
+<div class="mb-4">
+    <div class="flex items-center gap-2.5 mb-3">
+        <h2 class="text-base font-semibold text-white">Active Alerts</h2>
+        <span class="badge-amber">{{ active_alert_count }}</span>
+    </div>
+    <div class="card divide-y divide-gray-800/50">
+        {% for alert, link, product in recent_alerts %}
+        <div class="px-5 py-4 flex items-start gap-4 flex-wrap">
+            <div class="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0 mt-1.5"></div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <a href="/inventory/{{ product.id }}"
+                       class="text-sm font-semibold text-gray-100 hover:text-indigo-400 transition-colors">
+                        {{ product.name }}
+                    </a>
+                    <span class="text-gray-700 text-xs">·</span>
+                    <span class="text-gray-500 text-xs">{{ link.shop_name }}</span>
+                </div>
+                <p class="text-xs text-gray-500 mt-0.5">{{ alert.message }}</p>
+            </div>
+            <div class="flex items-center gap-3 flex-shrink-0">
+                <span class="text-xs text-gray-600 tabular-nums">{{ alert.created_at.strftime('%d.%m. %H:%M') }}</span>
+                {% if not is_viewer %}
+                <form method="POST" action="/inventory/alert/{{ alert.id }}/resolve" class="inline">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit"
+                            class="px-2.5 py-1 text-xs rounded-lg bg-gray-800 hover:bg-gray-750
+                                   text-gray-500 hover:text-gray-200 transition-colors">
+                        Dismiss
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 
+<!-- Target Prices Hit -->
+{% if target_hits %}
+<div class="mb-4">
+    <div class="flex items-center gap-2.5 mb-3">
+        <h2 class="text-base font-semibold text-white">Target Prices Hit</h2>
+        <span class="badge-green">{{ target_hits|length }}</span>
+    </div>
+    <div class="card overflow-hidden">
+        <table class="w-full text-sm">
+            <thead>
+            <tr class="border-b border-gray-800 bg-gray-900/50">
+                <th class="text-left px-5 py-3 section-label">Filament</th>
+                <th class="text-left px-5 py-3 section-label hidden sm:table-cell">Shop</th>
+                <th class="text-right px-5 py-3 section-label">Current</th>
+                <th class="text-right px-5 py-3 section-label hidden md:table-cell">Target</th>
+                <th class="px-5 py-3 section-label"></th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800/50">
+            {% for h in target_hits %}
+            <tr class="hover:bg-white/[0.015] transition-colors">
+                <td class="px-5 py-3.5">
+                    <a href="/inventory/{{ h.product_id }}"
+                       class="font-medium text-gray-100 hover:text-indigo-400 transition-colors">
+                        {{ h.product_name }}
+                    </a>
+                </td>
+                <td class="px-5 py-3.5 text-gray-500 text-xs hidden sm:table-cell">{{ h.link.shop_name }}</td>
+                <td class="px-5 py-3.5 text-right tabular-nums">
+                    <span class="text-white font-semibold">{{ "%.2f"|format(h.snap_total) }}</span>
+                    <span class="text-gray-600 text-xs ml-0.5">{{ h.snap.currency }}</span>
+                </td>
+                <td class="px-5 py-3.5 text-right tabular-nums hidden md:table-cell">
+                    {% if h.hit_price %}
+                    <span class="text-emerald-400 font-medium">{{ "%.2f"|format(h.link.target_price) }}</span>
+                    <span class="text-gray-600 text-xs ml-0.5">{{ h.link.currency }}</span>
+                    {% endif %}
+                </td>
+                <td class="px-5 py-3.5 text-right">
+                    <span class="badge-green text-[10px]">Target ✓</span>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Price Overview + Low Stock -->
+<div class="flex items-center gap-2.5 mb-3">
+    <h2 class="text-base font-semibold text-white">Overview</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
     <div class="card p-5">
         <h2 class="section-label mb-4">Price Overview</h2>
         <dl class="space-y-3">
@@ -217,96 +309,6 @@
     </div>
 
 </div>
-
-<!-- Active Alerts -->
-{% if recent_alerts %}
-<div class="mb-4">
-    <div class="flex items-center gap-2.5 mb-3">
-        <h2 class="text-base font-semibold text-white">Active Alerts</h2>
-        <span class="badge-amber">{{ active_alert_count }}</span>
-    </div>
-    <div class="card divide-y divide-gray-800/50">
-        {% for alert, link, product in recent_alerts %}
-        <div class="px-5 py-4 flex items-start gap-4 flex-wrap">
-            <div class="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0 mt-1.5"></div>
-            <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                    <a href="/inventory/{{ product.id }}"
-                       class="text-sm font-semibold text-gray-100 hover:text-indigo-400 transition-colors">
-                        {{ product.name }}
-                    </a>
-                    <span class="text-gray-700 text-xs">·</span>
-                    <span class="text-gray-500 text-xs">{{ link.shop_name }}</span>
-                </div>
-                <p class="text-xs text-gray-500 mt-0.5">{{ alert.message }}</p>
-            </div>
-            <div class="flex items-center gap-3 flex-shrink-0">
-                <span class="text-xs text-gray-600 tabular-nums">{{ alert.created_at.strftime('%d.%m. %H:%M') }}</span>
-                {% if not is_viewer %}
-                <form method="POST" action="/inventory/alert/{{ alert.id }}/resolve" class="inline">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit"
-                            class="px-2.5 py-1 text-xs rounded-lg bg-gray-800 hover:bg-gray-750
-                                   text-gray-500 hover:text-gray-200 transition-colors">
-                        Dismiss
-                    </button>
-                </form>
-                {% endif %}
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
-
-<!-- Target Prices Hit -->
-{% if target_hits %}
-<div class="mb-4">
-    <div class="flex items-center gap-2.5 mb-3">
-        <h2 class="text-base font-semibold text-white">Target Prices Hit</h2>
-        <span class="badge-green">{{ target_hits|length }}</span>
-    </div>
-    <div class="card overflow-hidden">
-        <table class="w-full text-sm">
-            <thead>
-                <tr class="border-b border-gray-800 bg-gray-900/50">
-                    <th class="text-left px-5 py-3 section-label">Filament</th>
-                    <th class="text-left px-5 py-3 section-label hidden sm:table-cell">Shop</th>
-                    <th class="text-right px-5 py-3 section-label">Current</th>
-                    <th class="text-right px-5 py-3 section-label hidden md:table-cell">Target</th>
-                    <th class="px-5 py-3 section-label"></th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-800/50">
-                {% for h in target_hits %}
-                <tr class="hover:bg-white/[0.015] transition-colors">
-                    <td class="px-5 py-3.5">
-                        <a href="/inventory/{{ h.product_id }}"
-                           class="font-medium text-gray-100 hover:text-indigo-400 transition-colors">
-                            {{ h.product_name }}
-                        </a>
-                    </td>
-                    <td class="px-5 py-3.5 text-gray-500 text-xs hidden sm:table-cell">{{ h.link.shop_name }}</td>
-                    <td class="px-5 py-3.5 text-right tabular-nums">
-                        <span class="text-white font-semibold">{{ "%.2f"|format(h.snap_total) }}</span>
-                        <span class="text-gray-600 text-xs ml-0.5">{{ h.snap.currency }}</span>
-                    </td>
-                    <td class="px-5 py-3.5 text-right tabular-nums hidden md:table-cell">
-                        {% if h.hit_price %}
-                        <span class="text-emerald-400 font-medium">{{ "%.2f"|format(h.link.target_price) }}</span>
-                        <span class="text-gray-600 text-xs ml-0.5">{{ h.link.currency }}</span>
-                        {% endif %}
-                    </td>
-                    <td class="px-5 py-3.5 text-right">
-                        <span class="badge-green text-[10px]">Target ✓</span>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-{% endif %}
 
 <!-- Scheduler Status -->
 <div class="mt-4">

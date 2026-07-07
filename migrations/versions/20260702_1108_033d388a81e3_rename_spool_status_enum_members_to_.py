@@ -16,10 +16,6 @@ down_revision: Union[str, None] = 'fc5b2c227b07'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-# Renames the underlying enum member identifiers (DB-stored values) from German
-# to English. Enum .value strings were already English (see prior migration);
-# this closes the remaining gap where member *names* — what MySQL/MariaDB
-# actually stores in the ENUM column — were still German.
 _SPOOL_STATUS_MAP = {
     "neu": "new",
     "geoeffnet": "opened",
