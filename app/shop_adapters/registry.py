@@ -27,14 +27,16 @@ def _reg(adapter: BaseAdapter) -> None:
 
 
 # ── Confirmed working adapters ────────────────────────────────────────────────
-_reg(AmazonAdapter())         # amazon.com/.de/.co.uk/.fr/.it/.es/.nl/.se/.pl/.co.jp/.ca/.com.au/.in — httpx (cloudscraper gets CAPTCHA'd), confirmed 2026-07-06
+_reg(AmazonAdapter())         # amazon.com/.de/.co.uk/.fr/.it/.es/.nl/.se/.pl/.co.jp/.ca/.com.au/.in
+                              # — httpx (cloudscraper gets CAPTCHA'd), confirmed 2026-07-06
 _reg(ThreeDJakeAdapter())     # 3djake.de             — SSR PHP
 _reg(PrusaAdapter())          # prusa3d.com            — JSON-LD
 _reg(AnycubicAdapter())       # anycubic.com           — Shopify USD
 _reg(BambuLabAdapter())       # eu.store.bambulab.com  — JSON-LD EUR, cloudscraper
 _reg(ESunAdapter())           # esun3dstore.com, esun3dstoreeu.com — JSON-LD, cloudscraper
 _reg(ElegooAdapter())         # elegoo.com             — Shopify og:price:amount USD, confirmed 2026-06-30
-_reg(EbayAdapter())           # ebay.com/.de/.co.uk/.fr/.it/.es/.at/.nl/.ie/.pl/.ch/.ca/.com.au/.com.hk/.com.sg/.com.my/.ph — httpx
+_reg(EbayAdapter())           # ebay.com/.de/.co.uk/.fr/.it/.es/.at/.nl/.ie/.pl/.ch/.ca/.com.au
+                              # /.com.hk/.com.sg/.com.my/.ph — httpx
 
 
 def get_adapter(domain: str) -> BaseAdapter | None:
