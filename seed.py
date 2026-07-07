@@ -13,6 +13,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# pylint: disable=wrong-import-position
+# Must be imported after load_dotenv() — app.config reads DB_* env vars at import time.
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
@@ -24,6 +26,7 @@ from app.models.price_snapshot import PriceSnapshot
 from app.models.price_alert_event import PriceAlertEvent
 from app.models.shop_rule import ShopRule
 from app.models.spool import Spool, SpoolStatus, StorageStatus
+# pylint: enable=wrong-import-position
 
 
 # ── helpers ────────────────────────────────────────────────────────────────────
@@ -141,17 +144,71 @@ async def seed(reset: bool = False) -> None:
         #  8 Anycubic PLA Basic White   (NEW)
         #  9 eSUN ePLA Pro White        (NEW)
         raw_products = [
-            dict(m="Elegoo",    name="Rapid PLA+ Black",          material="PLA+", color_name="Black",        color_hex="#1A1A1A"),
-            dict(m="Bambu Lab", name="PLA Basic White",           material="PLA",  color_name="White",        color_hex="#F5F5F0"),
-            dict(m="Polymaker", name="PolyTerra PLA Army Green",  material="PLA",  color_name="Army Green",   color_hex="#4A5240"),
-            dict(m="eSUN",      name="ePETG Black",               material="PETG", color_name="Black",        color_hex="#111111"),
-            dict(m="Prusament", name="PETG Prusa Orange",         material="PETG", color_name="Prusa Orange", color_hex="#FA6831"),
-            dict(m="Fiberlogy", name="Easy PLA Gray",             material="PLA",  color_name="Gray",         color_hex="#9E9E9E"),
-            dict(m="Bambu Lab", name="PLA Basic Black",           material="PLA",  color_name="Black",        color_hex="#1A1A1A"),
-            dict(m="Prusament", name="PLA Galaxy Black",          material="PLA",  color_name="Galaxy Black", color_hex="#1C1C2E"),
-            dict(m="Anycubic",  name="PLA Basic White",           material="PLA",  color_name="White",        color_hex="#F0F0EE"),
-            dict(m="eSUN",      name="ePLA Pro White",            material="PLA",  color_name="White",        color_hex="#FAFAFA",
-                 notes="2-roll bundle available on esun3dstore.com."),
+            {
+                "m": "Elegoo",
+                "name": "Rapid PLA+ Black",
+                "material": "PLA+",
+                "color_name": "Black",
+                "color_hex": "#1A1A1A",
+            },
+            {
+                "m": "Bambu Lab",
+                "name": "PLA Basic White",
+                "material": "PLA",
+                "color_name": "White",
+                "color_hex": "#F5F5F0",
+            },
+            {
+                "m": "Polymaker",
+                "name": "PolyTerra PLA Army Green",
+                "material": "PLA",
+                "color_name": "Army Green",
+                "color_hex": "#4A5240",
+            },
+            {"m": "eSUN", "name": "ePETG Black", "material": "PETG", "color_name": "Black", "color_hex": "#111111"},
+            {
+                "m": "Prusament",
+                "name": "PETG Prusa Orange",
+                "material": "PETG",
+                "color_name": "Prusa Orange",
+                "color_hex": "#FA6831",
+            },
+            {
+                "m": "Fiberlogy",
+                "name": "Easy PLA Gray",
+                "material": "PLA",
+                "color_name": "Gray",
+                "color_hex": "#9E9E9E",
+            },
+            {
+                "m": "Bambu Lab",
+                "name": "PLA Basic Black",
+                "material": "PLA",
+                "color_name": "Black",
+                "color_hex": "#1A1A1A",
+            },
+            {
+                "m": "Prusament",
+                "name": "PLA Galaxy Black",
+                "material": "PLA",
+                "color_name": "Galaxy Black",
+                "color_hex": "#1C1C2E",
+            },
+            {
+                "m": "Anycubic",
+                "name": "PLA Basic White",
+                "material": "PLA",
+                "color_name": "White",
+                "color_hex": "#F0F0EE",
+            },
+            {
+                "m": "eSUN",
+                "name": "ePLA Pro White",
+                "material": "PLA",
+                "color_name": "White",
+                "color_hex": "#FAFAFA",
+                "notes": "2-roll bundle available on esun3dstore.com.",
+            },
         ]
         products = []
         for rp in raw_products:
@@ -160,111 +217,240 @@ async def seed(reset: bool = False) -> None:
 
         # ── Purchases + PurchaseLines + Spools ────────────────────────────────
         raw_purchases = [
-            dict(
-                shop_name="3DJake",
-                order_number="3DJ-2025-11-0082",
-                purchase_date=date(2025, 11, 4),
-                shipping_price=4.90,
-                currency="EUR",
-                lines=[
-                    dict(pi=1, qty=3, unit_price=12.49, spool_weight_g=1000, lot="BL-2025-W44",
-                         spools=[
-                             dict(status=SpoolStatus.opened, remaining=650, storage="Shelf A",
-                                  storage_status=StorageStatus.open, opened_at=datetime(2025, 11, 10)),
-                             dict(status=SpoolStatus.new, remaining=1000, storage="Shelf A",
-                                  storage_status=StorageStatus.sealed),
-                             dict(status=SpoolStatus.new, remaining=1000, storage="Shelf A",
-                                  storage_status=StorageStatus.sealed),
-                         ]),
-                    dict(pi=2, qty=2, unit_price=17.99, spool_weight_g=1000, lot="PM-AG-2025-38",
-                         spools=[
-                             dict(status=SpoolStatus.almost_empty, remaining=120, storage="Workshop",
-                                  storage_status=StorageStatus.open, opened_at=datetime(2025, 11, 20)),
-                             dict(status=SpoolStatus.opened, remaining=780, storage="Drybox 1",
-                                  storage_status=StorageStatus.drybox, opened_at=datetime(2026, 1, 5)),
-                         ]),
+            {
+                "shop_name": "3DJake",
+                "order_number": "3DJ-2025-11-0082",
+                "purchase_date": date(2025, 11, 4),
+                "shipping_price": 4.90,
+                "currency": "EUR",
+                "lines": [
+                    {
+                        "pi": 1,
+                        "qty": 3,
+                        "unit_price": 12.49,
+                        "spool_weight_g": 1000,
+                        "lot": "BL-2025-W44",
+                        "spools": [
+                            {
+                                "status": SpoolStatus.opened,
+                                "remaining": 650,
+                                "storage": "Shelf A",
+                                "storage_status": StorageStatus.open,
+                                "opened_at": datetime(2025, 11, 10),
+                            },
+                            {
+                                "status": SpoolStatus.new,
+                                "remaining": 1000,
+                                "storage": "Shelf A",
+                                "storage_status": StorageStatus.sealed,
+                            },
+                            {
+                                "status": SpoolStatus.new,
+                                "remaining": 1000,
+                                "storage": "Shelf A",
+                                "storage_status": StorageStatus.sealed,
+                            },
+                        ],
+                    },
+                    {
+                        "pi": 2,
+                        "qty": 2,
+                        "unit_price": 17.99,
+                        "spool_weight_g": 1000,
+                        "lot": "PM-AG-2025-38",
+                        "spools": [
+                            {
+                                "status": SpoolStatus.almost_empty,
+                                "remaining": 120,
+                                "storage": "Workshop",
+                                "storage_status": StorageStatus.open,
+                                "opened_at": datetime(2025, 11, 20),
+                            },
+                            {
+                                "status": SpoolStatus.opened,
+                                "remaining": 780,
+                                "storage": "Drybox 1",
+                                "storage_status": StorageStatus.drybox,
+                                "opened_at": datetime(2026, 1, 5),
+                            },
+                        ],
+                    },
                 ],
-            ),
-            dict(
-                shop_name="Prusa Shop",
-                order_number="PRS-EU-2025-34821",
-                purchase_date=date(2025, 12, 18),
-                shipping_price=6.00,
-                currency="EUR",
-                lines=[
-                    dict(pi=4, qty=2, unit_price=29.99, spool_weight_g=1000, lot="PRS-PETG-OR-W50",
-                         spools=[
-                             dict(status=SpoolStatus.opened, remaining=410, storage="Shelf B",
-                                  storage_status=StorageStatus.open, opened_at=datetime(2025, 12, 28)),
-                             dict(status=SpoolStatus.new, remaining=1000, storage="Vacuum box",
-                                  storage_status=StorageStatus.vacuum_sealed),
-                         ]),
-                    dict(pi=7, qty=1, unit_price=29.99, spool_weight_g=1000, lot="PRS-PLA-GB-W50",
-                         spools=[
-                             dict(status=SpoolStatus.empty, remaining=0, storage="Shelf B",
-                                  storage_status=StorageStatus.open, opened_at=datetime(2026, 1, 2)),
-                         ]),
+            },
+            {
+                "shop_name": "Prusa Shop",
+                "order_number": "PRS-EU-2025-34821",
+                "purchase_date": date(2025, 12, 18),
+                "shipping_price": 6.00,
+                "currency": "EUR",
+                "lines": [
+                    {
+                        "pi": 4,
+                        "qty": 2,
+                        "unit_price": 29.99,
+                        "spool_weight_g": 1000,
+                        "lot": "PRS-PETG-OR-W50",
+                        "spools": [
+                            {
+                                "status": SpoolStatus.opened,
+                                "remaining": 410,
+                                "storage": "Shelf B",
+                                "storage_status": StorageStatus.open,
+                                "opened_at": datetime(2025, 12, 28),
+                            },
+                            {
+                                "status": SpoolStatus.new,
+                                "remaining": 1000,
+                                "storage": "Vacuum box",
+                                "storage_status": StorageStatus.vacuum_sealed,
+                            },
+                        ],
+                    },
+                    {
+                        "pi": 7,
+                        "qty": 1,
+                        "unit_price": 29.99,
+                        "spool_weight_g": 1000,
+                        "lot": "PRS-PLA-GB-W50",
+                        "spools": [
+                            {
+                                "status": SpoolStatus.empty,
+                                "remaining": 0,
+                                "storage": "Shelf B",
+                                "storage_status": StorageStatus.open,
+                                "opened_at": datetime(2026, 1, 2),
+                            }
+                        ],
+                    },
                 ],
-            ),
-            dict(
-                shop_name="Elegoo Official",
-                order_number="ELG-2026-00441",
-                purchase_date=date(2026, 2, 12),
-                shipping_price=0.00,
-                currency="EUR",
-                lines=[
-                    dict(pi=0, qty=4, unit_price=18.99, spool_weight_g=1000, lot="ELG-RPLA-BK-0226",
-                         spools=[
-                             dict(status=SpoolStatus.opened, remaining=850, storage="Drybox 1",
-                                  storage_status=StorageStatus.drybox, opened_at=datetime(2026, 2, 20)),
-                             dict(status=SpoolStatus.opened, remaining=920, storage="Drybox 1",
-                                  storage_status=StorageStatus.drybox, opened_at=datetime(2026, 3, 1)),
-                             dict(status=SpoolStatus.new, remaining=1000, storage="Shelf A",
-                                  storage_status=StorageStatus.vacuum_sealed),
-                             dict(status=SpoolStatus.new, remaining=1000, storage="Shelf A",
-                                  storage_status=StorageStatus.vacuum_sealed),
-                         ]),
+            },
+            {
+                "shop_name": "Elegoo Official",
+                "order_number": "ELG-2026-00441",
+                "purchase_date": date(2026, 2, 12),
+                "shipping_price": 0.00,
+                "currency": "EUR",
+                "lines": [
+                    {
+                        "pi": 0,
+                        "qty": 4,
+                        "unit_price": 18.99,
+                        "spool_weight_g": 1000,
+                        "lot": "ELG-RPLA-BK-0226",
+                        "spools": [
+                            {
+                                "status": SpoolStatus.opened,
+                                "remaining": 850,
+                                "storage": "Drybox 1",
+                                "storage_status": StorageStatus.drybox,
+                                "opened_at": datetime(2026, 2, 20),
+                            },
+                            {
+                                "status": SpoolStatus.opened,
+                                "remaining": 920,
+                                "storage": "Drybox 1",
+                                "storage_status": StorageStatus.drybox,
+                                "opened_at": datetime(2026, 3, 1),
+                            },
+                            {
+                                "status": SpoolStatus.new,
+                                "remaining": 1000,
+                                "storage": "Shelf A",
+                                "storage_status": StorageStatus.vacuum_sealed,
+                            },
+                            {
+                                "status": SpoolStatus.new,
+                                "remaining": 1000,
+                                "storage": "Shelf A",
+                                "storage_status": StorageStatus.vacuum_sealed,
+                            },
+                        ],
+                    }
                 ],
-            ),
-            dict(
-                shop_name="Fiberlogy EU Store",
-                order_number="FBG-EU-2026-1188",
-                purchase_date=date(2026, 4, 3),
-                shipping_price=5.50,
-                currency="EUR",
-                lines=[
-                    dict(pi=5, qty=2, unit_price=21.90, spool_weight_g=850, lot="FBG-EPLA-GR-Q1-26",
-                         spools=[
-                             dict(status=SpoolStatus.opened, remaining=600, storage="Shelf B",
-                                  storage_status=StorageStatus.open, opened_at=datetime(2026, 4, 10)),
-                             dict(status=SpoolStatus.new, remaining=850, storage="Shelf B",
-                                  storage_status=StorageStatus.sealed),
-                         ]),
-                    dict(pi=3, qty=1, unit_price=22.90, spool_weight_g=1000, lot="FBG-PETG-BK-Q1-26",
-                         spools=[
-                             dict(status=SpoolStatus.new, remaining=1000, storage="Shelf B",
-                                  storage_status=StorageStatus.sealed),
-                         ]),
+            },
+            {
+                "shop_name": "Fiberlogy EU Store",
+                "order_number": "FBG-EU-2026-1188",
+                "purchase_date": date(2026, 4, 3),
+                "shipping_price": 5.50,
+                "currency": "EUR",
+                "lines": [
+                    {
+                        "pi": 5,
+                        "qty": 2,
+                        "unit_price": 21.90,
+                        "spool_weight_g": 850,
+                        "lot": "FBG-EPLA-GR-Q1-26",
+                        "spools": [
+                            {
+                                "status": SpoolStatus.opened,
+                                "remaining": 600,
+                                "storage": "Shelf B",
+                                "storage_status": StorageStatus.open,
+                                "opened_at": datetime(2026, 4, 10),
+                            },
+                            {
+                                "status": SpoolStatus.new,
+                                "remaining": 850,
+                                "storage": "Shelf B",
+                                "storage_status": StorageStatus.sealed,
+                            },
+                        ],
+                    },
+                    {
+                        "pi": 3,
+                        "qty": 1,
+                        "unit_price": 22.90,
+                        "spool_weight_g": 1000,
+                        "lot": "FBG-PETG-BK-Q1-26",
+                        "spools": [
+                            {
+                                "status": SpoolStatus.new,
+                                "remaining": 1000,
+                                "storage": "Shelf B",
+                                "storage_status": StorageStatus.sealed,
+                            }
+                        ],
+                    },
                 ],
-            ),
-            dict(
-                shop_name="Anycubic Store",
-                order_number="ANC-2026-09914",
-                purchase_date=date(2026, 5, 20),
-                shipping_price=0.00,
-                currency="USD",
-                lines=[
-                    dict(pi=8, qty=3, unit_price=17.99, spool_weight_g=1000, lot="ANC-PLA-WH-Q2-26",
-                         spools=[
-                             dict(status=SpoolStatus.opened, remaining=900, storage="Shelf C",
-                                  storage_status=StorageStatus.open, opened_at=datetime(2026, 5, 28)),
-                             dict(status=SpoolStatus.new, remaining=1000, storage="Shelf C",
-                                  storage_status=StorageStatus.sealed),
-                             dict(status=SpoolStatus.new, remaining=1000, storage="Shelf C",
-                                  storage_status=StorageStatus.sealed),
-                         ]),
+            },
+            {
+                "shop_name": "Anycubic Store",
+                "order_number": "ANC-2026-09914",
+                "purchase_date": date(2026, 5, 20),
+                "shipping_price": 0.00,
+                "currency": "USD",
+                "lines": [
+                    {
+                        "pi": 8,
+                        "qty": 3,
+                        "unit_price": 17.99,
+                        "spool_weight_g": 1000,
+                        "lot": "ANC-PLA-WH-Q2-26",
+                        "spools": [
+                            {
+                                "status": SpoolStatus.opened,
+                                "remaining": 900,
+                                "storage": "Shelf C",
+                                "storage_status": StorageStatus.open,
+                                "opened_at": datetime(2026, 5, 28),
+                            },
+                            {
+                                "status": SpoolStatus.new,
+                                "remaining": 1000,
+                                "storage": "Shelf C",
+                                "storage_status": StorageStatus.sealed,
+                            },
+                            {
+                                "status": SpoolStatus.new,
+                                "remaining": 1000,
+                                "storage": "Shelf C",
+                                "storage_status": StorageStatus.sealed,
+                            },
+                        ],
+                    }
                 ],
-            ),
+            },
         ]
 
         ts_base = int(now.timestamp())
@@ -322,115 +508,181 @@ async def seed(reset: bool = False) -> None:
         # ── ShopLinks + PriceSnapshots + Alerts ───────────────────────────────
         raw_links = [
             # ── Elegoo Rapid PLA+ Black (pi=0) ──────────────────────────────
-            dict(pi=0, shop_name="Elegoo Official", currency="EUR",
-                 url="https://www.elegoo.com/products/elegoo-rapid-series-pla-plus",
-                 package_weight_g=1000, manual_price=18.99, shipping_price=0.00,
-                 target_price=17.00, is_active=False,
-                 notes="Free shipping above 25 EUR.",
-                 history=[
-                     (90, 21.99, 0.0, "In Stock"), (60, 20.49, 0.0, "In Stock"),
-                     (30, 19.49, 0.0, "In Stock"), (7,  18.99, 0.0, "In Stock"),
-                     (1,  18.99, 0.0, "In Stock"),
-                 ]),
-            dict(pi=0, shop_name="Amazon DE", currency="EUR",
-                 url="https://www.amazon.de/dp/B0CF35BLP5",
-                 package_weight_g=1000, manual_price=19.89, shipping_price=0.00,
-                 is_active=False,
-                 notes="Blocked — returns empty page without authenticated browser session.",
-                 history=[
-                     (14, 21.99, 0.0, "In Stock"), (3, 19.89, 0.0, "In Stock"),
-                 ]),
-
+            {
+                "pi": 0,
+                "shop_name": "Elegoo Official",
+                "currency": "EUR",
+                "url": "https://www.elegoo.com/products/elegoo-rapid-series-pla-plus",
+                "package_weight_g": 1000,
+                "manual_price": 18.99,
+                "shipping_price": 0.00,
+                "target_price": 17.00,
+                "is_active": False,
+                "notes": "Free shipping above 25 EUR.",
+                "history": [
+                    (90, 21.99, 0.0, "In Stock"),
+                    (60, 20.49, 0.0, "In Stock"),
+                    (30, 19.49, 0.0, "In Stock"),
+                    (7, 18.99, 0.0, "In Stock"),
+                    (1, 18.99, 0.0, "In Stock"),
+                ],
+            },
+            {
+                "pi": 0,
+                "shop_name": "Amazon DE",
+                "currency": "EUR",
+                "url": "https://www.amazon.de/dp/B0CF35BLP5",
+                "package_weight_g": 1000,
+                "manual_price": 19.89,
+                "shipping_price": 0.00,
+                "is_active": False,
+                "notes": "Blocked — returns empty page without authenticated browser session.",
+                "history": [(14, 21.99, 0.0, "In Stock"), (3, 19.89, 0.0, "In Stock")],
+            },
             # ── Bambu Lab PLA Basic White (pi=1) ─────────────────────────────
-            dict(pi=1, shop_name="Bambu Lab EU Store", currency="EUR",
-                 url="https://eu.store.bambulab.com/en/products/pla-basic-filament",
-                 package_weight_g=1000, manual_price=22.99, shipping_price=None,
-                 target_price=20.00, target_price_per_kg=20.00,
-                 is_active=True,
-                 notes="Cloudscraper adapter — eu.store.bambulab.com (NOT bambulab.com which is blocked).",
-                 history=[
-                     (75, 24.99, None, "In Stock"), (40, 23.99, None, "In Stock"),
-                     (10, 22.99, None, "In Stock"), (2,  22.99, None, "In Stock"),
-                 ]),
-            dict(pi=1, shop_name="3DJake", currency="EUR",
-                 url="https://www.3djake.de/bambu-lab/pla-basic-white",
-                 package_weight_g=1000, manual_price=12.49, shipping_price=4.90,
-                 target_price=18.00, is_active=True,
-                 history=[
-                     (60, 14.99, 4.90, "In Stock"), (30, 13.99, 4.90, "In Stock"),
-                     (14, 13.49, 4.90, "In Stock"), (3,  12.49, 4.90, "In Stock"),
-                 ],
-                 alert_resolved=True),
-            dict(pi=1, shop_name="Filamentworld", currency="EUR",
-                 url="https://filamentworld.de/shop/filament-3d-drucker/bambu-lab-pla-basic-weiss-1-75mm/?switch_shop=b2c",
-                 package_weight_g=1000, manual_price=19.90, shipping_price=4.90,
-                 target_price=25.00, is_active=True,
-                 notes="WooCommerce EUR. Use direct product URL — category pages may return 0,00€.",
-                 history=[
-                     (30, 22.90, 4.90, "In Stock"), (14, 21.90, 4.90, "In Stock"),
-                     (5,  19.90, 4.90, "In Stock"),
-                 ]),
-
+            {
+                "pi": 1,
+                "shop_name": "Bambu Lab EU Store",
+                "currency": "EUR",
+                "url": "https://eu.store.bambulab.com/en/products/pla-basic-filament",
+                "package_weight_g": 1000,
+                "manual_price": 22.99,
+                "shipping_price": None,
+                "target_price": 20.00,
+                "target_price_per_kg": 20.00,
+                "is_active": True,
+                "notes": "Cloudscraper adapter — eu.store.bambulab.com (NOT bambulab.com which is blocked).",
+                "history": [
+                    (75, 24.99, None, "In Stock"),
+                    (40, 23.99, None, "In Stock"),
+                    (10, 22.99, None, "In Stock"),
+                    (2, 22.99, None, "In Stock"),
+                ],
+            },
+            {
+                "pi": 1,
+                "shop_name": "3DJake",
+                "currency": "EUR",
+                "url": "https://www.3djake.de/bambu-lab/pla-basic-white",
+                "package_weight_g": 1000,
+                "manual_price": 12.49,
+                "shipping_price": 4.90,
+                "target_price": 18.00,
+                "is_active": True,
+                "history": [
+                    (60, 14.99, 4.90, "In Stock"),
+                    (30, 13.99, 4.90, "In Stock"),
+                    (14, 13.49, 4.90, "In Stock"),
+                    (3, 12.49, 4.90, "In Stock"),
+                ],
+                "alert_resolved": True,
+            },
+            {
+                "pi": 1,
+                "shop_name": "Filamentworld",
+                "currency": "EUR",
+                "url": (
+                    "https://filamentworld.de/shop/filament-3d-drucker/"
+                    "bambu-lab-pla-basic-weiss-1-75mm/?switch_shop=b2c"
+                ),
+                "package_weight_g": 1000,
+                "manual_price": 19.90,
+                "shipping_price": 4.90,
+                "target_price": 25.00,
+                "is_active": True,
+                "notes": "WooCommerce EUR. Use direct product URL — category pages may return 0,00€.",
+                "history": [(30, 22.90, 4.90, "In Stock"), (14, 21.90, 4.90, "In Stock"), (5, 19.90, 4.90, "In Stock")],
+            },
             # ── Polymaker PolyTerra Army Green (pi=2) ────────────────────────
-            dict(pi=2, shop_name="3DJake", currency="EUR",
-                 url="https://www.3djake.de/polymaker/polyterra-pla-army-green",
-                 package_weight_g=1000, manual_price=17.99, shipping_price=3.90,
-                 target_price=22.00, is_active=True,
-                 history=[
-                     (45, 22.99, 3.90, "In Stock"), (20, 20.49, 3.90, "In Stock"),
-                     (5,  17.99, 3.90, "In Stock"), (0,  None,  None, None),
-                 ],
-                 alert_active=True),
-            dict(pi=2, shop_name="Polymaker Shop", currency="USD",
-                 url="https://polymaker.com/product/polyterra-pla/",
-                 package_weight_g=1000, manual_price=22.99, shipping_price=None,
-                 is_active=False,
-                 notes="Marketing/product-info site — no prices. Products sold via distributors.",
-                 history=[
-                     (30, 24.99, None, "In Stock"), (5, 22.99, None, "In Stock"),
-                 ]),
-
+            {
+                "pi": 2,
+                "shop_name": "3DJake",
+                "currency": "EUR",
+                "url": "https://www.3djake.de/polymaker/polyterra-pla-army-green",
+                "package_weight_g": 1000,
+                "manual_price": 17.99,
+                "shipping_price": 3.90,
+                "target_price": 22.00,
+                "is_active": True,
+                "history": [
+                    (45, 22.99, 3.90, "In Stock"),
+                    (20, 20.49, 3.90, "In Stock"),
+                    (5, 17.99, 3.90, "In Stock"),
+                    (0, None, None, None),
+                ],
+                "alert_active": True,
+            },
+            {
+                "pi": 2,
+                "shop_name": "Polymaker Shop",
+                "currency": "USD",
+                "url": "https://polymaker.com/product/polyterra-pla/",
+                "package_weight_g": 1000,
+                "manual_price": 22.99,
+                "shipping_price": None,
+                "is_active": False,
+                "notes": "Marketing/product-info site — no prices. Products sold via distributors.",
+                "history": [(30, 24.99, None, "In Stock"), (5, 22.99, None, "In Stock")],
+            },
             # ── Prusament PETG Prusa Orange (pi=4) ───────────────────────────
-            dict(pi=4, shop_name="Prusa Shop", currency="EUR",
-                 url="https://www.prusa3d.com/de/produkt/prusament-petg-prusa-orange-1kg/",
-                 package_weight_g=1000, manual_price=29.99, shipping_price=6.00,
-                 target_price=32.00, is_active=True,
-                 history=[
-                     (90, 34.99, 6.00, "In Stock"), (45, 32.99, 6.00, "In Stock"),
-                     (14, 30.99, 6.00, "In Stock"), (3,  29.99, 6.00, "In Stock"),
-                 ]),
-
+            {
+                "pi": 4,
+                "shop_name": "Prusa Shop",
+                "currency": "EUR",
+                "url": "https://www.prusa3d.com/de/produkt/prusament-petg-prusa-orange-1kg/",
+                "package_weight_g": 1000,
+                "manual_price": 29.99,
+                "shipping_price": 6.00,
+                "target_price": 32.00,
+                "is_active": True,
+                "history": [
+                    (90, 34.99, 6.00, "In Stock"),
+                    (45, 32.99, 6.00, "In Stock"),
+                    (14, 30.99, 6.00, "In Stock"),
+                    (3, 29.99, 6.00, "In Stock"),
+                ],
+            },
             # ── Fiberlogy Easy PLA Gray (pi=5) ───────────────────────────────
-            dict(pi=5, shop_name="eBay DE", currency="EUR",
-                 url="https://www.ebay.de/itm/fiberlogy-easy-pla-gray",
-                 package_weight_g=850, manual_price=19.50, shipping_price=3.90,
-                 is_active=False,
-                 notes="Blocked — eBay Cloudflare protection. Consider eBay Browse API.",
-                 history=[
-                     (20, 21.90, 3.90, "In Stock"), (8, 19.50, 3.90, "In Stock"),
-                 ]),
-
+            {
+                "pi": 5,
+                "shop_name": "eBay DE",
+                "currency": "EUR",
+                "url": "https://www.ebay.de/itm/fiberlogy-easy-pla-gray",
+                "package_weight_g": 850,
+                "manual_price": 19.50,
+                "shipping_price": 3.90,
+                "is_active": False,
+                "notes": "Blocked — eBay Cloudflare protection. Consider eBay Browse API.",
+                "history": [(20, 21.90, 3.90, "In Stock"), (8, 19.50, 3.90, "In Stock")],
+            },
             # ── Anycubic PLA Basic White (pi=8) ──────────────────────────────
-            dict(pi=8, shop_name="Anycubic", currency="USD",
-                 url="https://www.anycubic.com/products/pla-filament",
-                 package_weight_g=1000, manual_price=17.99, shipping_price=None,
-                 target_price=20.00, is_active=True,
-                 notes="Shopify USD store. SSR — no JS required. Adapter available.",
-                 history=[
-                     (30, 22.99, None, "In Stock"), (14, 19.99, None, "In Stock"),
-                     (5,  17.99, None, "In Stock"),
-                 ]),
-
+            {
+                "pi": 8,
+                "shop_name": "Anycubic",
+                "currency": "USD",
+                "url": "https://www.anycubic.com/products/pla-filament",
+                "package_weight_g": 1000,
+                "manual_price": 17.99,
+                "shipping_price": None,
+                "target_price": 20.00,
+                "is_active": True,
+                "notes": "Shopify USD store. SSR — no JS required. Adapter available.",
+                "history": [(30, 22.99, None, "In Stock"), (14, 19.99, None, "In Stock"), (5, 17.99, None, "In Stock")],
+            },
             # ── eSUN ePLA Pro White (pi=9) ────────────────────────────────────
-            dict(pi=9, shop_name="eSUN Store", currency="USD",
-                 url="https://esun3dstore.com/products/pla-pro-2-rolls",
-                 package_weight_g=2000, manual_price=31.99, shipping_price=None,
-                 target_price=38.00, is_active=True,
-                 notes="2-roll bundle (2 kg). Cloudscraper adapter — esun3dstore.com. USD store.",
-                 history=[
-                     (20, 37.99, None, "In Stock"), (10, 34.99, None, "In Stock"),
-                     (3,  31.99, None, "In Stock"),
-                 ]),
+            {
+                "pi": 9,
+                "shop_name": "eSUN Store",
+                "currency": "USD",
+                "url": "https://esun3dstore.com/products/pla-pro-2-rolls",
+                "package_weight_g": 2000,
+                "manual_price": 31.99,
+                "shipping_price": None,
+                "target_price": 38.00,
+                "is_active": True,
+                "notes": "2-roll bundle (2 kg). Cloudscraper adapter — esun3dstore.com. USD store.",
+                "history": [(20, 37.99, None, "In Stock"), (10, 34.99, None, "In Stock"), (3, 31.99, None, "In Stock")],
+            },
         ]
 
         alert_count = 0
@@ -500,79 +752,85 @@ async def seed(reset: bool = False) -> None:
         # a ShopRule for the same domain, so a rule for it would be dead weight
         # and confusing in the UI. See app.shop_adapters.registry.registered_domains().
         raw_rules = [
-            dict(
-                domain="filamentworld.de",
-                price_selector=".price",
-                price_regex=r"\d+[,\.]\d{2}",
-                title_selector="h1",
-                availability_selector=".stock",
-                currency="EUR",
-                test_url="https://filamentworld.de/shop/filament-3d-drucker/pla-filament-1-75-mm-braun/?switch_shop=b2c",
-                is_active=True,
-                notes="WooCommerce EUR. Confirmed 2026-06-30.",
-            ),
+            {
+                "domain": "filamentworld.de",
+                "price_selector": ".price",
+                "price_regex": r"\d+[,\.]\d{2}",
+                "title_selector": "h1",
+                "availability_selector": ".stock",
+                "currency": "EUR",
+                "test_url": (
+                    "https://filamentworld.de/shop/filament-3d-drucker/"
+                    "pla-filament-1-75-mm-braun/?switch_shop=b2c"
+                ),
+                "is_active": True,
+                "notes": "WooCommerce EUR. Confirmed 2026-06-30.",
+            },
             # ── Blocked / inactive (reference only) ───────────────────────────
-            dict(
-                domain="bambulab.com",
-                price_selector="[class*='price']",
-                price_regex=r"\d+[,\.]\d{2}",
-                title_selector="h1",
-                currency="EUR",
-                test_url="https://bambulab.com/de-de/filament/pla-basic",
-                is_active=False,
-                notes="BLOCKED — Cloudflare WAF (httpx + Playwright + cloudscraper). Use eu.store.bambulab.com instead.",
-            ),
-            dict(
-                domain="amazon.de",
-                price_selector=".a-price .a-offscreen",
-                price_regex=r"\d+[,\.]\d{2}",
-                title_selector="#productTitle",
-                availability_selector="#availability span",
-                currency="EUR",
-                test_url="",
-                is_active=False,
-                notes="BLOCKED — ASIN pages return 404 without session. Future: Amazon Product Advertising API.",
-            ),
-            dict(
-                domain="ebay.de",
-                price_selector=".x-price-primary .ux-textspans",
-                price_regex=r"\d+[,\.]\d{2}",
-                title_selector="h1.x-item-title__mainTitle",
-                currency="EUR",
-                test_url="",
-                is_active=False,
-                notes="BLOCKED — Cloudflare (httpx + Playwright + cloudscraper). Future: eBay Browse API.",
-            ),
-            dict(
-                domain="aliexpress.com",
-                price_selector="[class*='price--current']",
-                price_regex=r"\d+[,\.]\d{2}",
-                title_selector="h1",
-                currency="EUR",
-                test_url="",
-                is_active=False,
-                notes="JS-rendered — headless Playwright returns empty body (anti-bot fingerprinting).",
-            ),
-            dict(
-                domain="polymaker.com",
-                price_selector=".price-item--regular",
-                price_regex=r"\d+[,\.]\d{2}",
-                title_selector="h2",
-                currency="USD",
-                test_url="https://polymaker.com/product/polyterra-pla/",
-                is_active=False,
-                notes="Marketing/product-info site only — no purchasable prices. Sold via distributors.",
-            ),
-            dict(
-                domain="sunlu.com",
-                price_selector="[class*='price']",
-                price_regex=r"\d+[,\.]\d{2}",
-                title_selector="h1",
-                currency="USD",
-                test_url="",
-                is_active=False,
-                notes="HTTP 500 on collection pages. Server instability or geo-blocking.",
-            ),
+            {
+                "domain": "bambulab.com",
+                "price_selector": "[class*='price']",
+                "price_regex": r"\d+[,\.]\d{2}",
+                "title_selector": "h1",
+                "currency": "EUR",
+                "test_url": "https://bambulab.com/de-de/filament/pla-basic",
+                "is_active": False,
+                "notes": (
+                    "BLOCKED — Cloudflare WAF (httpx + Playwright + cloudscraper). "
+                    "Use eu.store.bambulab.com instead."
+                ),
+            },
+            {
+                "domain": "amazon.de",
+                "price_selector": ".a-price .a-offscreen",
+                "price_regex": r"\d+[,\.]\d{2}",
+                "title_selector": "#productTitle",
+                "availability_selector": "#availability span",
+                "currency": "EUR",
+                "test_url": "",
+                "is_active": False,
+                "notes": "BLOCKED — ASIN pages return 404 without session. Future: Amazon Product Advertising API.",
+            },
+            {
+                "domain": "ebay.de",
+                "price_selector": ".x-price-primary .ux-textspans",
+                "price_regex": r"\d+[,\.]\d{2}",
+                "title_selector": "h1.x-item-title__mainTitle",
+                "currency": "EUR",
+                "test_url": "",
+                "is_active": False,
+                "notes": "BLOCKED — Cloudflare (httpx + Playwright + cloudscraper). Future: eBay Browse API.",
+            },
+            {
+                "domain": "aliexpress.com",
+                "price_selector": "[class*='price--current']",
+                "price_regex": r"\d+[,\.]\d{2}",
+                "title_selector": "h1",
+                "currency": "EUR",
+                "test_url": "",
+                "is_active": False,
+                "notes": "JS-rendered — headless Playwright returns empty body (anti-bot fingerprinting).",
+            },
+            {
+                "domain": "polymaker.com",
+                "price_selector": ".price-item--regular",
+                "price_regex": r"\d+[,\.]\d{2}",
+                "title_selector": "h2",
+                "currency": "USD",
+                "test_url": "https://polymaker.com/product/polyterra-pla/",
+                "is_active": False,
+                "notes": "Marketing/product-info site only — no purchasable prices. Sold via distributors.",
+            },
+            {
+                "domain": "sunlu.com",
+                "price_selector": "[class*='price']",
+                "price_regex": r"\d+[,\.]\d{2}",
+                "title_selector": "h1",
+                "currency": "USD",
+                "test_url": "",
+                "is_active": False,
+                "notes": "HTTP 500 on collection pages. Server instability or geo-blocking.",
+            },
         ]
 
         rule_count = 0

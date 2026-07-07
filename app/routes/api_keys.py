@@ -15,8 +15,8 @@ api_keys_bp = Blueprint("api_keys", __name__, url_prefix="/api-keys")
 def admin_required(f):
     @wraps(f)
     async def wrapper(*args, **kwargs):
-        async with get_db() as session:
-            user = await session.get(User, int(current_user.auth_id))
+        async with get_db() as db:
+            user = await db.get(User, int(current_user.auth_id))
         if not user or user.role != UserRole.admin:
             abort(403)
         return await f(*args, **kwargs)
@@ -67,11 +67,11 @@ async def create():
 @login_required
 @admin_required
 async def delete(key_id: int):
-    async with get_db() as session:
-        key = await session.get(ApiKey, key_id)
+    async with get_db() as db:
+        key = await db.get(ApiKey, key_id)
         if not key:
             abort(404)
-        await session.delete(key)
+        await db.delete(key)
 
     await flash("API key revoked.", "success")
     return redirect(url_for("api_keys.index"))

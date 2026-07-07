@@ -8,6 +8,7 @@ from .base import BaseAdapter, AdapterResult
 
 class ThreeDJakeAdapter(BaseAdapter):
     domains = ("3djake.de",)
+    fetch_engine = "httpx"
 
     _PRICE_SEL = ".price"
     _PRICE_RE  = r"\d+[,\.]\d{2}"
@@ -15,6 +16,13 @@ class ThreeDJakeAdapter(BaseAdapter):
     _AVAIL_SEL = "[class*='availab']"
 
     def extract(self, html: str, url: str) -> AdapterResult:
+        title_node = _extract(html, "title", None)
+        if title_node and "Request Problem" in title_node:
+            return AdapterResult(
+                status="blocked",
+                error_message="niceshops WAF blocked the request (Error 425 - Security Filtering).",
+            )
+
         title        = _extract(html, self._TITLE_SEL, None)
         price_raw    = _extract(html, self._PRICE_SEL, self._PRICE_RE)
         availability = _extract(html, self._AVAIL_SEL, None)
