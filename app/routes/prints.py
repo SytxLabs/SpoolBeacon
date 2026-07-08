@@ -7,6 +7,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
+from app.i18n import t
 from app.models.filament import FilamentProduct, Manufacturer
 from app.models.spool import Spool, SpoolStatus
 from app.models.user import User, UserRole
@@ -80,7 +81,7 @@ async def new_print():
         used_gs = form.getlist("used_g[]")
 
         if not spool_ids:
-            await flash("Add at least one filament line.", "error")
+            await flash(t("prints.validation.no_lines"), "error")
             return await render_template("prints/print_form.html", spools=spools)
 
         spool_map = {s.id: s for s in spools}
@@ -91,24 +92,29 @@ async def new_print():
             try:
                 sid = int(sid_raw)
             except (ValueError, TypeError):
-                errors.append(f"Line {i + 1}: invalid spool.")
+                errors.append(t("prints.validation.line_invalid_spool", line=i + 1))
                 continue
             try:
                 used_g = float(ug_raw)
                 if used_g <= 0:
                     raise ValueError
             except (ValueError, TypeError):
-                errors.append(f"Line {i + 1}: used weight must be > 0.")
+                errors.append(t("prints.validation.line_used_weight", line=i + 1))
                 continue
 
             spool = spool_map.get(sid)
             if not spool:
-                errors.append(f"Line {i + 1}: spool not found.")
+                errors.append(t("prints.validation.line_spool_not_found", line=i + 1))
                 continue
             if used_g > spool.remaining_weight_g:
                 errors.append(
-                    f"Line {i + 1}: {used_g} g exceeds remaining {spool.remaining_weight_g} g "
-                    f"on {spool.spool_code}."
+                    t(
+                        "prints.validation.line_exceeds_remaining",
+                        line=i + 1,
+                        used=used_g,
+                        remaining=spool.remaining_weight_g,
+                        code=spool.spool_code,
+                    )
                 )
                 continue
 
@@ -153,7 +159,7 @@ async def new_print():
             elif spool.status == SpoolStatus.new:
                 spool.status = SpoolStatus.opened
 
-    await flash("Print logged.", "success")
+    await flash(t("prints.flash.logged"), "success")
     return redirect(url_for("prints.index"))
 
 
@@ -167,5 +173,5 @@ async def delete_print(job_id: int):
             abort(404)
         await session.delete(job)
 
-    await flash("Print log deleted.", "success")
+    await flash(t("prints.flash.deleted"), "success")
     return redirect(url_for("prints.index"))

@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Dashboard – SpoolBeacon{% endblock %}
+{% block title %}{{ t('dashboard.page_title') }} – {{ t('app.title') }}{% endblock %}
 
 {% block content %}
 
 <div class="mb-8">
-    <h1 class="page-title">Dashboard</h1>
-    <p class="page-subtitle">Filament inventory at a glance</p>
+    <h1 class="page-title">{{ t('dashboard.heading') }}</h1>
+    <p class="page-subtitle">{{ t('dashboard.subtitle') }}</p>
 </div>
 
 <!-- KPI Cards -->
@@ -14,7 +14,7 @@
     <div class="stat-card">
         <div class="flex items-start justify-between mb-4">
             <div>
-                <p class="section-label">Filaments</p>
+                <p class="section-label">{{ t('dashboard.stats.filaments') }}</p>
                 <p class="text-3xl font-bold text-white tabular-nums mt-2 tracking-tight">{{ stats.total_products }}</p>
             </div>
             <div class="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
@@ -24,13 +24,13 @@
                 </svg>
             </div>
         </div>
-        <p class="text-xs text-gray-600">Products tracked</p>
+        <p class="text-xs text-gray-600">{{ t('dashboard.stats.filaments_hint') }}</p>
     </div>
 
     <div class="stat-card">
         <div class="flex items-start justify-between mb-4">
             <div>
-                <p class="section-label">Active Spools</p>
+                <p class="section-label">{{ t('dashboard.stats.active_spools') }}</p>
                 <p class="text-3xl font-bold text-white tabular-nums mt-2 tracking-tight">{{ stats.total_spools }}</p>
             </div>
             <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
@@ -39,13 +39,13 @@
                 </svg>
             </div>
         </div>
-        <p class="text-xs text-gray-600">Not archived</p>
+        <p class="text-xs text-gray-600">{{ t('dashboard.stats.active_spools_hint') }}</p>
     </div>
 
     <div class="stat-card">
         <div class="flex items-start justify-between mb-4">
             <div>
-                <p class="section-label">Remaining</p>
+                <p class="section-label">{{ t('dashboard.stats.remaining') }}</p>
                 <p class="text-3xl font-bold text-white tabular-nums mt-2 tracking-tight">
                     {{ stats.total_remaining_kg }}<span class="text-lg font-medium text-gray-500 ml-1">kg</span>
                 </p>
@@ -56,13 +56,13 @@
                 </svg>
             </div>
         </div>
-        <p class="text-xs text-gray-600">Across all spools</p>
+        <p class="text-xs text-gray-600">{{ t('dashboard.stats.remaining_hint') }}</p>
     </div>
 
     <div class="stat-card">
         <div class="flex items-start justify-between mb-4">
             <div>
-                <p class="section-label">Inventory Value</p>
+                <p class="section-label">{{ t('dashboard.stats.inventory_value') }}</p>
                 <p class="text-3xl font-bold text-white tabular-nums mt-2 tracking-tight">
                     {{ "%.0f"|format(stats.inventory_value) }}<span class="text-lg font-medium text-gray-500 ml-1">€</span>
                 </p>
@@ -74,7 +74,7 @@
                 </svg>
             </div>
         </div>
-        <p class="text-xs text-gray-600">Weight-based</p>
+        <p class="text-xs text-gray-600">{{ t('dashboard.stats.inventory_value_hint') }}</p>
     </div>
 
 </div>
@@ -83,7 +83,7 @@
 {% if recent_alerts %}
 <div class="mb-4">
     <div class="flex items-center gap-2.5 mb-3">
-        <h2 class="text-base font-semibold text-white">Active Alerts</h2>
+        <h2 class="text-base font-semibold text-white">{{ t('dashboard.alerts.heading') }}</h2>
         <span class="badge-amber">{{ active_alert_count }}</span>
     </div>
     <div class="card divide-y divide-gray-800/50">
@@ -109,7 +109,7 @@
                     <button type="submit"
                             class="px-2.5 py-1 text-xs rounded-lg bg-gray-800 hover:bg-gray-750
                                    text-gray-500 hover:text-gray-200 transition-colors">
-                        Dismiss
+                        {{ t('dashboard.alerts.dismiss') }}
                     </button>
                 </form>
                 {% endif %}
@@ -124,17 +124,17 @@
 {% if target_hits %}
 <div class="mb-4">
     <div class="flex items-center gap-2.5 mb-3">
-        <h2 class="text-base font-semibold text-white">Target Prices Hit</h2>
+        <h2 class="text-base font-semibold text-white">{{ t('dashboard.target_hits.heading') }}</h2>
         <span class="badge-green">{{ target_hits|length }}</span>
     </div>
     <div class="card overflow-hidden">
         <table class="w-full text-sm">
             <thead>
             <tr class="border-b border-gray-800 bg-gray-900/50">
-                <th class="text-left px-5 py-3 section-label">Filament</th>
-                <th class="text-left px-5 py-3 section-label hidden sm:table-cell">Shop</th>
-                <th class="text-right px-5 py-3 section-label">Current</th>
-                <th class="text-right px-5 py-3 section-label hidden md:table-cell">Target</th>
+                <th class="text-left px-5 py-3 section-label">{{ t('dashboard.target_hits.col_filament') }}</th>
+                <th class="text-left px-5 py-3 section-label hidden sm:table-cell">{{ t('dashboard.target_hits.col_shop') }}</th>
+                <th class="text-right px-5 py-3 section-label">{{ t('dashboard.target_hits.col_current') }}</th>
+                <th class="text-right px-5 py-3 section-label hidden md:table-cell">{{ t('dashboard.target_hits.col_target') }}</th>
                 <th class="px-5 py-3 section-label"></th>
             </tr>
             </thead>
@@ -159,7 +159,7 @@
                     {% endif %}
                 </td>
                 <td class="px-5 py-3.5 text-right">
-                    <span class="badge-green text-[10px]">Target ✓</span>
+                    <span class="badge-green text-[10px]">{{ t('dashboard.target_hits.badge') }}</span>
                 </td>
             </tr>
             {% endfor %}
@@ -171,19 +171,19 @@
 
 <!-- Price Overview + Low Stock -->
 <div class="flex items-center gap-2.5 mb-3">
-    <h2 class="text-base font-semibold text-white">Overview</h2>
+    <h2 class="text-base font-semibold text-white">{{ t('dashboard.overview.heading') }}</h2>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
     <div class="card p-5">
-        <h2 class="section-label mb-4">Price Overview</h2>
+        <h2 class="section-label mb-4">{{ t('dashboard.overview.price_overview.title') }}</h2>
         <dl class="space-y-3">
             <div class="flex items-center justify-between">
-                <dt class="text-sm text-gray-500">Avg. price / kg</dt>
+                <dt class="text-sm text-gray-500">{{ t('dashboard.overview.price_overview.avg_price_per_kg') }}</dt>
                 <dd class="text-sm font-semibold text-white tabular-nums">{{ "%.2f"|format(stats.avg_price_per_kg) }} €</dd>
             </div>
             {% if stats.cheapest %}
             <div class="flex items-center justify-between">
-                <dt class="text-sm text-gray-500">Cheapest purchase</dt>
+                <dt class="text-sm text-gray-500">{{ t('dashboard.overview.price_overview.cheapest_purchase') }}</dt>
                 <dd class="text-sm font-semibold text-white tabular-nums">
                     {{ "%.2f"|format(stats.cheapest[0]) }} {{ stats.cheapest[3] }}
                     <span class="text-gray-600 font-normal text-xs ml-1">({{ stats.cheapest[1] }})</span>
@@ -192,7 +192,7 @@
             {% endif %}
             {% if stats.last_purchase %}
             <div class="flex items-start justify-between gap-4">
-                <dt class="text-sm text-gray-500 flex-shrink-0">Last purchase</dt>
+                <dt class="text-sm text-gray-500 flex-shrink-0">{{ t('dashboard.overview.price_overview.last_purchase') }}</dt>
                 <dd class="text-sm font-medium text-white text-right">
                     {{ stats.last_purchase.shop_name }}
                     <span class="block text-xs text-gray-500 font-normal">{{ stats.last_purchase.purchase_date }}</span>
@@ -200,7 +200,7 @@
             </div>
             {% endif %}
             <div class="flex items-center justify-between pt-2 border-t border-gray-800">
-                <dt class="text-sm text-gray-500">Total purchases</dt>
+                <dt class="text-sm text-gray-500">{{ t('dashboard.overview.price_overview.total_purchases') }}</dt>
                 <dd class="text-sm font-semibold text-white">{{ stats.total_purchases }}</dd>
             </div>
         </dl>
@@ -208,8 +208,8 @@
 
     <div class="card p-5">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="section-label">Low Stock</h2>
-            <span class="badge-amber text-[10px]">under 20%</span>
+            <h2 class="section-label">{{ t('dashboard.overview.low_stock.title') }}</h2>
+            <span class="badge-amber text-[10px]">{{ t('dashboard.overview.low_stock.badge') }}</span>
         </div>
         {% if low_stock %}
         <ul class="space-y-3">
@@ -240,7 +240,7 @@
                     <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd"/>
                 </svg>
             </div>
-            <p class="text-sm text-gray-500 font-medium">All spools well stocked</p>
+            <p class="text-sm text-gray-500 font-medium">{{ t('dashboard.overview.low_stock.empty') }}</p>
         </div>
         {% endif %}
     </div>
@@ -252,7 +252,7 @@
 
     <div class="card overflow-hidden">
         <div class="px-5 py-3.5 border-b border-gray-800">
-            <h2 class="section-label">Stock by Material</h2>
+            <h2 class="section-label">{{ t('dashboard.stock.by_material.title') }}</h2>
         </div>
         {% if by_material %}
         <table class="w-full text-sm">
@@ -261,7 +261,7 @@
                 <tr class="hover:bg-white/[0.015] transition-colors">
                     <td class="px-5 py-3 font-medium text-gray-200">{{ material }}</td>
                     <td class="px-5 py-3 text-center">
-                        <span class="badge-gray text-[10px]">{{ count }} spool{{ 's' if count != 1 else '' }}</span>
+                        <span class="badge-gray text-[10px]">{{ count }} {{ t('dashboard.stock.spool_singular') if count == 1 else t('dashboard.stock.spool_plural') }}</span>
                     </td>
                     <td class="px-5 py-3 text-right text-gray-300 font-medium tabular-nums text-sm">
                         {{ (total_g / 1000)|round(2) }} kg
@@ -271,13 +271,13 @@
             </tbody>
         </table>
         {% else %}
-        <p class="px-5 py-8 text-sm text-gray-600 text-center">No data available.</p>
+        <p class="px-5 py-8 text-sm text-gray-600 text-center">{{ t('dashboard.stock.no_data') }}</p>
         {% endif %}
     </div>
 
     <div class="card overflow-hidden">
         <div class="px-5 py-3.5 border-b border-gray-800">
-            <h2 class="section-label">Stock by Color</h2>
+            <h2 class="section-label">{{ t('dashboard.stock.by_color.title') }}</h2>
         </div>
         {% if by_color %}
         <table class="w-full text-sm">
@@ -294,7 +294,7 @@
                         </div>
                     </td>
                     <td class="px-5 py-3 text-center">
-                        <span class="badge-gray text-[10px]">{{ count }} spool{{ 's' if count != 1 else '' }}</span>
+                        <span class="badge-gray text-[10px]">{{ count }} {{ t('dashboard.stock.spool_singular') if count == 1 else t('dashboard.stock.spool_plural') }}</span>
                     </td>
                     <td class="px-5 py-3 text-right text-gray-300 font-medium tabular-nums text-sm">
                         {{ (total_g / 1000)|round(2) }} kg
@@ -304,7 +304,7 @@
             </tbody>
         </table>
         {% else %}
-        <p class="px-5 py-8 text-sm text-gray-600 text-center">No data available.</p>
+        <p class="px-5 py-8 text-sm text-gray-600 text-center">{{ t('dashboard.stock.no_data') }}</p>
         {% endif %}
     </div>
 
@@ -323,33 +323,33 @@
                 {% endif %}
             </span>
             <span class="text-xs font-medium {% if scheduler.enabled %}text-emerald-400{% else %}text-gray-500{% endif %}">
-                Price Checker {% if scheduler.enabled %}active{% else %}inactive{% endif %}
+                {{ t('dashboard.scheduler.title') }} {{ t('dashboard.scheduler.active') if scheduler.enabled else t('dashboard.scheduler.inactive') }}
             </span>
         </div>
 
         {% if scheduler.interval_minutes %}
         <span class="text-gray-800 text-xs">·</span>
-        <span class="text-xs text-gray-500">every {{ scheduler.interval_minutes }} min</span>
+        <span class="text-xs text-gray-500">{{ t('dashboard.scheduler.every_minutes', minutes=scheduler.interval_minutes) }}</span>
         {% endif %}
 
         {% if scheduler.next_run %}
         <span class="text-gray-800 text-xs">·</span>
         <span class="text-xs text-gray-500">
-            Next run: <span class="text-gray-400 font-mono">{{ scheduler.next_run.strftime('%d.%m. %H:%M') }}</span>
+            {{ t('dashboard.scheduler.next_run_label') }} <span class="text-gray-400 font-mono">{{ scheduler.next_run.strftime('%d.%m. %H:%M') }}</span>
         </span>
         {% endif %}
 
         {% if scheduler.last_run %}
         <span class="text-gray-800 text-xs">·</span>
         <span class="text-xs text-gray-500">
-            Last run: <span class="text-gray-400 font-mono">{{ scheduler.last_run.strftime('%d.%m. %H:%M') }}</span>
+            {{ t('dashboard.scheduler.last_run_label') }} <span class="text-gray-400 font-mono">{{ scheduler.last_run.strftime('%d.%m. %H:%M') }}</span>
         </span>
         {% endif %}
 
         {% if not scheduler.enabled %}
         <span class="text-gray-800 text-xs">·</span>
         <a href="/settings/" class="text-xs text-indigo-500 hover:text-indigo-400 transition-colors">
-            Enable in Settings →
+            {{ t('dashboard.scheduler.enable_in_settings') }}
         </a>
         {% endif %}
     </div>

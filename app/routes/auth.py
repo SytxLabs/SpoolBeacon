@@ -4,6 +4,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from sqlalchemy import select, func
 
 from app.database import get_db
+from app.i18n import t
 from app.models.user import User, UserRole
 
 auth_bp = Blueprint("auth", __name__)
@@ -31,7 +32,7 @@ async def login():
             login_user(AuthUser(str(user.id)))
             return redirect(url_for("dashboard.index"))
 
-        await flash("Invalid credentials.", "error")
+        await flash(t("auth.flash.invalid_credentials"), "error")
 
     return await render_template("auth/login.html")
 
@@ -58,7 +59,7 @@ async def setup():
         password = form.get("password", "")
 
         if not (username and email and password):
-            await flash("All fields are required.", "error")
+            await flash(t("auth.flash.all_fields_required"), "error")
             return await render_template("auth/setup.html")
 
         async with get_db() as session:

@@ -1,14 +1,13 @@
 {% extends "base.html" %}
-{% block title %}API Keys – SpoolBeacon{% endblock %}
+{% block title %}{{ t('api_keys.index.title') }} – SpoolBeacon{% endblock %}
 
 {% block content %}
 
     <div class="mb-7 flex items-center justify-between">
         <div>
-            <h1 class="text-xl font-bold text-white tracking-tight">API Keys</h1>
-            <p class="text-gray-500 text-sm mt-0.5">Bearer tokens for the <a href="/api/docs" target="_blank"
-                                                                             class="text-indigo-400 hover:text-indigo-300 transition-colors">REST
-                API</a>.</p>
+            <h1 class="text-xl font-bold text-white tracking-tight">{{ t('api_keys.index.title') }}</h1>
+            <p class="text-gray-500 text-sm mt-0.5">{{ t('api_keys.index.subtitle_prefix') }} <a href="/api/docs" target="_blank"
+                                                                             class="text-indigo-400 hover:text-indigo-300 transition-colors">{{ t('api_keys.index.rest_api_link_text') }}</a>.</p>
         </div>
     </div>
 
@@ -23,15 +22,14 @@
                     </svg>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-white mb-1">API key created — copy it now</p>
-                    <p class="text-xs text-gray-400 mb-3">This token is shown <strong class="text-gray-200">only
-                        once</strong> and cannot be retrieved later.</p>
+                    <p class="text-sm font-semibold text-white mb-1">{{ t('api_keys.index.new_token_title') }}</p>
+                    <p class="text-xs text-gray-400 mb-3">{{ t('api_keys.index.new_token_warning_prefix') }} <strong class="text-gray-200">{{ t('api_keys.index.new_token_warning_bold') }}</strong> {{ t('api_keys.index.new_token_warning_suffix') }}</p>
                     <div class="flex items-center gap-2">
                         <code id="token-display"
                               class="flex-1 font-mono text-xs bg-gray-900 border border-gray-700 rounded-lg px-3 py-2.5 text-indigo-300 break-all select-all">{{ new_token }}</code>
                         <button onclick="copyToken()"
                                 class="flex-shrink-0 px-3 py-2.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors">
-                            Copy
+                            {{ t('api_keys.index.copy_button') }}
                         </button>
                     </div>
                 </div>
@@ -42,11 +40,11 @@
                 const token = document.getElementById('token-display').textContent;
                 navigator.clipboard.writeText(token).then(function () {
                     const btn = document.querySelector('button[onclick="copyToken()"]');
-                    btn.textContent = 'Copied!';
+                    btn.textContent = '{{ t("api_keys.index.copied_button") }}';
                     btn.classList.replace('bg-indigo-600', 'bg-emerald-600');
                     btn.classList.replace('hover:bg-indigo-500', 'hover:bg-emerald-500');
                     setTimeout(function () {
-                        btn.textContent = 'Copy';
+                        btn.textContent = '{{ t("api_keys.index.copy_button") }}';
                         btn.classList.replace('bg-emerald-600', 'bg-indigo-600');
                         btn.classList.replace('hover:bg-emerald-500', 'hover:bg-indigo-500');
                     }, 2000);
@@ -58,20 +56,20 @@
     {# Create form #}
     <div class="card p-5 mb-6">
         <div class="pb-3 border-b border-gray-800 mb-4">
-            <p class="text-sm font-medium text-gray-200">Create API Key</p>
+            <p class="text-sm font-medium text-gray-200">{{ t('api_keys.index.create_section_title') }}</p>
         </div>
         <form method="POST" action="/api-keys/create" class="flex items-end gap-3">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <div class="flex-1">
-                <label for="key-name" class="block text-xs text-gray-400 mb-1.5">Key name</label>
+                <label for="key-name" class="block text-xs text-gray-400 mb-1.5">{{ t('api_keys.index.key_name_label') }}</label>
                 <input type="text" id="key-name" name="name" required
-                       placeholder="e.g. OrcaSlicer, Home Assistant, Local script"
+                       placeholder="{{ t('api_keys.index.key_name_placeholder') }}"
                        autofocus autocomplete="off"
                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
             </div>
             <button type="submit" class="btn-primary flex-shrink-0">
-                Generate Key
+                {{ t('api_keys.index.generate_button') }}
             </button>
         </form>
     </div>
@@ -82,11 +80,11 @@
             <table class="w-full text-sm">
                 <thead>
                 <tr class="border-b border-gray-800">
-                    <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">Name</th>
-                    <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 hidden sm:table-cell">Created by
+                    <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">{{ t('api_keys.index.col_name') }}</th>
+                    <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 hidden sm:table-cell">{{ t('api_keys.index.col_created_by') }}
                     </th>
-                    <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 hidden md:table-cell">Created</th>
-                    <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 hidden lg:table-cell">Last used
+                    <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 hidden md:table-cell">{{ t('api_keys.index.col_created') }}</th>
+                    <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 hidden lg:table-cell">{{ t('api_keys.index.col_last_used') }}
                     </th>
                     <th class="px-5 py-3"></th>
                 </tr>
@@ -106,17 +104,17 @@
                         <td class="px-5 py-3.5 hidden lg:table-cell">
                     <span class="text-gray-500 text-xs tabular-nums">
                         {% if key.last_used_at %}{{ key.last_used_at.strftime('%d.%m.%Y %H:%M') }}{% else %}
-                            Never{% endif %}
+                            {{ t('api_keys.index.never') }}{% endif %}
                     </span>
                         </td>
                         <td class="px-5 py-3.5 text-right">
                             <form method="POST" action="/api-keys/{{ key.id }}/delete" class="inline"
                                   data-key-name="{{ key.name }}"
-                                  onsubmit="return confirm('Revoke API key &quot;' + this.dataset.keyName + '&quot;? Any clients using it will lose access.')">
+                                  onsubmit="return confirm('{{ t('api_keys.index.revoke_confirm_prefix') }} &quot;' + this.dataset.keyName + '&quot;{{ t('api_keys.index.revoke_confirm_suffix') }}')">
                                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit"
                                         class="px-3 py-1.5 text-xs font-medium rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-950/30 transition-colors">
-                                    Revoke
+                                    {{ t('api_keys.index.revoke_button') }}
                                 </button>
                             </form>
                         </td>
@@ -135,17 +133,17 @@
                           clip-rule="evenodd"/>
                 </svg>
             </div>
-            <p class="text-gray-400 font-medium">No API keys yet.</p>
-            <p class="text-gray-600 text-sm mt-1">Create one above to access the REST API.</p>
+            <p class="text-gray-400 font-medium">{{ t('api_keys.index.empty_title') }}</p>
+            <p class="text-gray-600 text-sm mt-1">{{ t('api_keys.index.empty_subtitle') }}</p>
         </div>
     {% endif %}
 
     <div class="mt-4 text-xs text-gray-600 space-y-1">
-        <p>Use keys in the <code class="bg-gray-800 px-1.5 py-0.5 rounded text-gray-400">Authorization</code> header:
+        <p>{{ t('api_keys.index.usage_intro_prefix') }} <code class="bg-gray-800 px-1.5 py-0.5 rounded text-gray-400">Authorization</code> {{ t('api_keys.index.usage_intro_suffix') }}
         </p>
         <code class="block bg-gray-850 border border-gray-800 rounded-lg px-3 py-2 text-gray-400 font-mono">Authorization:
             Bearer &lt;your-token&gt;</code>
-        <p class="pt-1">Full API reference: <a href="/api/docs" target="_blank"
+        <p class="pt-1">{{ t('api_keys.index.full_reference') }} <a href="/api/docs" target="_blank"
                                                class="text-indigo-400 hover:text-indigo-300">/api/docs</a></p>
     </div>
 

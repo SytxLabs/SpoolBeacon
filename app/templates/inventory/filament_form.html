@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% set editing = product is not none %}
-{% block title %}{% if editing %}Edit {{ product.name }}{% else %}New Filament{% endif %} – SpoolBeacon{% endblock %}
+{% block title %}{% if editing %}{{ t('inventory.filament_form.title_edit', name=product.name) }}{% else %}{{ t('inventory.filament_form.title_new') }}{% endif %} – SpoolBeacon{% endblock %}
 
 {% macro field_val(name, default='') %}
 {%- if form_data is not none -%}{{ form_data.get(name, default) }}{%- elif editing -%}{{ product[name] if product[name] is not none else default }}{%- else -%}{{ default }}{%- endif -%}
@@ -10,22 +10,22 @@
 
 <div class="mb-7">
     <nav class="flex items-center gap-1.5 text-xs text-gray-600 mb-3">
-        <a href="/inventory/" class="hover:text-gray-400 transition-colors">Inventory</a>
+        <a href="/inventory/" class="hover:text-gray-400 transition-colors">{{ t('nav.inventory') }}</a>
         {% if editing %}
         <span>/</span>
         <a href="/inventory/{{ product.id }}" class="hover:text-gray-400 transition-colors">{{ product.name }}</a>
         {% endif %}
         <span>/</span>
-        <span class="text-gray-400">{% if editing %}Edit{% else %}New{% endif %}</span>
+        <span class="text-gray-400">{% if editing %}{{ t('common.edit') }}{% else %}{{ t('inventory.filament_form.breadcrumb_new') }}{% endif %}</span>
     </nav>
     <h1 class="text-2xl font-bold text-white tracking-tight">
-        {% if editing %}Edit {{ product.name }}{% else %}New Filament{% endif %}
+        {% if editing %}{{ t('inventory.filament_form.title_edit', name=product.name) }}{% else %}{{ t('inventory.filament_form.title_new') }}{% endif %}
     </h1>
 </div>
 
 {% if editing %}
 <form id="form-delete-filament" method="POST" action="/inventory/filament/{{ product.id }}/delete"
-      onsubmit="return confirm('Delete this filament? This cannot be undone.')">
+      onsubmit="return confirm('{{ t('inventory.filament_form.confirm_delete') }}')">
     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 </form>
 {% endif %}
@@ -38,17 +38,17 @@
     <!-- Manufacturer -->
     <div class="card p-5 space-y-4">
         <div class="pb-3 border-b border-gray-800">
-            <p class="text-sm font-medium text-gray-200">Manufacturer</p>
+            <p class="text-sm font-medium text-gray-200">{{ t('inventory.filament_form.manufacturer_title') }}</p>
         </div>
         <div>
             <label for="manufacturer_id" class="block text-xs text-gray-400 mb-1.5">
-                Manufacturer <span class="text-red-500">*</span>
+                {{ t('inventory.filament_form.manufacturer_title') }} <span class="text-red-500">*</span>
             </label>
             <select id="manufacturer_id" name="manufacturer_id"
                     onchange="document.getElementById('new-mfr').classList.toggle('hidden', this.value !== 'new')"
                     class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                            focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-                <option value="">– Select manufacturer –</option>
+                <option value="">{{ t('inventory.filament_form.manufacturer_select_placeholder') }}</option>
                 {% for mfr in manufacturers %}
                 <option value="{{ mfr.id }}"
                     {% if form_data and form_data.get('manufacturer_id') == mfr.id|string %}selected
@@ -59,7 +59,7 @@
                 {% endfor %}
                 <option value="new"
                     {% if form_data and form_data.get('manufacturer_id') == 'new' %}selected{% endif %}>
-                    + Add new manufacturer
+                    {{ t('inventory.filament_form.manufacturer_add_new') }}
                 </option>
             </select>
         </div>
@@ -67,11 +67,11 @@
              class="{% if not (form_data and form_data.get('manufacturer_id') == 'new') %}hidden{% endif %}
                     bg-gray-800/50 border border-gray-700/50 rounded-lg p-4">
             <label class="block text-xs text-gray-400 mb-1.5">
-                New manufacturer name <span class="text-red-500">*</span>
+                {{ t('inventory.filament_form.new_manufacturer_name_label') }} <span class="text-red-500">*</span>
             </label>
             <input type="text" name="new_manufacturer_name"
                    value="{{ form_data.get('new_manufacturer_name', '') if form_data else '' }}"
-                   placeholder="e.g. Bambu Lab"
+                   placeholder="{{ t('inventory.filament_form.new_manufacturer_name_placeholder') }}"
                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
         </div>
@@ -80,27 +80,27 @@
     <!-- Filament Details -->
     <div class="card p-5 space-y-4">
         <div class="pb-3 border-b border-gray-800">
-            <p class="text-sm font-medium text-gray-200">Filament</p>
+            <p class="text-sm font-medium text-gray-200">{{ t('inventory.filament_form.filament_title') }}</p>
         </div>
         <div>
             <label for="name" class="block text-xs text-gray-400 mb-1.5">
-                Product Name <span class="text-red-500">*</span>
+                {{ t('inventory.filament_form.product_name_label') }} <span class="text-red-500">*</span>
             </label>
             <input type="text" id="name" name="name"
                    value="{{ field_val('name') }}"
-                   placeholder="e.g. PolyTerra PLA Matte"
+                   placeholder="{{ t('inventory.filament_form.product_name_placeholder') }}"
                    autofocus
                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
         </div>
         <div>
             <label for="material" class="block text-xs text-gray-400 mb-1.5">
-                Material <span class="text-red-500">*</span>
+                {{ t('inventory.filament_form.material_label') }} <span class="text-red-500">*</span>
             </label>
             <input type="text" id="material" name="material"
                    value="{{ field_val('material') }}"
                    list="material-list"
-                   placeholder="e.g. PLA"
+                   placeholder="{{ t('inventory.filament_form.material_placeholder') }}"
                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
             <datalist id="material-list">
@@ -133,16 +133,16 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label for="color_name" class="block text-xs text-gray-400 mb-1.5">
-                    Color Name <span class="text-red-500">*</span>
+                    {{ t('inventory.filament_form.color_name_label') }} <span class="text-red-500">*</span>
                 </label>
                 <input type="text" id="color_name" name="color_name"
                        value="{{ field_val('color_name') }}"
-                       placeholder="e.g. Marble White"
+                       placeholder="{{ t('inventory.filament_form.color_name_placeholder') }}"
                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                               placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
             </div>
             <div>
-                <label for="color_hex_text" class="block text-xs text-gray-400 mb-1.5">Color (optional)</label>
+                <label for="color_hex_text" class="block text-xs text-gray-400 mb-1.5">{{ t('inventory.filament_form.color_label') }}</label>
                 <div class="flex items-center gap-2">
                     <input type="color" id="color_picker"
                            value="{{ field_val('color_hex', '#ffffff') }}"
@@ -164,22 +164,22 @@
                    onchange="document.getElementById('dual-color-fields').classList.toggle('hidden', !this.checked)"
                    class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
             <label for="dual_color" class="text-sm text-gray-300 cursor-pointer">
-                Dual-color filament <span class="text-gray-600 text-xs">(two colors on one spool)</span>
+                {{ t('inventory.filament_form.dual_color_label') }} <span class="text-gray-600 text-xs">({{ t('inventory.filament_form.dual_color_hint') }})</span>
             </label>
         </div>
         <div id="dual-color-fields"
              class="{% if not (field_val('color_name_2') or field_val('color_hex_2')) %}hidden{% endif %}
                     grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-800/50 border border-gray-700/50 rounded-lg p-4">
             <div>
-                <label for="color_name_2" class="block text-xs text-gray-400 mb-1.5">Second Color Name</label>
+                <label for="color_name_2" class="block text-xs text-gray-400 mb-1.5">{{ t('inventory.filament_form.second_color_name_label') }}</label>
                 <input type="text" id="color_name_2" name="color_name_2"
                        value="{{ field_val('color_name_2') }}"
-                       placeholder="e.g. Black"
+                       placeholder="{{ t('inventory.filament_form.second_color_name_placeholder') }}"
                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                               placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
             </div>
             <div>
-                <label for="color_hex_text_2" class="block text-xs text-gray-400 mb-1.5">Second Color</label>
+                <label for="color_hex_text_2" class="block text-xs text-gray-400 mb-1.5">{{ t('inventory.filament_form.second_color_label') }}</label>
                 <div class="flex items-center gap-2">
                     <input type="color" id="color_picker_2"
                            value="{{ field_val('color_hex_2', '#000000') }}"
@@ -197,7 +197,7 @@
         </div>
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <label for="diameter_mm" class="block text-xs text-gray-400 mb-1.5">Diameter</label>
+                <label for="diameter_mm" class="block text-xs text-gray-400 mb-1.5">{{ t('inventory.filament_form.diameter_label') }}</label>
                 <select id="diameter_mm" name="diameter_mm"
                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
@@ -210,7 +210,7 @@
                 </select>
             </div>
             <div>
-                <label for="nominal_weight_g" class="block text-xs text-gray-400 mb-1.5">Nominal Weight</label>
+                <label for="nominal_weight_g" class="block text-xs text-gray-400 mb-1.5">{{ t('inventory.filament_form.nominal_weight_label') }}</label>
                 <select id="nominal_weight_g" name="nominal_weight_g"
                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
@@ -228,26 +228,26 @@
     <!-- Notes -->
     <div class="card p-5 space-y-4">
         <div class="pb-3 border-b border-gray-800">
-            <p class="text-sm font-medium text-gray-200">Notes <span class="text-gray-600 font-normal text-xs">(optional)</span></p>
+            <p class="text-sm font-medium text-gray-200">{{ t('common.notes') }} <span class="text-gray-600 font-normal text-xs">({{ t('common.optional') }})</span></p>
         </div>
         <textarea id="notes" name="notes" rows="3"
-                  placeholder="Notes, print settings, …"
+                  placeholder="{{ t('inventory.filament_form.notes_placeholder') }}"
                   class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                          placeholder-gray-600 resize-y focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">{{ field_val('notes') }}</textarea>
     </div>
 
     <div class="flex items-center gap-3">
         <button type="submit" class="btn-primary">
-            {% if editing %}Save Changes{% else %}Create Filament{% endif %}
+            {% if editing %}{{ t('inventory.filament_form.save_changes') }}{% else %}{{ t('inventory.filament_form.create_filament') }}{% endif %}
         </button>
         <a href="{% if editing %}/inventory/{{ product.id }}{% else %}/inventory/{% endif %}" class="btn-ghost">
-            Cancel
+            {{ t('common.cancel') }}
         </a>
         {% if editing %}
         <div class="ml-auto">
             <button type="submit" form="form-delete-filament"
                     class="px-4 py-2 text-sm text-red-500 hover:text-red-400 hover:bg-red-950/30 rounded-lg transition-colors">
-                Delete
+                {{ t('common.delete') }}
             </button>
         </div>
         {% endif %}

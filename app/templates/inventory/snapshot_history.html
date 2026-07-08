@@ -1,18 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Price History – SpoolBeacon{% endblock %}
+{% block title %}{{ t('inventory.snapshot_history.title') }} – SpoolBeacon{% endblock %}
 
 {% block content %}
 <div class="mb-7">
     <nav class="flex items-center gap-1.5 text-xs text-gray-600 mb-3">
-        <a href="/inventory/" class="hover:text-gray-400 transition-colors">Inventory</a>
+        <a href="/inventory/" class="hover:text-gray-400 transition-colors">{{ t('nav.inventory') }}</a>
         <span>/</span>
         <a href="/inventory/{{ product.id }}" class="hover:text-gray-400 transition-colors">{{ product.name }}</a>
         <span>/</span>
-        <span class="text-gray-400">Snapshots</span>
+        <span class="text-gray-400">{{ t('inventory.snapshot_history.breadcrumb') }}</span>
     </nav>
     <div class="flex items-start justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-white tracking-tight">Price History</h1>
+            <h1 class="text-2xl font-bold text-white tracking-tight">{{ t('inventory.snapshot_history.title') }}</h1>
             <p class="text-gray-500 text-sm mt-1">
                 <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer"
                    class="text-indigo-400 hover:text-indigo-300 transition-colors">{{ link.shop_name }} &nearr;</a>
@@ -25,7 +25,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
             </svg>
-            Add Snapshot
+            {{ t('inventory.snapshot_history.add_snapshot') }}
         </a>
     </div>
 </div>
@@ -35,14 +35,14 @@
     <table class="w-full text-sm">
         <thead>
             <tr class="border-b border-gray-800 bg-gray-900/50">
-                <th class="text-left px-5 py-3 section-label">Captured</th>
-                <th class="text-right px-5 py-3 section-label">Price</th>
-                <th class="text-right px-5 py-3 section-label hidden sm:table-cell">Shipping</th>
-                <th class="text-right px-5 py-3 section-label">Total</th>
-                <th class="text-right px-5 py-3 section-label hidden md:table-cell">per kg</th>
-                <th class="text-right px-5 py-3 section-label hidden sm:table-cell">Change</th>
-                <th class="text-left px-5 py-3 section-label hidden lg:table-cell">Availability</th>
-                <th class="text-center px-5 py-3 section-label">Source</th>
+                <th class="text-left px-5 py-3 section-label">{{ t('inventory.snapshot_history.col_captured') }}</th>
+                <th class="text-right px-5 py-3 section-label">{{ t('inventory.snapshot_history.col_price') }}</th>
+                <th class="text-right px-5 py-3 section-label hidden sm:table-cell">{{ t('inventory.snapshot_history.col_shipping') }}</th>
+                <th class="text-right px-5 py-3 section-label">{{ t('inventory.snapshot_history.col_total') }}</th>
+                <th class="text-right px-5 py-3 section-label hidden md:table-cell">{{ t('inventory.snapshot_history.col_per_kg') }}</th>
+                <th class="text-right px-5 py-3 section-label hidden sm:table-cell">{{ t('inventory.snapshot_history.col_change') }}</th>
+                <th class="text-left px-5 py-3 section-label hidden lg:table-cell">{{ t('inventory.snapshot_history.col_availability') }}</th>
+                <th class="text-center px-5 py-3 section-label">{{ t('inventory.snapshot_history.col_source') }}</th>
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-800/60">
@@ -57,7 +57,7 @@
                 </td>
                 {% if snap.source == 'error' %}
                 <td class="px-5 py-3.5 text-right" colspan="5">
-                    <span class="text-red-400 text-xs">{{ snap.error_message or 'Error' }}</span>
+                    <span class="text-red-400 text-xs">{{ snap.error_message or t('inventory.snapshot_history.error_fallback') }}</span>
                 </td>
                 {% else %}
                 <td class="px-5 py-3.5 text-right tabular-nums">
@@ -112,11 +112,11 @@
 </div>
 {% else %}
 <div class="card p-10 text-center">
-    <p class="text-gray-500 text-sm mb-3">No snapshots yet for this shop link.</p>
+    <p class="text-gray-500 text-sm mb-3">{{ t('inventory.snapshot_history.empty_message') }}</p>
     <a href="/inventory/{{ product.id }}/shop-link/{{ link.id }}/snapshot/new"
        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg
               bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 transition-all">
-        Add first snapshot
+        {{ t('inventory.snapshot_history.add_first_snapshot') }}
     </a>
 </div>
 {% endif %}

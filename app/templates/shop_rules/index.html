@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Shop Rules – SpoolBeacon{% endblock %}
+{% block title %}{{ t('shop_rules.index.title') }} – {{ t('app.title') }}{% endblock %}
 
 {% block content %}
 <div class="flex items-center justify-between mb-7">
     <div>
-        <h1 class="text-2xl font-bold text-white tracking-tight">Shop Rules</h1>
-        <p class="text-gray-500 text-sm mt-1">CSS selectors and regex patterns for price scraping</p>
+        <h1 class="text-2xl font-bold text-white tracking-tight">{{ t('shop_rules.index.title') }}</h1>
+        <p class="text-gray-500 text-sm mt-1">{{ t('shop_rules.index.subtitle') }}</p>
     </div>
     {% if not is_viewer %}
     <a href="/shop-rules/new"
@@ -14,7 +14,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
         </svg>
-        New Rule
+        {{ t('shop_rules.index.new_rule') }}
     </a>
     {% endif %}
 </div>
@@ -24,11 +24,11 @@
     <table class="w-full text-sm">
         <thead>
             <tr class="border-b border-gray-800 bg-gray-900/50">
-                <th class="text-left px-5 py-3 section-label">Domain</th>
-                <th class="text-left px-5 py-3 section-label hidden md:table-cell">Price Selector</th>
-                <th class="text-left px-5 py-3 section-label hidden lg:table-cell">Availability Selector</th>
-                <th class="text-center px-5 py-3 section-label">Currency</th>
-                <th class="text-center px-5 py-3 section-label">Status</th>
+                <th class="text-left px-5 py-3 section-label">{{ t('shop_rules.index.table.domain') }}</th>
+                <th class="text-left px-5 py-3 section-label hidden md:table-cell">{{ t('shop_rules.index.table.price_selector') }}</th>
+                <th class="text-left px-5 py-3 section-label hidden lg:table-cell">{{ t('shop_rules.index.table.availability_selector') }}</th>
+                <th class="text-center px-5 py-3 section-label">{{ t('shop_rules.index.table.currency') }}</th>
+                <th class="text-center px-5 py-3 section-label">{{ t('common.status') }}</th>
                 <th class="px-5 py-3 section-label"></th>
             </tr>
         </thead>
@@ -38,13 +38,13 @@
                 <td class="px-5 py-3.5">
                     <span class="font-medium text-gray-200 font-mono text-xs">{{ rule.domain }}</span>
                     {% if rule.domain in adapter_domains %}
-                    <span class="badge-indigo text-[10px] ml-2" title="A built-in adapter handles this domain — this rule is never used.">
-                        ⚡ built-in adapter active
+                    <span class="badge-indigo text-[10px] ml-2" title="{{ t('shop_rules.index.builtin_badge_title') }}">
+                        ⚡ {{ t('shop_rules.index.builtin_badge') }}
                     </span>
                     {% endif %}
                     {% if rule.test_url %}
                     <a href="{{ rule.test_url }}" target="_blank" rel="noopener noreferrer"
-                       class="ml-2 text-xs text-gray-600 hover:text-indigo-400 transition-colors">test &nearr;</a>
+                       class="ml-2 text-xs text-gray-600 hover:text-indigo-400 transition-colors">{{ t('shop_rules.index.test_link') }} &nearr;</a>
                     {% endif %}
                     {% if rule.notes %}
                     <p class="text-xs text-gray-600 mt-0.5 max-w-xs truncate" title="{{ rule.notes }}">{{ rule.notes }}</p>
@@ -67,7 +67,7 @@
                     <span class="px-2 py-0.5 rounded-full text-xs font-medium
                                   {% if rule.is_active %}bg-emerald-500/15 text-emerald-400
                                   {% else %}bg-gray-800 text-gray-600{% endif %}">
-                        {% if rule.is_active %}active{% else %}inactive{% endif %}
+                        {% if rule.is_active %}{{ t('shop_rules.index.active') }}{% else %}{{ t('shop_rules.index.inactive') }}{% endif %}
                     </span>
                     {% else %}
                     <form method="POST" action="/shop-rules/{{ rule.id }}/toggle" class="inline">
@@ -76,7 +76,7 @@
                                 class="px-2 py-0.5 rounded-full text-xs font-medium transition-all
                                        {% if rule.is_active %}bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25
                                        {% else %}bg-gray-800 text-gray-600 hover:text-gray-400{% endif %}">
-                            {% if rule.is_active %}active{% else %}inactive{% endif %}
+                            {% if rule.is_active %}{{ t('shop_rules.index.active') }}{% else %}{{ t('shop_rules.index.inactive') }}{% endif %}
                         </button>
                     </form>
                     {% endif %}
@@ -84,7 +84,7 @@
                 <td class="px-5 py-3.5 text-right">
                     {% if not is_viewer %}
                     <div class="flex items-center justify-end gap-0.5">
-                        <a href="/shop-rules/{{ rule.id }}/edit" title="Edit rule"
+                        <a href="/shop-rules/{{ rule.id }}/edit" title="{{ t('shop_rules.index.edit_rule_title') }}"
                            class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
                             <svg viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
                                 <path d="M13.488 2.513a1.75 1.75 0 0 0-2.475 0L6.75 6.774a2.75 2.75 0 0 0-.596.892l-.848 2.047a.75.75 0 0 0 .98.98l2.047-.848a2.75 2.75 0 0 0 .892-.596l4.263-4.263a1.75 1.75 0 0 0 0-2.474Zm-1.414 1.06a.25.25 0 0 1 .354 0l.999.999a.25.25 0 0 1 0 .354L9.168 8.685 7.8 7.316l4.274-4.743Z"/>
@@ -92,9 +92,9 @@
                             </svg>
                         </a>
                         <form method="POST" action="/shop-rules/{{ rule.id }}/delete" class="inline"
-                              onsubmit="return confirm('Delete rule for {{ rule.domain }}?')">
+                              onsubmit="return confirm('{{ t('shop_rules.index.delete_confirm', domain=rule.domain) }}')">
                             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" title="Delete rule"
+                            <button type="submit" title="{{ t('shop_rules.index.delete_rule_title') }}"
                                     class="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-950/30 transition-colors">
                                 <svg viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
                                     <path d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 .75.75V4h-3V2.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.711Z"/>
@@ -111,12 +111,12 @@
 </div>
 {% else %}
 <div class="card p-12 text-center">
-    <p class="text-gray-500 text-sm mb-3">No shop rules yet. Rules define per-domain CSS selectors for automated price scraping.</p>
+    <p class="text-gray-500 text-sm mb-3">{{ t('shop_rules.index.empty_state') }}</p>
     {% if not is_viewer %}
     <a href="/shop-rules/new"
        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg
               bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 transition-all">
-        Add first rule
+        {{ t('shop_rules.index.add_first_rule') }}
     </a>
     {% endif %}
 </div>

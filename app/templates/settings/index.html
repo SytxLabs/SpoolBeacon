@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Settings – SpoolBeacon{% endblock %}
+{% block title %}{{ t('settings.page_title') }} – {{ t('app.title') }}{% endblock %}
 
 {% block content %}
 <div class="mb-8">
-    <h1 class="text-2xl font-bold text-white tracking-tight">Settings</h1>
-    <p class="text-gray-500 text-sm mt-1">Price checking, notifications, and inventory configuration</p>
+    <h1 class="text-2xl font-bold text-white tracking-tight">{{ t('settings.page_title') }}</h1>
+    <p class="text-gray-500 text-sm mt-1">{{ t('settings.page_subtitle') }}</p>
 </div>
 
 {# Hidden forms for test actions — outside the main save form to avoid nesting #}
@@ -24,6 +24,35 @@
 <form method="POST" action="/settings/" class="max-w-5xl space-y-10">
     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
+    <!-- ── Language ───────────────────────────────────────────────────── -->
+    <section>
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-7 h-7 rounded-lg bg-violet-500/20 border border-violet-500/30 flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-violet-400">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM7.75 5.75a.75.75 0 0 0-1.5 0v.5h-1.5a.75.75 0 0 0 0 1.5h5.44a8.53 8.53 0 0 1-1.05 2.187 8.626 8.626 0 0 1-.977-1.334.75.75 0 1 0-1.316.723c.372.674.85 1.313 1.417 1.897a10.487 10.487 0 0 1-1.807 1.402.75.75 0 0 0 .758 1.294 11.99 11.99 0 0 0 2.07-1.615c.32.271.663.525 1.028.759a.75.75 0 0 0 .81-1.263 8.088 8.088 0 0 1-.87-.65 10.04 10.04 0 0 0 1.436-3.4h.694a.75.75 0 0 0 0-1.5h-3.75v-.5Zm5.31 6.44a.75.75 0 0 0-1.36.62l1.5 3.25a.75.75 0 0 0 1.36 0l.234-.507h1.912l.234.507a.75.75 0 1 0 1.36-.62l-2.25-4.876a.75.75 0 0 0-1.362 0l-1.628 3.626Zm2.25-.813.458.994h-.916l.458-.994Z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <h2 class="text-base font-semibold text-white">{{ t('settings.language.section_title') }}</h2>
+        </div>
+        <div class="card p-5 space-y-4 max-w-sm">
+            <div class="pb-3 border-b border-gray-800">
+                <p class="text-sm font-medium text-gray-200">{{ t('settings.language.section_title') }}</p>
+                <p class="text-xs text-gray-600 mt-0.5">{{ t('settings.language.section_subtitle') }}</p>
+            </div>
+            <div>
+                <label for="app_language" class="block text-xs text-gray-400 mb-1.5">{{ t('settings.language.label') }}</label>
+                <select id="app_language" name="app_language"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
+                               focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+                    {% for code, label in available_locales.items() %}
+                    <option value="{{ code }}" {% if s['app.language'] == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <p class="text-xs text-gray-600 mt-1">{{ t('settings.language.help') }}</p>
+            </div>
+        </div>
+    </section>
+
     <!-- ── Price Checker ───────────────────────────────────────────────── -->
     <section>
         <div class="flex items-center gap-3 mb-4">
@@ -32,7 +61,7 @@
                     <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm.75-13a.75.75 0 0 0-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 0 0 0-1.5h-3.25V5Z" clip-rule="evenodd"/>
                 </svg>
             </div>
-            <h2 class="text-base font-semibold text-white">Price Checker</h2>
+            <h2 class="text-base font-semibold text-white">{{ t('settings.price_checker.section_title') }}</h2>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -40,58 +69,58 @@
             <!-- Scheduler -->
             <div class="card p-5 space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-gray-800">
-                    <p class="text-sm font-medium text-gray-200">Scheduler</p>
+                    <p class="text-sm font-medium text-gray-200">{{ t('settings.price_checker.scheduler.title') }}</p>
                     <div class="flex items-center gap-2">
                         <input type="hidden" name="scheduler_enabled" value="">
                         <input type="checkbox" id="scheduler_enabled" name="scheduler_enabled" value="1"
                                {% if s['scheduler.enabled'] == '1' %}checked{% endif %}
                                class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
-                        <label for="scheduler_enabled" class="text-xs text-gray-400 cursor-pointer">Enabled</label>
+                        <label for="scheduler_enabled" class="text-xs text-gray-400 cursor-pointer">{{ t('settings.price_checker.scheduler.enabled_label') }}</label>
                     </div>
                 </div>
                 <div>
-                    <label for="scheduler_interval_minutes" class="block text-xs text-gray-400 mb-1.5">Check interval (minutes)</label>
+                    <label for="scheduler_interval_minutes" class="block text-xs text-gray-400 mb-1.5">{{ t('settings.price_checker.scheduler.interval_label') }}</label>
                     <input type="number" id="scheduler_interval_minutes" name="scheduler_interval_minutes"
                            value="{{ s['scheduler.interval_minutes'] }}" min="5"
                            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                   focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-                    <p class="text-xs text-gray-600 mt-1">Time between complete check runs.</p>
+                    <p class="text-xs text-gray-600 mt-1">{{ t('settings.price_checker.scheduler.interval_help') }}</p>
                 </div>
                 <div>
-                    <label for="scheduler_min_interval_minutes" class="block text-xs text-gray-400 mb-1.5">Min. interval per link (minutes)</label>
+                    <label for="scheduler_min_interval_minutes" class="block text-xs text-gray-400 mb-1.5">{{ t('settings.price_checker.scheduler.min_interval_label') }}</label>
                     <input type="number" id="scheduler_min_interval_minutes" name="scheduler_min_interval_minutes"
                            value="{{ s['scheduler.min_interval_minutes'] }}" min="0"
                            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                   focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-                    <p class="text-xs text-gray-600 mt-1">A link is rechecked no sooner than this.</p>
+                    <p class="text-xs text-gray-600 mt-1">{{ t('settings.price_checker.scheduler.min_interval_help') }}</p>
                 </div>
             </div>
 
             <!-- Fetch Engine -->
             <div class="card p-5 space-y-4">
                 <div class="pb-3 border-b border-gray-800">
-                    <p class="text-sm font-medium text-gray-200">Fetch Engine</p>
-                    <p class="text-xs text-gray-600 mt-0.5">How product pages are downloaded</p>
+                    <p class="text-sm font-medium text-gray-200">{{ t('settings.price_checker.fetch_engine.title') }}</p>
+                    <p class="text-xs text-gray-600 mt-0.5">{{ t('settings.price_checker.fetch_engine.subtitle') }}</p>
                 </div>
                 <div>
-                    <label for="check_engine" class="block text-xs text-gray-400 mb-1.5">Default engine</label>
+                    <label for="check_engine" class="block text-xs text-gray-400 mb-1.5">{{ t('settings.price_checker.fetch_engine.default_engine_label') }}</label>
                     <select id="check_engine" name="check_engine"
                             class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                    focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-                        <option value="playwright" {% if s['check.engine'] == 'playwright' %}selected{% endif %}>Playwright (Chromium) — recommended</option>
-                        <option value="httpx" {% if s['check.engine'] == 'httpx' %}selected{% endif %}>httpx (plain HTTP)</option>
+                        <option value="playwright" {% if s['check.engine'] == 'playwright' %}selected{% endif %}>{{ t('settings.price_checker.fetch_engine.option_playwright') }}</option>
+                        <option value="httpx" {% if s['check.engine'] == 'httpx' %}selected{% endif %}>{{ t('settings.price_checker.fetch_engine.option_httpx') }}</option>
                     </select>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label for="playwright_timeout_ms" class="block text-xs text-gray-400 mb-1.5">Playwright timeout (ms)</label>
+                        <label for="playwright_timeout_ms" class="block text-xs text-gray-400 mb-1.5">{{ t('settings.price_checker.fetch_engine.timeout_label') }}</label>
                         <input type="number" id="playwright_timeout_ms" name="playwright_timeout_ms"
                                value="{{ s['playwright.timeout_ms'] }}" min="5000" step="1000"
                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                       focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
                     </div>
                     <div>
-                        <label for="playwright_max_concurrent" class="block text-xs text-gray-400 mb-1.5">Max. parallel checks</label>
+                        <label for="playwright_max_concurrent" class="block text-xs text-gray-400 mb-1.5">{{ t('settings.price_checker.fetch_engine.max_concurrent_label') }}</label>
                         <input type="number" id="playwright_max_concurrent" name="playwright_max_concurrent"
                                value="{{ s['playwright.max_concurrent'] }}" min="1" max="5"
                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
@@ -104,7 +133,7 @@
                            {% if s['playwright.headless'] == '1' %}checked{% endif %}
                            class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
                     <label for="playwright_headless" class="text-sm text-gray-300 cursor-pointer">
-                        Headless mode <span class="text-gray-600 text-xs">(no visible browser)</span>
+                        {{ t('settings.price_checker.fetch_engine.headless_label') }} <span class="text-gray-600 text-xs">{{ t('settings.price_checker.fetch_engine.headless_hint') }}</span>
                     </label>
                 </div>
             </div>
@@ -120,7 +149,7 @@
                     <path d="M4.214 3.227a.75.75 0 0 0-1.156-.956 8.97 8.97 0 0 0-1.856 3.826.75.75 0 0 0 1.466.316 7.47 7.47 0 0 1 1.546-3.186ZM16.942 2.271a.75.75 0 0 0-1.157.956 7.47 7.47 0 0 1 1.547 3.186.75.75 0 0 0 1.466-.316 8.971 8.971 0 0 0-1.856-3.826ZM10 2a6 6 0 0 0-6 6c0 1.887-.454 3.665-1.257 5.234a.75.75 0 0 0 .515 1.076 32.94 32.94 0 0 0 3.256.508 3.5 3.5 0 0 0 6.972 0 32.933 32.933 0 0 0 3.256-.508.75.75 0 0 0 .515-1.076A11.448 11.448 0 0 1 16 8a6 6 0 0 0-6-6Zm0 14.5a2 2 0 0 1-1.95-1.557 33.54 33.54 0 0 0 3.9 0A2 2 0 0 1 10 16.5Z"/>
                 </svg>
             </div>
-            <h2 class="text-base font-semibold text-white">Notifications</h2>
+            <h2 class="text-base font-semibold text-white">{{ t('settings.notifications.section_title') }}</h2>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -129,36 +158,36 @@
             <div class="card p-5 space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-gray-800">
                     <div>
-                        <p class="text-sm font-medium text-gray-200">Discord</p>
-                        <p class="text-xs text-gray-600 mt-0.5">Webhook message on price alert</p>
+                        <p class="text-sm font-medium text-gray-200">{{ t('settings.notifications.discord.title') }}</p>
+                        <p class="text-xs text-gray-600 mt-0.5">{{ t('settings.notifications.discord.subtitle') }}</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <input type="hidden" name="discord_enabled" value="">
                         <input type="checkbox" id="discord_enabled" name="discord_enabled" value="1"
                                {% if s['discord.enabled'] == '1' %}checked{% endif %}
                                class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
-                        <label for="discord_enabled" class="text-xs text-gray-400 cursor-pointer">Enabled</label>
+                        <label for="discord_enabled" class="text-xs text-gray-400 cursor-pointer">{{ t('settings.notifications.discord.enabled_label') }}</label>
                     </div>
                 </div>
                 <div>
-                    <label for="discord_webhook_url" class="block text-xs text-gray-400 mb-1.5">Webhook URL</label>
+                    <label for="discord_webhook_url" class="block text-xs text-gray-400 mb-1.5">{{ t('settings.notifications.discord.webhook_url_label') }}</label>
                     <input type="url" id="discord_webhook_url" name="discord_webhook_url" value=""
-                           placeholder="{% if s['discord.webhook_url'] %}••••••• (set – leave empty to keep){% else %}https://discord.com/api/webhooks/…{% endif %}"
+                           placeholder="{% if s['discord.webhook_url'] %}{{ t('settings.notifications.discord.webhook_placeholder_set') }}{% else %}{{ t('settings.notifications.discord.webhook_placeholder_empty') }}{% endif %}"
                            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                   placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 font-mono">
                     {% if s['discord.webhook_url'] %}
-                    <p class="text-xs text-emerald-600 mt-1">Webhook set. Leave empty to keep.</p>
+                    <p class="text-xs text-emerald-600 mt-1">{{ t('settings.notifications.discord.webhook_set_hint') }}</p>
                     {% endif %}
                 </div>
                 <button type="submit" form="form-test-discord"
-                        {% if not s['discord.webhook_url'] %}disabled title="Webhook URL not configured"{% endif %}
+                        {% if not s['discord.webhook_url'] %}disabled title="{{ t('settings.notifications.discord.test_disabled_title') }}"{% endif %}
                         class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors
                                {% if s['discord.webhook_url'] %}bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white
                                {% else %}bg-gray-800/50 text-gray-700 cursor-not-allowed{% endif %}">
                     <svg viewBox="0 0 16 16" fill="currentColor" class="w-3.5 h-3.5">
                         <path fill-rule="evenodd" d="M8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.001 7.001 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.501 5.501 0 0 0 8 2.5ZM1.705 8.005a.75.75 0 0 1 .834.656 5.501 5.501 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.001 7.001 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834Z" clip-rule="evenodd"/>
                     </svg>
-                    Send test message
+                    {{ t('settings.notifications.discord.test_button') }}
                 </button>
             </div>
 
@@ -166,27 +195,27 @@
             <div class="card p-5 space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-gray-800">
                     <div>
-                        <p class="text-sm font-medium text-gray-200">Email (SMTP)</p>
-                        <p class="text-xs text-gray-600 mt-0.5">Send alerts via email</p>
+                        <p class="text-sm font-medium text-gray-200">{{ t('settings.notifications.email.title') }}</p>
+                        <p class="text-xs text-gray-600 mt-0.5">{{ t('settings.notifications.email.subtitle') }}</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <input type="hidden" name="smtp_enabled" value="">
                         <input type="checkbox" id="smtp_enabled" name="smtp_enabled" value="1"
                                {% if s['smtp.enabled'] == '1' %}checked{% endif %}
                                class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
-                        <label for="smtp_enabled" class="text-xs text-gray-400 cursor-pointer">Enabled</label>
+                        <label for="smtp_enabled" class="text-xs text-gray-400 cursor-pointer">{{ t('settings.notifications.email.enabled_label') }}</label>
                     </div>
                 </div>
                 <div class="grid grid-cols-3 gap-3">
                     <div class="col-span-2">
-                        <label for="smtp_host" class="block text-xs text-gray-400 mb-1.5">SMTP Host</label>
+                        <label for="smtp_host" class="block text-xs text-gray-400 mb-1.5">{{ t('settings.notifications.email.host_label') }}</label>
                         <input type="text" id="smtp_host" name="smtp_host"
                                value="{{ s['smtp.host'] }}" placeholder="smtp.example.com"
                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white font-mono
                                       placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
                     </div>
                     <div>
-                        <label for="smtp_port" class="block text-xs text-gray-400 mb-1.5">Port</label>
+                        <label for="smtp_port" class="block text-xs text-gray-400 mb-1.5">{{ t('settings.notifications.email.port_label') }}</label>
                         <input type="number" id="smtp_port" name="smtp_port"
                                value="{{ s['smtp.port'] }}" placeholder="587" min="1" max="65535"
                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
@@ -195,32 +224,32 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label for="smtp_user" class="block text-xs text-gray-400 mb-1.5">Username</label>
+                        <label for="smtp_user" class="block text-xs text-gray-400 mb-1.5">{{ t('settings.notifications.email.user_label') }}</label>
                         <input type="text" id="smtp_user" name="smtp_user"
                                value="{{ s['smtp.user'] }}" placeholder="user@example.com" autocomplete="off"
                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                       placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
                     </div>
                     <div>
-                        <label for="smtp_password" class="block text-xs text-gray-400 mb-1.5">Password</label>
+                        <label for="smtp_password" class="block text-xs text-gray-400 mb-1.5">{{ t('settings.notifications.email.password_label') }}</label>
                         <input type="password" id="smtp_password" name="smtp_password" value=""
-                               placeholder="{% if s['smtp.password'] %}••••••• (keep){% else %}Password{% endif %}"
+                               placeholder="{% if s['smtp.password'] %}{{ t('settings.notifications.email.password_placeholder_set') }}{% else %}{{ t('settings.notifications.email.password_placeholder_empty') }}{% endif %}"
                                autocomplete="new-password"
                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                       placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-                        {% if s['smtp.password'] %}<p class="text-xs text-emerald-600 mt-1">Set. Leave empty to keep.</p>{% endif %}
+                        {% if s['smtp.password'] %}<p class="text-xs text-emerald-600 mt-1">{{ t('settings.notifications.email.password_set_hint') }}</p>{% endif %}
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label for="smtp_from_addr" class="block text-xs text-gray-400 mb-1.5">From</label>
+                        <label for="smtp_from_addr" class="block text-xs text-gray-400 mb-1.5">{{ t('settings.notifications.email.from_label') }}</label>
                         <input type="email" id="smtp_from_addr" name="smtp_from_addr"
                                value="{{ s['smtp.from_addr'] }}" placeholder="spoolbeacon@example.com"
                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                       placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
                     </div>
                     <div>
-                        <label for="smtp_to_addr" class="block text-xs text-gray-400 mb-1.5">To</label>
+                        <label for="smtp_to_addr" class="block text-xs text-gray-400 mb-1.5">{{ t('settings.notifications.email.to_label') }}</label>
                         <input type="email" id="smtp_to_addr" name="smtp_to_addr"
                                value="{{ s['smtp.to_addr'] }}" placeholder="me@example.com"
                                class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
@@ -234,18 +263,18 @@
                                {% if s['smtp.tls'] == '1' %}checked{% endif %}
                                class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
                         <label for="smtp_tls" class="text-sm text-gray-300 cursor-pointer">
-                            STARTTLS <span class="text-gray-600 text-xs">(port 587)</span>
+                            {{ t('settings.notifications.email.tls_label') }} <span class="text-gray-600 text-xs">{{ t('settings.notifications.email.tls_hint') }}</span>
                         </label>
                     </div>
                     <button type="submit" form="form-test-email"
-                            {% if not s['smtp.host'] or not s['smtp.to_addr'] %}disabled title="SMTP configuration incomplete"{% endif %}
+                            {% if not s['smtp.host'] or not s['smtp.to_addr'] %}disabled title="{{ t('settings.notifications.email.test_disabled_title') }}"{% endif %}
                             class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors
                                    {% if s['smtp.host'] and s['smtp.to_addr'] %}bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white
                                    {% else %}bg-gray-800/50 text-gray-700 cursor-not-allowed{% endif %}">
                         <svg viewBox="0 0 16 16" fill="currentColor" class="w-3.5 h-3.5">
                             <path fill-rule="evenodd" d="M8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.001 7.001 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.501 5.501 0 0 0 8 2.5ZM1.705 8.005a.75.75 0 0 1 .834.656 5.501 5.501 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.001 7.001 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834Z" clip-rule="evenodd"/>
                         </svg>
-                        Send test email
+                        {{ t('settings.notifications.email.test_button') }}
                     </button>
                 </div>
             </div>
@@ -261,16 +290,16 @@
                     <path fill-rule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clip-rule="evenodd"/>
                 </svg>
             </div>
-            <h2 class="text-base font-semibold text-white">Inventory</h2>
+            <h2 class="text-base font-semibold text-white">{{ t('settings.inventory.section_title') }}</h2>
         </div>
 
         <div class="card p-5 space-y-4">
             <div class="pb-3 border-b border-gray-800">
-                <p class="text-sm font-medium text-gray-200">Spool Code Template</p>
-                <p class="text-xs text-gray-600 mt-0.5">Pattern used when generating spool codes. Changes apply to new spools only.</p>
+                <p class="text-sm font-medium text-gray-200">{{ t('settings.inventory.spool_code.title') }}</p>
+                <p class="text-xs text-gray-600 mt-0.5">{{ t('settings.inventory.spool_code.subtitle') }}</p>
             </div>
             <div>
-                <label for="spool_code_template" class="block text-xs text-gray-400 mb-1.5">Template</label>
+                <label for="spool_code_template" class="block text-xs text-gray-400 mb-1.5">{{ t('settings.inventory.spool_code.template_label') }}</label>
                 <input type="text" id="spool_code_template" name="spool_code_template"
                        value="{{ s['spool.code_template'] }}"
                        placeholder="{{ s['spool.code_template'] }}"
@@ -278,7 +307,7 @@
                               focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
             </div>
             <div class="rounded-lg bg-gray-850 border border-gray-800 p-3">
-                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-2.5">Available variables</p>
+                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-2.5">{{ t('settings.inventory.spool_code.available_vars_title') }}</p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1.5">
                     {% for var, desc in available_vars %}
                     <div class="flex items-baseline gap-2">
@@ -290,17 +319,17 @@
             </div>
             <div class="flex items-center justify-between pt-1 border-t border-gray-800">
                 <div>
-                    <p class="text-sm font-medium text-gray-300">Regenerate all spool codes</p>
-                    <p class="text-xs text-gray-600 mt-0.5">Overwrites existing codes using the saved template above.</p>
+                    <p class="text-sm font-medium text-gray-300">{{ t('settings.inventory.spool_code.regenerate_title') }}</p>
+                    <p class="text-xs text-gray-600 mt-0.5">{{ t('settings.inventory.spool_code.regenerate_subtitle') }}</p>
                 </div>
                 <button type="submit" form="form-regenerate"
-                        onclick="return confirm('Regenerate all spool codes? Existing codes will be overwritten.')"
+                        onclick="return confirm('{{ t('settings.inventory.spool_code.regenerate_confirm') }}')"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg flex-shrink-0
                                bg-amber-700 hover:bg-amber-600 text-white transition-colors">
                     <svg viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
                         <path fill-rule="evenodd" d="M8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.001 7.001 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.501 5.501 0 0 0 8 2.5ZM1.705 8.005a.75.75 0 0 1 .834.656 5.501 5.501 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.001 7.001 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834Z" clip-rule="evenodd"/>
                     </svg>
-                    Regenerate
+                    {{ t('settings.inventory.spool_code.regenerate_button') }}
                 </button>
             </div>
         </div>
@@ -314,30 +343,29 @@
                     <path fill-rule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clip-rule="evenodd"/>
                 </svg>
             </div>
-            <h2 class="text-base font-semibold text-white">Backup &amp; Restore</h2>
+            <h2 class="text-base font-semibold text-white">{{ t('settings.backup.section_title') }}</h2>
         </div>
 
         <div class="card p-5 space-y-4">
             <div class="flex items-center justify-between pb-3 border-b border-gray-800">
                 <div>
-                    <p class="text-sm font-medium text-gray-200">Export data</p>
+                    <p class="text-sm font-medium text-gray-200">{{ t('settings.backup.export.title') }}</p>
                     <p class="text-xs text-gray-600 mt-0.5">
-                        Manufacturers, products, purchases, spools, shop links and shop rules as JSON.
-                        Users and price-check history are not included.
+                        {{ t('settings.backup.export.subtitle') }}
                     </p>
                 </div>
                 <a href="/settings/export"
                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg flex-shrink-0
                           bg-gray-800 hover:bg-gray-750 text-gray-200 transition-colors">
-                    Export JSON
+                    {{ t('settings.backup.export.button') }}
                 </a>
             </div>
 
             <div class="flex items-center justify-between pt-1">
                 <div>
-                    <p class="text-sm font-medium text-gray-300">Import data</p>
+                    <p class="text-sm font-medium text-gray-300">{{ t('settings.backup.import.title') }}</p>
                     <p class="text-xs text-gray-600 mt-0.5">
-                        Additive only — existing records (matched by name / code) are never overwritten or deleted.
+                        {{ t('settings.backup.import.subtitle') }}
                     </p>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
@@ -346,10 +374,10 @@
                                   file:text-xs file:font-medium file:bg-gray-800 file:text-gray-300
                                   hover:file:bg-gray-750 file:cursor-pointer cursor-pointer">
                     <button type="submit" form="form-import"
-                            onclick="return confirm('Import data from this JSON file? Existing records will not be modified.')"
+                            onclick="return confirm('{{ t('settings.backup.import.confirm') }}')"
                             class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg flex-shrink-0
                                    bg-sky-700 hover:bg-sky-600 text-white transition-colors">
-                        Import
+                        {{ t('settings.backup.import.button') }}
                     </button>
                 </div>
             </div>
@@ -357,7 +385,7 @@
     </section>
 
     <div class="pt-2">
-        <button type="submit" class="btn-primary px-6 py-2.5">Save Settings</button>
+        <button type="submit" class="btn-primary px-6 py-2.5">{{ t('settings.save_button') }}</button>
     </div>
 
 </form>

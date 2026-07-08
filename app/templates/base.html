@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="{{ current_locale }}" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}SpoolBeacon{% endblock %}</title>
+    <title>{% block title %}{{ t('app.title') }}{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -131,7 +131,7 @@
                             <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
                                 <path d="M2 11a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-5ZM8 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V7ZM14 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V4Z"/>
                             </svg>
-                            Dashboard
+                            {{ t('nav.dashboard') }}
                             {% if nav_alert_count > 0 %}
                             <span class="ml-0.5 px-1.5 py-0.5 text-[10px] rounded-full bg-amber-500/20 text-amber-400 font-semibold leading-none">{{ nav_alert_count }}</span>
                             {% endif %}
@@ -142,21 +142,21 @@
                                 <path d="M2 3a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2Z"/>
                                 <path fill-rule="evenodd" d="M2 7.5h16l-.811 7.71a2 2 0 0 1-1.99 1.79H4.802a2 2 0 0 1-1.99-1.79L2 7.5ZM7 11a1 1 0 0 1 1-1h4a1 1 0 0 1 0 2H8a1 1 0 0 1-1-1Z" clip-rule="evenodd"/>
                             </svg>
-                            Inventory
+                            {{ t('nav.inventory') }}
                         </a>
                         <a href="/prints/"
                            class="{% if '/prints' in request.path %}nav-link-active{% else %}nav-link-inactive{% endif %}">
                             <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
                                 <path fill-rule="evenodd" d="M5 4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v2H5V4Zm-2 3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h1v-3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3h1a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1H3Zm9 8v-3H8v3h4Zm2-8a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z" clip-rule="evenodd"/>
                             </svg>
-                            Prints
+                            {{ t('nav.prints') }}
                         </a>
                         <a href="/shop-rules/"
                            class="{% if '/shop-rules' in request.path %}nav-link-active{% else %}nav-link-inactive{% endif %}">
                             <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
                                 <path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 0 0 3 5.5v2.879a2.5 2.5 0 0 0 .732 1.767l6.5 6.5a2.5 2.5 0 0 0 3.536 0l2.878-2.878a2.5 2.5 0 0 0 0-3.536l-6.5-6.5A2.5 2.5 0 0 0 8.38 3H5.5ZM6 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/>
                             </svg>
-                            Shop Rules
+                            {{ t('nav.shop_rules') }}
                         </a>
                         <a href="/manufacturers/"
                            class="{% if '/manufacturers' in request.path %}nav-link-active{% else %}nav-link-inactive{% endif %}">
@@ -166,7 +166,7 @@
                                 <rect x="9" y="11" width="2" height="2"/>
                                 <rect x="13" y="11" width="2" height="2"/>
                             </svg>
-                            Manufacturers
+                            {{ t('nav.manufacturers') }}
                         </a>
                         {% if is_admin %}
                         <a href="/users/"
@@ -174,14 +174,14 @@
                             <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
                                 <path d="M7 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM14.5 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM1.615 16.428a1.224 1.224 0 0 1-.569-1.175 6.002 6.002 0 0 1 11.908 0 1.224 1.224 0 0 1-.569 1.175A9.953 9.953 0 0 1 7 18a9.953 9.953 0 0 1-5.385-1.572ZM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 0 0-1.588-3.755 4.502 4.502 0 0 1 5.874 2.636.818.818 0 0 1-.36.98A7.465 7.465 0 0 1 14.5 16Z"/>
                             </svg>
-                            Users
+                            {{ t('nav.users') }}
                         </a>
                         <a href="/settings/"
                            class="{% if '/settings' in request.path %}nav-link-active{% else %}nav-link-inactive{% endif %}">
                             <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
                                 <path fill-rule="evenodd" d="M7.84 1.804A1 1 0 0 1 8.82 1h2.36a1 1 0 0 1 .98.804l.331 1.652a6.993 6.993 0 0 1 1.929 1.115l1.598-.54a1 1 0 0 1 1.186.447l1.18 2.044a1 1 0 0 1-.205 1.251l-1.267 1.113a7.047 7.047 0 0 1 0 2.228l1.267 1.113a1 1 0 0 1 .206 1.25l-1.18 2.045a1 1 0 0 1-1.187.447l-1.598-.54a6.993 6.993 0 0 1-1.929 1.115l-.33 1.652a1 1 0 0 1-.98.804H8.82a1 1 0 0 1-.98-.804l-.331-1.652a6.993 6.993 0 0 1-1.929-1.115l-1.598.54a1 1 0 0 1-1.186-.447l-1.18-2.044a1 1 0 0 1 .205-1.251l1.267-1.114a7.05 7.05 0 0 1 0-2.227L1.821 7.773a1 1 0 0 1-.206-1.25l1.18-2.045a1 1 0 0 1 1.187-.447l1.598.54A6.992 6.992 0 0 1 7.51 3.456l.33-1.652ZM10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clip-rule="evenodd"/>
                             </svg>
-                            Settings
+                            {{ t('nav.settings') }}
                         </a>
                             <a href="/api-keys/"
                                class="{% if '/api-keys' in request.path %}nav-link-active{% else %}nav-link-inactive{% endif %}">
@@ -190,7 +190,7 @@
                                           d="M18 8a6 6 0 0 1-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1 1 18 8Zm-6-4a1 1 0 1 0 0 2 2 2 0 0 1 2 2 1 1 0 1 0 2 0 4 4 0 0 0-4-4Z"
                                           clip-rule="evenodd"/>
                                 </svg>
-                                API Keys
+                                {{ t('nav.api_keys') }}
                             </a>
                         {% endif %}
                     </nav>
@@ -207,12 +207,12 @@
                             <path fill-rule="evenodd" d="M3 4.25A2.25 2.25 0 0 1 5.25 2h5.5A2.25 2.25 0 0 1 13 4.25v2a.75.75 0 0 1-1.5 0v-2a.75.75 0 0 0-.75-.75h-5.5a.75.75 0 0 0-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 0 0 .75-.75v-2a.75.75 0 0 1 1.5 0v2A2.25 2.25 0 0 1 10.75 18h-5.5A2.25 2.25 0 0 1 3 15.75V4.25Z" clip-rule="evenodd"/>
                             <path fill-rule="evenodd" d="M19 10a.75.75 0 0 0-.75-.75H8.704l1.048-1.04a.75.75 0 1 0-1.056-1.064l-2.25 2.25a.75.75 0 0 0 0 1.063l2.25 2.25a.75.75 0 1 0 1.056-1.063l-1.048-1.04h9.546A.75.75 0 0 0 19 10Z" clip-rule="evenodd"/>
                         </svg>
-                        Sign out
+                        {{ t('common.sign_out') }}
                     </a>
                     <!-- Hamburger (mobile only) -->
                     <button id="mobile-menu-btn" type="button"
                             class="md:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.06] transition-colors"
-                            aria-label="Toggle menu">
+                            aria-label="{{ t('nav.toggle_menu') }}">
                         <svg id="icon-open" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                             <path fill-rule="evenodd" d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z" clip-rule="evenodd"/>
                         </svg>
@@ -234,7 +234,7 @@
                     <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
                         <path d="M2 11a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-5ZM8 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V7ZM14 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V4Z"/>
                     </svg>
-                    Dashboard
+                    {{ t('nav.dashboard') }}
                     {% if nav_alert_count > 0 %}
                     <span class="ml-auto px-1.5 py-0.5 text-[10px] rounded-full bg-amber-500/20 text-amber-400 font-semibold leading-none">{{ nav_alert_count }}</span>
                     {% endif %}
@@ -245,21 +245,21 @@
                         <path d="M2 3a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2Z"/>
                         <path fill-rule="evenodd" d="M2 7.5h16l-.811 7.71a2 2 0 0 1-1.99 1.79H4.802a2 2 0 0 1-1.99-1.79L2 7.5ZM7 11a1 1 0 0 1 1-1h4a1 1 0 0 1 0 2H8a1 1 0 0 1-1-1Z" clip-rule="evenodd"/>
                     </svg>
-                    Inventory
+                    {{ t('nav.inventory') }}
                 </a>
                 <a href="/prints/"
                    class="{% if '/prints' in request.path %}nav-link-active{% else %}nav-link-inactive{% endif %}">
                     <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
                         <path fill-rule="evenodd" d="M5 4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v2H5V4Zm-2 3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h1v-3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3h1a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1H3Zm9 8v-3H8v3h4Zm2-8a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z" clip-rule="evenodd"/>
                     </svg>
-                    Prints
+                    {{ t('nav.prints') }}
                 </a>
                 <a href="/shop-rules/"
                    class="{% if '/shop-rules' in request.path %}nav-link-active{% else %}nav-link-inactive{% endif %}">
                     <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
                         <path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 0 0 3 5.5v2.879a2.5 2.5 0 0 0 .732 1.767l6.5 6.5a2.5 2.5 0 0 0 3.536 0l2.878-2.878a2.5 2.5 0 0 0 0-3.536l-6.5-6.5A2.5 2.5 0 0 0 8.38 3H5.5ZM6 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/>
                     </svg>
-                    Shop Rules
+                    {{ t('nav.shop_rules') }}
                 </a>
                 <a href="/manufacturers/"
                    class="{% if '/manufacturers' in request.path %}nav-link-active{% else %}nav-link-inactive{% endif %}">
@@ -269,7 +269,7 @@
                         <rect x="9" y="11" width="2" height="2"/>
                         <rect x="13" y="11" width="2" height="2"/>
                     </svg>
-                    Manufacturers
+                    {{ t('nav.manufacturers') }}
                 </a>
                 {% if is_admin %}
                 <a href="/users/"
@@ -277,14 +277,14 @@
                     <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
                         <path d="M7 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM14.5 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM1.615 16.428a1.224 1.224 0 0 1-.569-1.175 6.002 6.002 0 0 1 11.908 0 1.224 1.224 0 0 1-.569 1.175A9.953 9.953 0 0 1 7 18a9.953 9.953 0 0 1-5.385-1.572ZM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 0 0-1.588-3.755 4.502 4.502 0 0 1 5.874 2.636.818.818 0 0 1-.36.98A7.465 7.465 0 0 1 14.5 16Z"/>
                     </svg>
-                    Users
+                    {{ t('nav.users') }}
                 </a>
                 <a href="/settings/"
                    class="{% if '/settings' in request.path %}nav-link-active{% else %}nav-link-inactive{% endif %}">
                     <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0">
                         <path fill-rule="evenodd" d="M7.84 1.804A1 1 0 0 1 8.82 1h2.36a1 1 0 0 1 .98.804l.331 1.652a6.993 6.993 0 0 1 1.929 1.115l1.598-.54a1 1 0 0 1 1.186.447l1.18 2.044a1 1 0 0 1-.205 1.251l-1.267 1.113a7.047 7.047 0 0 1 0 2.228l1.267 1.113a1 1 0 0 1 .206 1.25l-1.18 2.045a1 1 0 0 1-1.187.447l-1.598-.54a6.993 6.993 0 0 1-1.929 1.115l-.33 1.652a1 1 0 0 1-.98.804H8.82a1 1 0 0 1-.98-.804l-.331-1.652a6.993 6.993 0 0 1-1.929-1.115l-1.598.54a1 1 0 0 1-1.186-.447l-1.18-2.044a1 1 0 0 1 .205-1.251l1.267-1.114a7.05 7.05 0 0 1 0-2.227L1.821 7.773a1 1 0 0 1-.206-1.25l1.18-2.045a1 1 0 0 1 1.187-.447l1.598.54A6.992 6.992 0 0 1 7.51 3.456l.33-1.652ZM10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clip-rule="evenodd"/>
                     </svg>
-                    Settings
+                    {{ t('nav.settings') }}
                 </a>
                     <a href="/api-keys/"
                        class="{% if '/api-keys' in request.path %}nav-link-active{% else %}nav-link-inactive{% endif %}">
@@ -293,7 +293,7 @@
                                   d="M18 8a6 6 0 0 1-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1 1 18 8Zm-6-4a1 1 0 1 0 0 2 2 2 0 0 1 2 2 1 1 0 1 0 2 0 4 4 0 0 0-4-4Z"
                                   clip-rule="evenodd"/>
                         </svg>
-                        API Keys
+                        {{ t('nav.api_keys') }}
                 </a>
                 {% endif %}
                 <div class="pt-2 mt-1 border-t border-white/[0.06]">
@@ -303,7 +303,7 @@
                             <path fill-rule="evenodd" d="M3 4.25A2.25 2.25 0 0 1 5.25 2h5.5A2.25 2.25 0 0 1 13 4.25v2a.75.75 0 0 1-1.5 0v-2a.75.75 0 0 0-.75-.75h-5.5a.75.75 0 0 0-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 0 0 .75-.75v-2a.75.75 0 0 1 1.5 0v2A2.25 2.25 0 0 1 10.75 18h-5.5A2.25 2.25 0 0 1 3 15.75V4.25Z" clip-rule="evenodd"/>
                             <path fill-rule="evenodd" d="M19 10a.75.75 0 0 0-.75-.75H8.704l1.048-1.04a.75.75 0 1 0-1.056-1.064l-2.25 2.25a.75.75 0 0 0 0 1.063l2.25 2.25a.75.75 0 1 0 1.056-1.063l-1.048-1.04h9.546A.75.75 0 0 0 19 10Z" clip-rule="evenodd"/>
                         </svg>
-                        Sign out
+                        {{ t('common.sign_out') }}
                     </a>
                 </div>
             </nav>

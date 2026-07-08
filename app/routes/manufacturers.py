@@ -5,6 +5,7 @@ from quart_auth import login_required, current_user
 from sqlalchemy import select, func
 
 from app.database import get_db
+from app.i18n import t
 from app.models.filament import Manufacturer, FilamentProduct
 from app.models.spool import Spool, SpoolStatus
 from app.models.user import User, UserRole
@@ -27,12 +28,12 @@ def write_required(f):
 def _validate(form) -> str | None:
     name = form.get("name", "").strip()
     if not name:
-        return "Name is required."
+        return t("manufacturers.validation.name_required")
     if len(name) > 128:
-        return "Name must be 128 characters or fewer."
+        return t("manufacturers.validation.name_too_long")
     website = form.get("website", "").strip()
     if website and not website.startswith(("http://", "https://")):
-        return "Website must start with http:// or https://."
+        return t("manufacturers.validation.website_invalid")
     return None
 
 
@@ -109,7 +110,7 @@ async def new():
             select(Manufacturer).where(Manufacturer.name == name)
         )).scalar_one_or_none()
         if dup:
-            await flash(f'Manufacturer "{name}" already exists.', "error")
+            await flash(t("manufacturers.flash.duplicate", name=name), "error")
             return await render_template("manufacturers/manufacturer_form.html", manufacturer=None, form_data=form)
 
         session.add(Manufacturer(**_fields(form)))
@@ -144,7 +145,7 @@ async def edit(manufacturer_id: int):
             select(Manufacturer).where(Manufacturer.name == name, Manufacturer.id != manufacturer_id)
         )).scalar_one_or_none()
         if dup:
-            await flash(f'Manufacturer "{name}" already exists.', "error")
+            await flash(t("manufacturers.flash.duplicate", name=name), "error")
             return await render_template(
                 "manufacturers/manufacturer_form.html", manufacturer=manufacturer, form_data=form
             )
@@ -169,7 +170,7 @@ async def delete(manufacturer_id: int):
         ) or 0
         if product_count:
             await flash(
-                f'Cannot delete "{manufacturer.name}": {product_count} filament product(s) still reference it.',
+                t("manufacturers.flash.cannot_delete", name=manufacturer.name, count=product_count),
                 "error",
             )
             return redirect(url_for("manufacturers.index"))
