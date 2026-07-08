@@ -6,6 +6,7 @@ Shared helper to create and auto-resolve PriceAlertEvents after a successful pri
 import logging
 from datetime import datetime
 from sqlalchemy import select
+from app.i18n import t
 from app.models.price_alert_event import PriceAlertEvent
 
 log = logging.getLogger(__name__)
@@ -50,18 +51,21 @@ async def dispatch_alert_notifications(
         for alert_type in alert_types:
             if alert_type == "target_price" and target_price is not None:
                 target_str = f"{target_price:.2f} {currency}"
-                type_label = "Target price"
+                type_label = t("notifications.labels.target_price")
             elif alert_type == "target_price_per_kg" and target_price_per_kg is not None:
                 target_str = f"{target_price_per_kg:.2f} {currency}/kg"
-                type_label = "Target price/kg"
+                type_label = t("notifications.labels.target_price_per_kg")
             else:
                 continue
 
-            message = (
-                f"Target price reached: {filament_name}\n"
-                f"Shop: {shop_name}\n"
-                f"Price: {snap_total:.2f} {currency}  |  {type_label}: {target_str}\n"
-                f"{shop_url}"
+            message = t(
+                "notifications.email.plain_body_price_alert",
+                filament_name=filament_name,
+                shop_name=shop_name,
+                price_str=f"{snap_total:.2f} {currency}",
+                type_label=type_label,
+                target_str=target_str,
+                shop_url=shop_url,
             )
 
             if discord_on:
@@ -83,7 +87,11 @@ async def dispatch_alert_notifications(
                     password=s["smtp.password"],
                     from_addr=s["smtp.from_addr"],
                     to_addr=s["smtp.to_addr"],
-                    subject=f"SpoolBeacon: {type_label} reached – {filament_name}",
+                    subject=t(
+                        "notifications.email.subject_price_alert",
+                        type_label=type_label,
+                        filament_name=filament_name,
+                    ),
                     body=message,
                     html_body=html_body,
                     use_tls=s["smtp.tls"] == "1",
@@ -136,12 +144,22 @@ async def maybe_create_alerts(
     if target_price is not None and snap_total <= target_price:
         candidates.append((
             "target_price",
-            f"Price {snap_total:.2f} {currency} <= target {target_price:.2f} {currency}",
+            t(
+                "notifications.alerts.target_price_hit",
+                price=f"{snap_total:.2f}",
+                currency=currency,
+                target=f"{target_price:.2f}",
+            ),
         ))
     if target_price_per_kg is not None and snap_per_kg is not None and snap_per_kg <= target_price_per_kg:
         candidates.append((
             "target_price_per_kg",
-            f"Price/kg {snap_per_kg:.2f} {currency} <= target {target_price_per_kg:.2f} {currency}/kg",
+            t(
+                "notifications.alerts.target_price_per_kg_hit",
+                price=f"{snap_per_kg:.2f}",
+                currency=currency,
+                target=f"{target_price_per_kg:.2f}",
+            ),
         ))
 
     created = []

@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
+from app.i18n import t
 from app.models.api_key import ApiKey
 from app.models.user import User, UserRole
 
@@ -45,7 +46,7 @@ async def create():
     form = await request.form
     name = form.get("name", "").strip()
     if not name:
-        await flash("API key name is required.", "error")
+        await flash(t("api_keys.validation.name_required"), "error")
         return redirect(url_for("api_keys.index"))
 
     token = ApiKey.generate_token()
@@ -73,5 +74,5 @@ async def delete(key_id: int):
             abort(404)
         await db.delete(key)
 
-    await flash("API key revoked.", "success")
+    await flash(t("api_keys.flash.revoked"), "success")
     return redirect(url_for("api_keys.index"))

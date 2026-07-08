@@ -1,14 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Print Log – SpoolBeacon{% endblock %}
+{% block title %}{{ t('prints.index.title') }} – SpoolBeacon{% endblock %}
 
 {% block content %}
 
 <div class="mb-7 flex items-center justify-between">
     <div>
-        <h1 class="text-xl font-bold text-white tracking-tight">Print Log</h1>
-        <p class="text-gray-500 text-sm mt-0.5">{{ total }} print{{ 's' if total != 1 else '' }} logged</p>
+        <h1 class="text-xl font-bold text-white tracking-tight">{{ t('prints.index.title') }}</h1>
+        <p class="text-gray-500 text-sm mt-0.5">
+            {% if total == 1 %}{{ t('prints.index.subtitle_one', count=total) }}{% else %}{{ t('prints.index.subtitle_other', count=total) }}{% endif %}
+        </p>
     </div>
-    <a href="/prints/new" class="btn-primary">+ Log Print</a>
+    <a href="/prints/new" class="btn-primary">{{ t('prints.index.log_button') }}</a>
 </div>
 
 {% if jobs %}
@@ -16,10 +18,10 @@
     <table class="w-full text-sm">
         <thead>
             <tr class="border-b border-gray-800">
-                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">Date</th>
-                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">Print Name</th>
-                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 hidden sm:table-cell">Filaments</th>
-                <th class="px-5 py-3 text-right text-xs font-medium text-gray-500">Total Used</th>
+                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">{{ t('prints.index.table_date') }}</th>
+                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">{{ t('prints.index.table_print_name') }}</th>
+                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 hidden sm:table-cell">{{ t('prints.index.table_filaments') }}</th>
+                <th class="px-5 py-3 text-right text-xs font-medium text-gray-500">{{ t('prints.index.table_total_used') }}</th>
                 <th class="px-5 py-3"></th>
             </tr>
         </thead>
@@ -52,7 +54,7 @@
                 </td>
                 <td class="px-5 py-3.5 text-right">
                     <form method="POST" action="/prints/{{ job.id }}/delete" class="inline"
-                          onsubmit="return confirm('Delete this print log? This cannot be undone.')">
+                          onsubmit="return confirm('{{ t('prints.index.delete_confirm') }}')">
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                         <button type="submit"
                                 class="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-950/30 transition-colors">
@@ -70,13 +72,13 @@
 
 {% if total_pages > 1 %}
 <div class="flex items-center justify-between mt-4">
-    <span class="text-xs text-gray-600">Page {{ page }} of {{ total_pages }}</span>
+    <span class="text-xs text-gray-600">{{ t('prints.index.page_of', page=page, total_pages=total_pages) }}</span>
     <div class="flex items-center gap-2">
         {% if page > 1 %}
-        <a href="?page={{ page - 1 }}" class="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors">← Previous</a>
+        <a href="?page={{ page - 1 }}" class="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors">{{ t('prints.index.previous') }}</a>
         {% endif %}
         {% if page < total_pages %}
-        <a href="?page={{ page + 1 }}" class="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors">Next →</a>
+        <a href="?page={{ page + 1 }}" class="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors">{{ t('prints.index.next') }}</a>
         {% endif %}
     </div>
 </div>
@@ -89,8 +91,8 @@
             <path fill-rule="evenodd" d="M5 4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v2H5V4Zm-2 3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h1v-3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3h1a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1H3Zm9 8v-3H8v3h4Zm2-8a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z" clip-rule="evenodd"/>
         </svg>
     </div>
-    <p class="text-gray-400 font-medium">No prints logged yet.</p>
-    <a href="/prints/new" class="inline-block mt-3 text-sm text-indigo-400 hover:text-indigo-300 transition-colors">Log your first print →</a>
+    <p class="text-gray-400 font-medium">{{ t('prints.index.empty') }}</p>
+    <a href="/prints/new" class="inline-block mt-3 text-sm text-indigo-400 hover:text-indigo-300 transition-colors">{{ t('prints.index.log_first') }}</a>
 </div>
 {% endif %}
 

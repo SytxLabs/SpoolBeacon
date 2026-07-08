@@ -1,18 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Users – SpoolBeacon{% endblock %}
+{% block title %}{{ t('users.index.title') }} – SpoolBeacon{% endblock %}
 
 {% block content %}
 
 <div class="flex items-start justify-between mb-6">
     <div>
-        <h1 class="page-title">Users</h1>
-        <p class="page-subtitle">{{ users|length }} account{{ 's' if users|length != 1 else '' }}</p>
+        <h1 class="page-title">{{ t('users.index.title') }}</h1>
+        <p class="page-subtitle">{{ t('users.index.subtitle_one', count=users|length) if users|length == 1 else t('users.index.subtitle_other', count=users|length) }}</p>
     </div>
     <a href="/users/new" class="btn-primary">
         <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
             <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z"/>
         </svg>
-        New User
+        {{ t('users.index.new_user') }}
     </a>
 </div>
 
@@ -21,16 +21,21 @@
     'member': 'badge-blue',
     'viewer': 'badge-gray',
 } %}
+{% set role_labels = {
+    'admin':  t('users.role.admin'),
+    'member': t('users.role.member'),
+    'viewer': t('users.role.viewer'),
+} %}
 
 <div class="card overflow-hidden">
     <table class="w-full text-sm">
         <thead>
             <tr class="border-b border-gray-800 bg-gray-900/50">
-                <th class="text-left px-5 py-3 section-label">Username</th>
-                <th class="text-left px-5 py-3 section-label hidden sm:table-cell">Email</th>
-                <th class="text-center px-5 py-3 section-label">Role</th>
-                <th class="text-center px-5 py-3 section-label">Status</th>
-                <th class="text-left px-5 py-3 section-label hidden md:table-cell">Created</th>
+                <th class="text-left px-5 py-3 section-label">{{ t('users.index.col_username') }}</th>
+                <th class="text-left px-5 py-3 section-label hidden sm:table-cell">{{ t('users.index.col_email') }}</th>
+                <th class="text-center px-5 py-3 section-label">{{ t('users.index.col_role') }}</th>
+                <th class="text-center px-5 py-3 section-label">{{ t('users.index.col_status') }}</th>
+                <th class="text-left px-5 py-3 section-label hidden md:table-cell">{{ t('users.index.col_created') }}</th>
                 <th class="px-5 py-3 section-label"></th>
             </tr>
         </thead>
@@ -40,20 +45,20 @@
                 <td class="px-5 py-4">
                     <span class="font-medium text-gray-200">{{ user.username }}</span>
                     {% if user.id == current_user.auth_id|int %}
-                    <span class="ml-1.5 text-[10px] text-gray-600">(you)</span>
+                    <span class="ml-1.5 text-[10px] text-gray-600">{{ t('users.index.you_suffix') }}</span>
                     {% endif %}
                 </td>
                 <td class="px-5 py-4 text-gray-500 text-xs hidden sm:table-cell">{{ user.email }}</td>
                 <td class="px-5 py-4 text-center">
                     <span class="{{ role_styles.get(user.role.value, 'badge-gray') }} text-[10px]">
-                        {{ user.role.value }}
+                        {{ role_labels.get(user.role.value, user.role.value) }}
                     </span>
                 </td>
                 <td class="px-5 py-4 text-center">
                     {% if user.is_active %}
-                    <span class="badge-green text-[10px]">active</span>
+                    <span class="badge-green text-[10px]">{{ t('users.index.status_active') }}</span>
                     {% else %}
-                    <span class="badge-gray text-[10px]">inactive</span>
+                    <span class="badge-gray text-[10px]">{{ t('users.index.status_inactive') }}</span>
                     {% endif %}
                 </td>
                 <td class="px-5 py-4 text-gray-600 text-xs hidden md:table-cell tabular-nums">
@@ -61,7 +66,7 @@
                 </td>
                 <td class="px-5 py-4">
                     <div class="flex items-center justify-end gap-1">
-                        <a href="/users/{{ user.id }}/edit" title="Edit user"
+                        <a href="/users/{{ user.id }}/edit" title="{{ t('users.index.edit_title') }}"
                            class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition-colors">
                             <svg viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
                                 <path d="M13.488 2.513a1.75 1.75 0 0 0-2.475 0L6.75 6.774a2.75 2.75 0 0 0-.596.892l-.848 2.047a.75.75 0 0 0 .98.98l2.047-.848a2.75 2.75 0 0 0 .892-.596l4.263-4.263a1.75 1.75 0 0 0 0-2.474Zm-1.414 1.06a.25.25 0 0 1 .354 0l.999.999a.25.25 0 0 1 0 .354L9.168 8.685 7.8 7.316l4.274-4.743Z"/>
@@ -70,9 +75,9 @@
                         </a>
                         {% if user.id != current_user.auth_id|int %}
                         <form method="POST" action="/users/{{ user.id }}/delete" class="inline"
-                              onsubmit="return confirm('Delete user {{ user.username }}? This cannot be undone.')">
+                              onsubmit="return confirm('{{ t('users.index.delete_confirm', username=user.username) }}')">
                             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" title="Delete user"
+                            <button type="submit" title="{{ t('users.index.delete_title') }}"
                                     class="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-950/30 transition-colors">
                                 <svg viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
                                     <path d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 .75.75V4h-3V2.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.711Z"/>

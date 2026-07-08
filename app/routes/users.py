@@ -6,6 +6,7 @@ from sqlalchemy import select, func
 from werkzeug.security import generate_password_hash
 
 from app.database import get_db
+from app.i18n import t
 from app.models.user import User, UserRole
 
 users_bp = Blueprint("users", __name__, url_prefix="/users")
@@ -57,13 +58,13 @@ async def create():
 
         errors = []
         if not username:
-            errors.append("Username is required.")
+            errors.append(t("users.validation.username_required"))
         if not email:
-            errors.append("Email is required.")
+            errors.append(t("users.validation.email_required"))
         if not password:
-            errors.append("Password is required.")
+            errors.append(t("users.validation.password_required"))
         if role_str not in ("admin", "member", "viewer"):
-            errors.append("Invalid role.")
+            errors.append(t("users.validation.invalid_role"))
 
         if not errors:
             async with get_db() as session:
@@ -73,7 +74,7 @@ async def create():
                     )
                 )
                 if clash:
-                    errors.append("Username or email already in use.")
+                    errors.append(t("users.validation.username_email_in_use"))
                 else:
                     session.add(User(
                         username=username,
@@ -89,7 +90,7 @@ async def create():
             return await render_template("users/user_form.html",
                                          editing=False, form_data=form)
 
-        await flash(f"User '{username}' created.", "success")
+        await flash(t("users.flash.created", username=username), "success")
         return redirect(url_for("users.index"))
 
     return await render_template("users/user_form.html", editing=False, form_data=None)
@@ -114,17 +115,17 @@ async def edit(user_id: int):
 
         errors = []
         if not username:
-            errors.append("Username is required.")
+            errors.append(t("users.validation.username_required"))
         if not email:
-            errors.append("Email is required.")
+            errors.append(t("users.validation.email_required"))
         if role_str not in ("admin", "member", "viewer"):
-            errors.append("Invalid role.")
+            errors.append(t("users.validation.invalid_role"))
 
         me = int(current_user.auth_id)
 
         # Cannot deactivate own account
         if user_id == me and not is_active:
-            errors.append("You cannot deactivate your own account.")
+            errors.append(t("users.validation.cannot_deactivate_self"))
 
         new_role = UserRole[role_str] if role_str in ("admin", "member", "viewer") else target.role
 
@@ -134,9 +135,9 @@ async def edit(user_id: int):
                 other_admins = await _active_admin_count(session, exclude_id=user_id)
             if other_admins == 0:
                 if not is_active:
-                    errors.append("Cannot deactivate the last active admin account.")
+                    errors.append(t("users.validation.cannot_deactivate_last_admin"))
                 if new_role != UserRole.admin:
-                    errors.append("Cannot demote the last active admin. Promote another user to admin first.")
+                    errors.append(t("users.validation.cannot_demote_last_admin"))
 
         if not errors:
             async with get_db() as session:
@@ -147,7 +148,7 @@ async def edit(user_id: int):
                     )
                 )
                 if clash:
-                    errors.append("Username or email already in use by another account.")
+                    errors.append(t("users.validation.username_email_in_use_other"))
                 else:
                     user = await session.get(User, user_id)
                     user.username = username
@@ -165,7 +166,7 @@ async def edit(user_id: int):
             return await render_template("users/user_form.html",
                                          editing=True, user=target, form_data=form)
 
-        await flash(f"User '{username}' updated.", "success")
+        await flash(t("users.flash.updated", username=username), "success")
         return redirect(url_for("users.index"))
 
     return await render_template("users/user_form.html",
@@ -178,7 +179,7 @@ async def edit(user_id: int):
 async def delete(user_id: int):
     me = int(current_user.auth_id)
     if user_id == me:
-        await flash("You cannot delete your own account.", "error")
+        await flash(t("users.flash.cannot_delete_self"), "error")
         return redirect(url_for("users.index"))
 
     async with get_db() as session:
@@ -188,9 +189,9 @@ async def delete(user_id: int):
         if target.role == UserRole.admin:
             other_admins = await _active_admin_count(session, exclude_id=user_id)
             if other_admins == 0:
-                await flash("Cannot delete the last active admin account.", "error")
+                await flash(t("users.flash.cannot_delete_last_admin"), "error")
                 return redirect(url_for("users.index"))
         await session.delete(target)
 
-    await flash("User deleted.", "success")
+    await flash(t("users.flash.deleted"), "success")
     return redirect(url_for("users.index"))

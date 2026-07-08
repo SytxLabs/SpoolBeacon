@@ -4,7 +4,7 @@
 {% block content %}
 <div class="mb-7">
     <nav class="flex items-center gap-1.5 text-xs text-gray-600 mb-3">
-        <a href="/manufacturers/" class="hover:text-gray-400 transition-colors">Manufacturers</a>
+        <a href="/manufacturers/" class="hover:text-gray-400 transition-colors">{{ t('nav.manufacturers') }}</a>
         <span>/</span>
         <span class="text-gray-400">{{ manufacturer.name }}</span>
     </nav>
@@ -21,18 +21,20 @@
         </div>
         {% if not is_viewer %}
         <div class="flex items-center gap-2 flex-shrink-0">
-            <a href="/manufacturers/{{ manufacturer.id }}/edit" class="btn-ghost btn-sm">Edit</a>
+            <a href="/manufacturers/{{ manufacturer.id }}/edit" class="btn-ghost btn-sm">{{ t('common.edit') }}</a>
             <form method="POST" action="/manufacturers/{{ manufacturer.id }}/delete"
-                  onsubmit="return confirm('Delete manufacturer {{ manufacturer.name }}?')">
+                  onsubmit="return confirm('{{ t('manufacturers.manufacturer_detail.delete_confirm', name=manufacturer.name) }}')">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn-ghost btn-sm text-red-400 hover:text-red-300">Delete</button>
+                <button type="submit" class="btn-ghost btn-sm text-red-400 hover:text-red-300">{{ t('common.delete') }}</button>
             </form>
         </div>
         {% endif %}
     </div>
 </div>
 
-<p class="text-gray-500 text-sm mb-5">{{ products|length }} product{{ 's' if products|length != 1 }}</p>
+<p class="text-gray-500 text-sm mb-5">
+    {% if products|length == 1 %}{{ t('manufacturers.manufacturer_detail.product_count_one', count=products|length) }}{% else %}{{ t('manufacturers.manufacturer_detail.product_count_other', count=products|length) }}{% endif %}
+</p>
 
 {% if products %}
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -73,7 +75,7 @@
                     {{ spool_count }}
                 </p>
                 <p class="text-[10px] text-gray-600 mt-0.5 uppercase tracking-wide">
-                    Spool{{ 's' if spool_count != 1 else '' }}
+                    {% if spool_count == 1 %}{{ t('manufacturers.manufacturer_detail.spool_label_one') }}{% else %}{{ t('manufacturers.manufacturer_detail.spool_label_other') }}{% endif %}
                 </p>
             </div>
             {% if total_remaining_g > 0 %}
@@ -81,12 +83,12 @@
                 <p class="text-base font-semibold text-gray-200 tabular-nums leading-none">
                     {{ (total_remaining_g / 1000)|round(2) }}<span class="text-xs font-normal text-gray-500 ml-0.5">kg</span>
                 </p>
-                <p class="text-[10px] text-gray-600 mt-0.5 uppercase tracking-wide">Remaining</p>
+                <p class="text-[10px] text-gray-600 mt-0.5 uppercase tracking-wide">{{ t('manufacturers.manufacturer_detail.remaining_label') }}</p>
             </div>
             {% else %}
             <div class="text-right">
                 <p class="text-sm text-gray-700">–</p>
-                <p class="text-[10px] text-gray-700 mt-0.5 uppercase tracking-wide">Remaining</p>
+                <p class="text-[10px] text-gray-700 mt-0.5 uppercase tracking-wide">{{ t('manufacturers.manufacturer_detail.remaining_label') }}</p>
             </div>
             {% endif %}
         </div>
@@ -96,7 +98,7 @@
 </div>
 {% else %}
 <div class="card p-12 text-center">
-    <p class="text-gray-500 text-sm">No products from this manufacturer yet.</p>
+    <p class="text-gray-500 text-sm">{{ t('manufacturers.manufacturer_detail.empty') }}</p>
 </div>
 {% endif %}
 {% endblock %}
