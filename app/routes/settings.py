@@ -13,6 +13,7 @@ from app.notification_service import send_discord, send_email, build_test_discor
 from app.models.spool import Spool
 from app.spool_code import generate_spool_code, DEFAULT_TEMPLATE, AVAILABLE_VARS
 from app.import_export_service import export_bundle, import_bundle
+from app.i18n import t, SUPPORTED_LOCALES, DEFAULT_LOCALE
 
 settings_bp = Blueprint("settings", __name__, url_prefix="/settings")
 
@@ -36,7 +37,9 @@ def admin_required(f):
 async def index():
     async with get_db() as session:
         s = await get_all(session)
-    return await render_template("settings/index.html", s=s, available_vars=AVAILABLE_VARS)
+    return await render_template(
+        "settings/index.html", s=s, available_vars=AVAILABLE_VARS, available_locales=SUPPORTED_LOCALES
+    )
 
 
 @settings_bp.post("/")
@@ -51,7 +54,10 @@ async def save():
             # hidden input + checkbox → getlist() to detect checked state
             return "1" if "1" in form.getlist(name) else "0"
 
+        language = form.get("app_language", "").strip()
         updates: dict[str, str] = {
+            # localization
+            "app.language": language if language in SUPPORTED_LOCALES else DEFAULT_LOCALE,
             # spool codes
             "spool.code_template": form.get("spool_code_template", "").strip() or DEFAULT_TEMPLATE,
             # scheduler
@@ -84,7 +90,7 @@ async def save():
     from app.scheduler import apply_settings
     apply_settings(updates)
 
-    await flash("Settings saved.", "success")
+    await flash(t("settings.flash.saved"), "success")
     return redirect(url_for("settings.index"))
 
 
@@ -98,9 +104,9 @@ async def test_discord():
     webhook_url = s["discord.webhook_url"]
     error = await send_discord(webhook_url, embeds=[build_test_discord_embed()])
     if error:
-        await flash(f"Discord test failed: {error}", "error")
+        await flash(t("settings.flash.discord_test_failed", error=error), "error")
     else:
-        await flash("Discord test successful.", "success")
+        await flash(t("settings.flash.discord_test_success"), "success")
     return redirect(url_for("settings.index"))
 
 
@@ -133,7 +139,7 @@ async def regenerate_spool_codes():
                 spool.spool_code = new_code
                 updated += 1
 
-    await flash(f"Spool codes regenerated: {updated} of {len(spools)} updated.", "success")
+    await flash(t("settings.flash.spool_codes_regenerated", updated=updated, total=len(spools)), "success")
     return redirect(url_for("settings.index"))
 
 
@@ -160,27 +166,35 @@ async def import_data():
     files = await request.files
     upload = files.get("import_file")
     if not upload or not upload.filename:
-        await flash("Import failed: no file selected.", "error")
+        await flash(t("settings.flash.import_no_file"), "error")
         return redirect(url_for("settings.index"))
 
     try:
         data = json.loads(upload.read())
     except (json.JSONDecodeError, UnicodeDecodeError, ValueError):
-        await flash("Import failed: file is not valid JSON.", "error")
+        await flash(t("settings.flash.import_invalid_json"), "error")
         return redirect(url_for("settings.index"))
 
     async with get_db() as session:
         counts = await import_bundle(session, data)
 
     labels = {
-        "manufacturers": "Manufacturers", "products": "Products", "shop_links": "Shop links",
-        "purchases": "Purchases", "purchase_lines": "Purchase lines", "spools": "Spools", "shop_rules": "Shop rules",
+        "manufacturers": t("settings.import_export.labels.manufacturers"),
+        "products": t("settings.import_export.labels.products"),
+        "shop_links": t("settings.import_export.labels.shop_links"),
+        "purchases": t("settings.import_export.labels.purchases"),
+        "purchase_lines": t("settings.import_export.labels.purchase_lines"),
+        "spools": t("settings.import_export.labels.spools"),
+        "shop_rules": t("settings.import_export.labels.shop_rules"),
     }
     summary = "; ".join(
-        f"{labels[k]}: {added} added, {skipped} skipped"
+        t("settings.import_export.summary_entry", label=labels[k], added=added, skipped=skipped)
         for k, (added, skipped) in counts.items() if added or skipped
     )
-    await flash(f"Import complete. {summary}" if summary else "Import complete. Nothing to import.", "success")
+    await flash(
+        t("settings.flash.import_complete", summary=summary) if summary else t("settings.flash.import_complete_empty"),
+        "success",
+    )
     return redirect(url_for("settings.index"))
 
 
@@ -204,7 +218,7 @@ async def test_email():
         use_tls=s["smtp.tls"] == "1",
     )
     if error:
-        await flash(f"Email test failed: {error}", "error")
+        await flash(t("settings.flash.email_test_failed", error=error), "error")
     else:
-        await flash("Email test successful.", "success")
+        await flash(t("settings.flash.email_test_success"), "success")
     return redirect(url_for("settings.index"))

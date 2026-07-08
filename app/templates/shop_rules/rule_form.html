@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% set editing = rule is not none %}
-{% block title %}{% if editing %}Edit Rule{% else %}New Shop Rule{% endif %} – SpoolBeacon{% endblock %}
+{% block title %}{% if editing %}{{ t('shop_rules.rule_form.title_edit') }}{% else %}{{ t('shop_rules.rule_form.title_new') }}{% endif %} – {{ t('app.title') }}{% endblock %}
 
 {% macro fval(name, default='') %}
 {%- if form_data is not none -%}{{ form_data.get(name, default) }}{%- elif editing -%}{{ rule[name] if rule[name] is not none else default }}{%- else -%}{{ default }}{%- endif -%}
@@ -9,12 +9,12 @@
 {% block content %}
 <div class="mb-7">
     <nav class="flex items-center gap-1.5 text-xs text-gray-600 mb-3">
-        <a href="/shop-rules/" class="hover:text-gray-400 transition-colors">Shop Rules</a>
+        <a href="/shop-rules/" class="hover:text-gray-400 transition-colors">{{ t('shop_rules.index.title') }}</a>
         <span>/</span>
-        <span class="text-gray-400">{% if editing %}{{ rule.domain }}{% else %}New Rule{% endif %}</span>
+        <span class="text-gray-400">{% if editing %}{{ rule.domain }}{% else %}{{ t('shop_rules.index.new_rule') }}{% endif %}</span>
     </nav>
     <h1 class="text-2xl font-bold text-white tracking-tight">
-        {% if editing %}Edit Rule{% else %}New Shop Rule{% endif %}
+        {% if editing %}{{ t('shop_rules.rule_form.title_edit') }}{% else %}{{ t('shop_rules.rule_form.title_new') }}{% endif %}
     </h1>
 </div>
 
@@ -26,11 +26,11 @@
     <!-- Domain -->
     <div class="card p-5 space-y-4">
         <div class="pb-3 border-b border-gray-800">
-            <p class="text-sm font-medium text-gray-200">Domain</p>
+            <p class="text-sm font-medium text-gray-200">{{ t('shop_rules.rule_form.domain_label') }}</p>
         </div>
         <div>
             <label for="domain" class="block text-xs text-gray-400 mb-1.5">
-                Domain <span class="text-red-500">*</span>
+                {{ t('shop_rules.rule_form.domain_label') }} <span class="text-red-500">*</span>
             </label>
             <input type="text" id="domain" name="domain"
                    value="{{ fval('domain') }}"
@@ -38,17 +38,17 @@
                    autofocus
                    class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white font-mono
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
-            <p class="text-xs text-gray-600 mt-1">Domain only, no https:// or path.</p>
+            <p class="text-xs text-gray-600 mt-1">{{ t('shop_rules.rule_form.domain_help') }}</p>
             <div id="adapter-banner" class="hidden mt-2 flex items-start gap-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 px-3 py-2">
                 <span class="text-indigo-400 text-sm leading-none">⚡</span>
                 <p class="text-xs text-indigo-300">
-                    This shop already has built-in support — price checks for this domain use that instead of the rule below. You don't need to fill anything in on this page.
+                    {{ t('shop_rules.rule_form.adapter_banner_text') }}
                 </p>
             </div>
         </div>
         <div class="grid grid-cols-2 gap-4">
             <div>
-                <label for="currency" class="block text-xs text-gray-400 mb-1.5">Currency</label>
+                <label for="currency" class="block text-xs text-gray-400 mb-1.5">{{ t('shop_rules.rule_form.currency_label') }}</label>
                 <select id="currency" name="currency"
                         class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                                focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
@@ -58,7 +58,7 @@
                 </select>
             </div>
             <div>
-                <label for="test_url" class="block text-xs text-gray-400 mb-1.5">Test URL (optional)</label>
+                <label for="test_url" class="block text-xs text-gray-400 mb-1.5">{{ t('shop_rules.rule_form.test_url_label') }} ({{ t('common.optional') }})</label>
                 <input type="url" id="test_url" name="test_url"
                        value="{{ fval('test_url') }}"
                        placeholder="https://shop.example.com/product"
@@ -73,10 +73,10 @@
                     <path d="M1.5 8s2.5-5 6.5-5 6.5 5 6.5 5-2.5 5-6.5 5-6.5-5-6.5-5Z"/>
                     <circle cx="8" cy="8" r="2"/>
                 </svg>
-                Open Visual Picker
+                {{ t('shop_rules.rule_form.open_picker_button') }}
             </button>
             <p class="text-xs text-gray-600 mt-1.5">
-                Enter a Test URL above, then click elements on the rendered page to fill the selectors below.
+                {{ t('shop_rules.rule_form.open_picker_help') }}
             </p>
         </div>
     </div>
@@ -84,10 +84,10 @@
     <!-- CSS Selectors -->
     <div class="card p-5 space-y-4">
         <div class="pb-3 border-b border-gray-800">
-            <p class="text-sm font-medium text-gray-200">CSS Selectors</p>
+            <p class="text-sm font-medium text-gray-200">{{ t('shop_rules.rule_form.css_selectors_title') }}</p>
         </div>
         <div>
-            <label for="price_selector" class="block text-xs text-gray-400 mb-1.5">Price Selector</label>
+            <label for="price_selector" class="block text-xs text-gray-400 mb-1.5">{{ t('shop_rules.rule_form.price_selector_label') }}</label>
             <input type="text" id="price_selector" name="price_selector"
                    value="{{ fval('price_selector') }}"
                    placeholder=".product-price, span[itemprop='price']"
@@ -95,7 +95,7 @@
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
         </div>
         <div>
-            <label for="title_selector" class="block text-xs text-gray-400 mb-1.5">Title Selector</label>
+            <label for="title_selector" class="block text-xs text-gray-400 mb-1.5">{{ t('shop_rules.rule_form.title_selector_label') }}</label>
             <input type="text" id="title_selector" name="title_selector"
                    value="{{ fval('title_selector') }}"
                    placeholder="h1.product-title"
@@ -103,7 +103,7 @@
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
         </div>
         <div>
-            <label for="availability_selector" class="block text-xs text-gray-400 mb-1.5">Availability Selector</label>
+            <label for="availability_selector" class="block text-xs text-gray-400 mb-1.5">{{ t('shop_rules.rule_form.availability_selector_label') }}</label>
             <input type="text" id="availability_selector" name="availability_selector"
                    value="{{ fval('availability_selector') }}"
                    placeholder=".availability-status"
@@ -115,10 +115,10 @@
     <!-- Regex -->
     <div class="card p-5 space-y-4">
         <div class="pb-3 border-b border-gray-800">
-            <p class="text-sm font-medium text-gray-200">Regex <span class="text-gray-600 font-normal text-xs">(optional)</span></p>
+            <p class="text-sm font-medium text-gray-200">{{ t('shop_rules.rule_form.regex_title') }} <span class="text-gray-600 font-normal text-xs">({{ t('common.optional') }})</span></p>
         </div>
         <div>
-            <label for="price_regex" class="block text-xs text-gray-400 mb-1.5">Price Regex</label>
+            <label for="price_regex" class="block text-xs text-gray-400 mb-1.5">{{ t('shop_rules.rule_form.price_regex_label') }}</label>
             <input type="text" id="price_regex" name="price_regex"
                    value="{{ fval('price_regex') }}"
                    placeholder="[\d,\.]+"
@@ -126,7 +126,7 @@
                           placeholder-gray-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
         </div>
         <div>
-            <label for="availability_regex" class="block text-xs text-gray-400 mb-1.5">Availability Regex</label>
+            <label for="availability_regex" class="block text-xs text-gray-400 mb-1.5">{{ t('shop_rules.rule_form.availability_regex_label') }}</label>
             <input type="text" id="availability_regex" name="availability_regex"
                    value="{{ fval('availability_regex') }}"
                    placeholder="in stock|auf lager"
@@ -138,19 +138,19 @@
     <!-- Status + Notes -->
     <div class="card p-5 space-y-4">
         <div class="pb-3 border-b border-gray-800">
-            <p class="text-sm font-medium text-gray-200">Status &amp; Notes</p>
+            <p class="text-sm font-medium text-gray-200">{{ t('shop_rules.rule_form.status_notes_title') }}</p>
         </div>
         <div class="flex items-center gap-3">
             <input type="hidden" name="is_active" value="0">
             <input type="checkbox" id="is_active" name="is_active" value="1"
                    {% if fval('is_active', '1') not in ('0', 'False', '') %}checked{% endif %}
                    class="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-500 focus:ring-indigo-500/30">
-            <label for="is_active" class="text-sm text-gray-300 cursor-pointer">Rule active</label>
+            <label for="is_active" class="text-sm text-gray-300 cursor-pointer">{{ t('shop_rules.rule_form.rule_active_label') }}</label>
         </div>
         <div>
-            <label for="notes" class="block text-xs text-gray-400 mb-1.5">Notes (optional)</label>
+            <label for="notes" class="block text-xs text-gray-400 mb-1.5">{{ t('common.notes') }} ({{ t('common.optional') }})</label>
             <textarea id="notes" name="notes" rows="3"
-                      placeholder="e.g. price is in a data attribute, selector returns gross price incl. VAT"
+                      placeholder="{{ t('shop_rules.rule_form.notes_placeholder') }}"
                       oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"
                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white
                              placeholder-gray-600 resize-none overflow-hidden focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">{{ fval('notes') }}</textarea>
@@ -159,9 +159,9 @@
 
     <div class="flex items-center gap-3">
         <button type="submit" class="btn-primary">
-            {% if editing %}Save Changes{% else %}Save Rule{% endif %}
+            {% if editing %}{{ t('shop_rules.rule_form.save_changes_button') }}{% else %}{{ t('shop_rules.rule_form.save_rule_button') }}{% endif %}
         </button>
-        <a href="/shop-rules/" class="btn-ghost">Cancel</a>
+        <a href="/shop-rules/" class="btn-ghost">{{ t('common.cancel') }}</a>
     </div>
 </form>
 
@@ -170,8 +170,8 @@
   <div class="card w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden shadow-2xl">
     <div class="flex items-center justify-between gap-4 px-5 py-3 border-b border-gray-800 flex-shrink-0">
       <div class="flex items-center gap-2">
-        <span class="text-sm font-medium text-gray-200">Visual Picker</span>
-        <span class="text-xs text-gray-600 hidden sm:inline">— click an element on the page to capture it</span>
+        <span class="text-sm font-medium text-gray-200">{{ t('shop_rules.rule_form.picker_title') }}</span>
+        <span class="text-xs text-gray-600 hidden sm:inline">— {{ t('shop_rules.rule_form.picker_subtitle') }}</span>
       </div>
       <button type="button" id="picker-close-btn"
               class="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.06]">
@@ -181,16 +181,16 @@
       </button>
     </div>
     <div class="flex items-center gap-2 px-5 py-2.5 border-b border-gray-800 flex-shrink-0 flex-wrap">
-      <button type="button" class="picker-tab" data-target="price_selector">Price</button>
-      <button type="button" class="picker-tab" data-target="title_selector">Title</button>
-      <button type="button" class="picker-tab" data-target="availability_selector">Availability</button>
+      <button type="button" class="picker-tab" data-target="price_selector">{{ t('shop_rules.rule_form.label_price') }}</button>
+      <button type="button" class="picker-tab" data-target="title_selector">{{ t('shop_rules.rule_form.label_title') }}</button>
+      <button type="button" class="picker-tab" data-target="availability_selector">{{ t('shop_rules.rule_form.label_availability') }}</button>
       <span id="picker-captured" class="text-xs text-gray-500 ml-2 truncate"></span>
-      <button type="button" id="picker-done-btn" class="btn-primary btn-sm ml-auto">Done</button>
+      <button type="button" id="picker-done-btn" class="btn-primary btn-sm ml-auto">{{ t('shop_rules.rule_form.picker_done') }}</button>
     </div>
     <div class="flex-1 relative bg-white">
       <iframe id="picker-iframe" sandbox="allow-same-origin" class="w-full h-full border-0"></iframe>
       <div id="picker-loading" class="absolute inset-0 flex items-center justify-center bg-gray-950/95 text-gray-400 text-sm">
-        Loading page…
+        {{ t('shop_rules.rule_form.picker_loading') }}
       </div>
     </div>
   </div>
@@ -365,7 +365,7 @@
             style.textContent = '.__sb-hover{outline:2px solid #6366f1 !important;outline-offset:-1px !important;cursor:crosshair !important;}';
             frameDoc.head.appendChild(style);
         } catch (err) {
-            capturedLabel.textContent = 'Could not attach picker to this page.';
+            capturedLabel.textContent = {{ t('shop_rules.rule_form.picker_attach_error') | tojson }};
         }
     });
 
@@ -382,12 +382,12 @@
 {% if editing %}
 <!-- Test Rule — separate form, outside the main save form -->
 <div class="max-w-2xl mt-8 space-y-4">
-    <h2 class="text-base font-semibold text-white">Test Rule</h2>
+    <h2 class="text-base font-semibold text-white">{{ t('shop_rules.rule_form.test_rule_title') }}</h2>
 
     <form method="POST" action="/shop-rules/{{ rule.id }}/test" class="card p-5 space-y-4">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <div>
-            <label for="test_url_input" class="block text-xs text-gray-400 mb-1.5">Test URL</label>
+            <label for="test_url_input" class="block text-xs text-gray-400 mb-1.5">{{ t('shop_rules.rule_form.test_url_label') }}</label>
             <input type="url" id="test_url_input" name="test_url"
                    value="{{ test_result.tested_url if test_result else (rule.test_url or '') }}"
                    placeholder="https://{{ rule.domain }}/product"
@@ -399,7 +399,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"/>
             </svg>
-            Test Rule
+            {{ t('shop_rules.rule_form.test_rule_title') }}
         </button>
     </form>
 
@@ -424,7 +424,7 @@
         <table class="w-full text-sm">
             <tbody class="divide-y divide-gray-800/50">
                 <tr>
-                    <td class="py-2 pr-4 section-label w-32">Price</td>
+                    <td class="py-2 pr-4 section-label w-32">{{ t('shop_rules.rule_form.label_price') }}</td>
                     <td class="py-2">
                         {% if test_result.price_raw %}
                         <span class="font-mono text-gray-400">{{ test_result.price_raw }}</span>
@@ -432,33 +432,33 @@
                         <span class="ml-2 text-gray-600 text-xs">→</span>
                         <span class="ml-1 font-mono font-semibold text-emerald-400">{{ test_result.price_parsed }} {{ rule.currency }}</span>
                         {% elif test_result.price_parse_error %}
-                        <span class="ml-2 text-red-400 text-xs">Parse error: {{ test_result.price_parse_error }}</span>
+                        <span class="ml-2 text-red-400 text-xs">{{ t('shop_rules.rule_form.parse_error', error=test_result.price_parse_error) }}</span>
                         {% endif %}
                         {% else %}
-                        <span class="text-gray-600 font-mono">– not found</span>
+                        <span class="text-gray-600 font-mono">{{ t('shop_rules.rule_form.not_found') }}</span>
                         {% if not rule.price_selector and not rule.price_regex %}
-                        <span class="text-gray-700 text-xs ml-2">(no selector/regex defined)</span>
+                        <span class="text-gray-700 text-xs ml-2">({{ t('shop_rules.rule_form.no_selector_defined') }})</span>
                         {% endif %}
                         {% endif %}
                     </td>
                 </tr>
                 <tr>
-                    <td class="py-2 pr-4 section-label">Title</td>
+                    <td class="py-2 pr-4 section-label">{{ t('shop_rules.rule_form.label_title') }}</td>
                     <td class="py-2 font-mono text-gray-400">
                         {% if test_result.title_raw %}
                         {{ test_result.title_raw[:120] }}{% if test_result.title_raw|length > 120 %}…{% endif %}
                         {% else %}
-                        <span class="text-gray-600">– not found</span>
+                        <span class="text-gray-600">{{ t('shop_rules.rule_form.not_found') }}</span>
                         {% endif %}
                     </td>
                 </tr>
                 <tr>
-                    <td class="py-2 pr-4 section-label">Availability</td>
+                    <td class="py-2 pr-4 section-label">{{ t('shop_rules.rule_form.label_availability') }}</td>
                     <td class="py-2 font-mono text-gray-400">
                         {% if test_result.availability_raw %}
                         {{ test_result.availability_raw }}
                         {% else %}
-                        <span class="text-gray-600">– not found</span>
+                        <span class="text-gray-600">{{ t('shop_rules.rule_form.not_found') }}</span>
                         {% endif %}
                     </td>
                 </tr>

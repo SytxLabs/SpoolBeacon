@@ -1,0 +1,783 @@
+language: Deutsch
+common:
+  save: Speichern
+  cancel: Abbrechen
+  delete: Löschen
+  edit: Bearbeiten
+  create: Erstellen
+  add: Hinzufügen
+  remove: Entfernen
+  actions: Aktionen
+  back: Zurück
+  back_to_list: Zurück zur Liste
+  close: Schließen
+  "yes": "Ja"
+  "no": "Nein"
+  search: Suche
+  filter: Filter
+  status: Status
+  name: Name
+  description: Beschreibung
+  notes: Notizen
+  none: Keine
+  optional: optional
+  required: Erforderlich
+  enabled: Aktiviert
+  disabled: Deaktiviert
+  export: Export
+  import: Import
+  view: Ansehen
+  details: Details
+  sign_out: Abmelden
+  loading: Lädt…
+  confirm_generic: Bist du sicher?
+app:
+  title: SpoolBeacon
+nav:
+  dashboard: Dashboard
+  inventory: Inventar
+  prints: Drucke
+  shop_rules: Shop-Regeln
+  manufacturers: Hersteller
+  users: Benutzer
+  settings: Einstellungen
+  api_keys: API-Schlüssel
+  toggle_menu: Menü umschalten
+errors:
+  '403':
+    title: Zugriff verweigert
+    message: Du hast keine Berechtigung, um auf diese Seite zuzugreifen.
+    go_dashboard: Zum Dashboard
+    go_back: Zurück
+  '404':
+    title: Seite nicht gefunden
+    message: Die gesuchte Seite existiert nicht oder wurde verschoben.
+    go_dashboard: Zum Dashboard
+    go_back: Zurück
+  '500':
+    title: Es ist ein Fehler aufgetreten
+    message: Ein interner Serverfehler ist aufgetreten. Der Fehler wurde protokolliert.
+    go_dashboard: Zum Dashboard
+    try_again: Erneut versuchen
+auth:
+  account_deactivated: Dein Konto wurde deaktiviert oder gelöscht. Kontaktiere einen Administrator.
+  fields:
+    username: Benutzername
+    password: Passwort
+    email: E-Mail
+  login:
+    page_title: Anmelden
+    subtitle: Filament-Inventar
+    card_title: Anmelden
+    card_subtitle: Gib deine Zugangsdaten ein, um fortzufahren
+    submit_button: Anmelden
+  setup:
+    page_title: Einrichtung
+    subtitle: Ersteinrichtung
+    card_title: Admin-Konto erstellen
+    card_subtitle: Dieses Konto erhält vollen Admin-Zugriff
+    submit_button: Admin-Konto erstellen
+  flash:
+    invalid_credentials: Ungültige Zugangsdaten.
+    all_fields_required: Alle Felder sind erforderlich.
+settings:
+  page_title: Einstellungen
+  page_subtitle: Preisprüfung, Benachrichtigungen und Inventar-Konfiguration
+  save_button: Einstellungen speichern
+  language:
+    section_title: Sprache
+    section_subtitle: Sprache der Benutzeroberfläche für die gesamte Anwendung
+    label: Anzeigesprache
+    help: Gilt für alle Benutzer, sofort nach dem Speichern.
+  price_checker:
+    section_title: Preisprüfung
+    scheduler:
+      title: Zeitplan
+      enabled_label: Aktiviert
+      interval_label: Prüfintervall (Minuten)
+      interval_help: Zeit zwischen vollständigen Prüfläufen.
+      min_interval_label: Min. Intervall pro Link (Minuten)
+      min_interval_help: Ein Link wird frühestens nach dieser Zeit erneut geprüft.
+    fetch_engine:
+      title: Abruf-Engine
+      subtitle: Wie Produktseiten heruntergeladen werden
+      default_engine_label: Standard-Engine
+      option_playwright: Playwright (Chromium) — empfohlen
+      option_httpx: httpx (einfaches HTTP)
+      timeout_label: Playwright-Timeout (ms)
+      max_concurrent_label: Max. parallele Prüfungen
+      headless_label: Headless-Modus
+      headless_hint: (kein sichtbarer Browser)
+  notifications:
+    section_title: Benachrichtigungen
+    discord:
+      title: Discord
+      subtitle: Webhook-Nachricht bei Preisalarm
+      enabled_label: Aktiviert
+      webhook_url_label: Webhook-URL
+      webhook_placeholder_set: ••••••• (gesetzt – leer lassen zum Beibehalten)
+      webhook_placeholder_empty: https://discord.com/api/webhooks/…
+      webhook_set_hint: Webhook gesetzt. Leer lassen zum Beibehalten.
+      test_button: Testnachricht senden
+      test_disabled_title: Webhook-URL nicht konfiguriert
+    email:
+      title: E-Mail (SMTP)
+      subtitle: Alarme per E-Mail senden
+      enabled_label: Aktiviert
+      host_label: SMTP-Host
+      port_label: Port
+      user_label: Benutzername
+      password_label: Passwort
+      password_placeholder_set: ••••••• (beibehalten)
+      password_placeholder_empty: Passwort
+      password_set_hint: Gesetzt. Leer lassen zum Beibehalten.
+      from_label: Von
+      to_label: An
+      tls_label: STARTTLS
+      tls_hint: (Port 587)
+      test_button: Test-E-Mail senden
+      test_disabled_title: SMTP-Konfiguration unvollständig
+  inventory:
+    section_title: Inventar
+    spool_code:
+      title: Spulen-Code-Vorlage
+      subtitle: Muster zur Generierung von Spulen-Codes. Änderungen gelten nur für neue Spulen.
+      template_label: Vorlage
+      available_vars_title: Verfügbare Variablen
+      regenerate_title: Alle Spulen-Codes neu generieren
+      regenerate_subtitle: Überschreibt bestehende Codes mit der oben gespeicherten Vorlage.
+      regenerate_button: Neu generieren
+      regenerate_confirm: Alle Spulen-Codes neu generieren? Bestehende Codes werden überschrieben.
+  backup:
+    section_title: Sicherung & Wiederherstellung
+    export:
+      title: Daten exportieren
+      subtitle: Hersteller, Produkte, Käufe, Spulen, Shop-Links und Shop-Regeln als JSON. Benutzer und Preisverlauf sind nicht enthalten.
+      button: JSON exportieren
+    import:
+      title: Daten importieren
+      subtitle: Nur additiv — bestehende Datensätze (abgeglichen über Name/Code) werden nie überschrieben oder gelöscht.
+      button: Importieren
+      confirm: Daten aus dieser JSON-Datei importieren? Bestehende Datensätze werden nicht verändert.
+  flash:
+    saved: Einstellungen gespeichert.
+    discord_test_failed: 'Discord-Test fehlgeschlagen: {error}'
+    discord_test_success: Discord-Test erfolgreich.
+    email_test_failed: 'E-Mail-Test fehlgeschlagen: {error}'
+    email_test_success: E-Mail-Test erfolgreich.
+    spool_codes_regenerated: 'Spulen-Codes neu generiert: {updated} von {total} aktualisiert.'
+    import_no_file: 'Import fehlgeschlagen: keine Datei ausgewählt.'
+    import_invalid_json: 'Import fehlgeschlagen: Datei ist kein gültiges JSON.'
+    import_complete: Import abgeschlossen. {summary}
+    import_complete_empty: Import abgeschlossen. Nichts zu importieren.
+  import_export:
+    labels:
+      manufacturers: Hersteller
+      products: Produkte
+      shop_links: Shop-Links
+      purchases: Käufe
+      purchase_lines: Kaufpositionen
+      spools: Spulen
+      shop_rules: Shop-Regeln
+    summary_entry: '{label}: {added} hinzugefügt, {skipped} übersprungen'
+dashboard:
+  page_title: Dashboard
+  heading: Dashboard
+  subtitle: Filament-Inventar auf einen Blick
+  stats:
+    filaments: Filamente
+    filaments_hint: Erfasste Produkte
+    active_spools: Aktive Spulen
+    active_spools_hint: Nicht archiviert
+    remaining: Verbleibend
+    remaining_hint: Über alle Spulen
+    inventory_value: Inventarwert
+    inventory_value_hint: Gewichtsbasiert
+  alerts:
+    heading: Aktive Alarme
+    dismiss: Verwerfen
+  target_hits:
+    heading: Zielpreise erreicht
+    col_filament: Filament
+    col_shop: Shop
+    col_current: Aktuell
+    col_target: Ziel
+    badge: Ziel ✓
+  overview:
+    heading: Übersicht
+    price_overview:
+      title: Preisübersicht
+      avg_price_per_kg: Ø Preis / kg
+      cheapest_purchase: Günstigster Kauf
+      last_purchase: Letzter Kauf
+      total_purchases: Käufe gesamt
+    low_stock:
+      title: Niedriger Bestand
+      badge: unter 20%
+      empty: Alle Spulen gut bestückt
+  stock:
+    spool_singular: Spule
+    spool_plural: Spulen
+    no_data: Keine Daten verfügbar.
+    by_material:
+      title: Bestand nach Material
+    by_color:
+      title: Bestand nach Farbe
+  scheduler:
+    title: Preisprüfung
+    active: aktiv
+    inactive: inaktiv
+    every_minutes: alle {minutes} Min.
+    next_run_label: 'Nächster Lauf:'
+    last_run_label: 'Letzter Lauf:'
+    enable_in_settings: In den Einstellungen aktivieren →
+inventory:
+  index:
+    title: Inventar
+    subtitle_default: Verwalte Filament-Produkte und Spulen
+    subtitle_count_one: '{count} Filament'
+    subtitle_count_other: '{count} Filamente'
+    subtitle_filtered: 'gefiltert:'
+    add_filament: Filament hinzufügen
+    search_placeholder: Suche nach Name, Farbe, Material, Hersteller…
+    filter_all: Alle
+    badge_target: Ziel ↓
+    spools_singular: Spule
+    spools_plural: Spulen
+    remaining_label: Verbleibend
+    empty_no_filaments_for: Keine Filamente für "{material}"
+    clear_filter: Filter zurücksetzen
+    empty_title: Noch keine Filamente
+    empty_desc: Füge dein erstes Filament hinzu, um Käufe, Spulen und Preise zu verwalten.
+    add_first_filament: Erstes Filament hinzufügen
+    js_unit_singular: Filament
+    js_unit_plural: Filamente
+    js_count_template: '{total} {unit}'
+    js_matching_template: '{visible} von {total} {unit}, die zu „{query}“ passen'
+  detail:
+    stat_active_spools: Aktive Spulen
+    stat_active_spools_hint: nicht archiviert
+    stat_remaining: Verbleibend
+    stat_remaining_hint: gesamt aktiv
+    stat_inventory_value: Bestandswert
+    stat_inventory_value_hint: gewichtsbasiert
+    stat_avg_price: Ø-Preis / Spule
+    stat_avg_price_hint: Kaufpreise
+    tab_shop_links: Shop-Links
+    tab_purchases: Käufe
+    tab_spools: Spulen
+    add_link: Link hinzufügen
+    add_purchase: Kauf hinzufügen
+    col_shop: Shop
+    col_package: Paket
+    col_price: Preis
+    col_shipping: Versand
+    col_total: Gesamt
+    col_per_kg: pro kg
+    col_latest_price: Letzter Preis
+    col_date: Datum
+    col_order_number: Bestellnr.
+    col_qty: Menge
+    col_price_per_unit: Preis / Stk.
+    col_weight: Gewicht
+    col_code: Code
+    col_location: Standort
+    col_storage: Lagerung
+    col_fill_level: Füllstand
+    col_opened: Geöffnet
+    col_last_dried: Zuletzt getrocknet
+    badge_target_hit: Ziel ✓
+    target_price_prefix: 'Ziel: {price}'
+    badge_error: Fehler
+    status_active: aktiv
+    status_inactive: inaktiv
+    badge_adapter_rule: Adapter + Regel
+    badge_adapter: Adapter
+    badge_rule: Regel
+    title_check_price: Preis prüfen · {badge}
+    title_no_rule: Keine aktive Shop-Regel oder Adapter – füge eine Regel hinzu, um dies zu aktivieren
+    title_add_snapshot: Preis-Snapshot hinzufügen
+    title_price_history: Preisverlauf
+    confirm_delete_link: Diesen Shop-Link löschen?
+    empty_shop_links: Noch keine Shop-Links.
+    spools_count: '{count}/{total} Spulen'
+    title_edit_purchase: Kauf bearbeiten
+    create_spools: Spulen erstellen
+    add_missing: Fehlende hinzufügen ({count}/{total})
+    empty_purchases_title: Keine Käufe erfasst.
+    empty_purchases_desc: Füge einen Kauf hinzu, um Spulen zu erstellen.
+    active_remaining: '{count} aktiv · {kg} kg verbleibend'
+    spool_status_new: Neu
+    spool_status_opened: Geöffnet
+    spool_status_almost_empty: Fast leer
+    spool_status_empty: Leer
+    spool_status_archived: Archiviert
+    storage_status_open: Offen
+    storage_status_sealed: Versiegelt
+    storage_status_vacuum_sealed: Vakuumversiegelt
+    storage_status_drybox: Trockenbox
+    storage_status_unknown: Unbekannt
+    title_print_label: Etikett drucken
+    title_edit_spool: Spule bearbeiten
+    confirm_delete_spool: Spule {code} löschen? Dies kann nicht rückgängig gemacht werden.
+    title_delete_spool: Spule löschen
+    empty_spools_title: Noch keine Spulen.
+    empty_spools_desc: Füge einen Kauf hinzu und erstelle daraus Spulen.
+  spool_form:
+    title: Spule {code} bearbeiten
+    heading: Spule bearbeiten
+    confirm_delete: Spule {code} löschen? Dies kann nicht rückgängig gemacht werden.
+    condition_title: Zustand
+    status_new: Neu
+    status_opened: Geöffnet
+    status_almost_empty: Fast leer
+    status_empty: Leer
+    status_archived: Archiviert
+    remaining_label: Verbleibend (g)
+    initial_hint: 'Anfangswert: {weight} g'
+    storage_title: Lagerung
+    location_label: Standort (optional)
+    location_placeholder: z. B. Regal A3, Trockenbox 1
+    storage_status_label: Lagerstatus
+    storage_status_open: Offen
+    storage_status_sealed: Versiegelt
+    storage_status_vacuum_sealed: Vakuumversiegelt
+    storage_status_drybox: Trockenbox
+    storage_status_unknown: Unbekannt
+    opened_label: Geöffnet (optional)
+    last_dried_label: Zuletzt getrocknet (optional)
+    notes_placeholder: Notizen, Druckeinstellungen …
+  filament_form:
+    title_edit: '{name} bearbeiten'
+    title_new: Neues Filament
+    breadcrumb_new: Neu
+    confirm_delete: Dieses Filament löschen? Dies kann nicht rückgängig gemacht werden.
+    manufacturer_title: Hersteller
+    manufacturer_select_placeholder: – Hersteller wählen –
+    manufacturer_add_new: + Neuen Hersteller hinzufügen
+    new_manufacturer_name_label: Name des neuen Herstellers
+    new_manufacturer_name_placeholder: z. B. Bambu Lab
+    filament_title: Filament
+    product_name_label: Produktname
+    product_name_placeholder: z. B. PolyTerra PLA Matte
+    material_label: Material
+    material_placeholder: z. B. PLA
+    color_name_label: Farbname
+    color_name_placeholder: z. B. Marmor Weiß
+    color_label: Farbe (optional)
+    dual_color_label: Zweifarbiges Filament
+    dual_color_hint: zwei Farben auf einer Spule
+    second_color_name_label: Name der zweiten Farbe
+    second_color_name_placeholder: z. B. Schwarz
+    second_color_label: Zweite Farbe
+    diameter_label: Durchmesser
+    nominal_weight_label: Nenngewicht
+    notes_placeholder: Notizen, Druckeinstellungen, …
+    save_changes: Änderungen speichern
+    create_filament: Filament erstellen
+  purchase_form:
+    title_edit: Kauf bearbeiten
+    title_new: Neuer Kauf
+    spools_linked: '{count} Spule(n) verknüpft.'
+    quantity_locked_notice: Menge kann nicht mehr geändert werden.
+    weight_editable_notice: Spulengewicht bearbeitbar – alle Spulen sind noch unbenutzt.
+    weight_locked_notice: Spulengewicht gesperrt – mindestens eine Spule wurde bereits geöffnet oder verwendet.
+    purchase_title: Kauf
+    purchase_date_label: Kaufdatum
+    currency_label: Währung
+    shop_name_label: Shop-Name
+    shop_name_placeholder: z. B. Amazon, Reichelt, filamentworld
+    order_number_label: Bestellnummer (optional)
+    order_number_placeholder: z. B. 123-456-7890
+    shipping_label: Versand (optional)
+    purchase_notes_label: Notizen (optional)
+    purchase_notes_placeholder: z. B. Rabattaktion, Sammelbestellung …
+    line_item_title: Positionsdetails
+    quantity_label: Menge
+    locked: gesperrt
+    quantity_locked_hint: Gesperrt – Spulen bereits erstellt
+    quantity_hint: Anzahl der Spulen
+    unit_price_label: Einzelpreis
+    unit_price_hint: Preis pro Spule
+    spool_weight_label: Spulengewicht
+    spool_weight_locked_hint: Spulen bereits geöffnet oder verwendet
+    spool_weight_editing_hint: Aktualisiert auch Anfangs- und Restgewicht aller neuen Spulen
+    lot_number_label: Charge / Los (optional)
+    lot_number_placeholder: z. B. L2024-03
+    line_notes_label: Positionsnotizen (optional)
+    line_notes_placeholder: z. B. Farbe weicht leicht vom Foto ab …
+    save_changes: Änderungen speichern
+    save_and_create_spools: Kauf speichern & Spulen erstellen
+  shoplink_form:
+    title_edit: Shop-Link bearbeiten
+    title_new: Shop-Link hinzufügen
+    shop_title: Shop
+    shop_name_label: Shop-Name
+    shop_name_placeholder: z. B. Bambu Lab Store, Amazon, Prusa
+    url_label: URL
+    price_title: Preis
+    price_label: Preis
+    currency_label: Währung
+    shipping_label: Versand (optional)
+    package_weight_label: Paketgewicht
+    total_label: Gesamt
+    price_per_kg_label: Preis/kg
+    target_price_title: Zielpreis
+    target_price_subtitle: Alarm wird ausgelöst, wenn der Preis auf oder unter das Ziel fällt
+    target_price_total_label: Zielpreis (gesamt)
+    target_price_total_placeholder: z. B. 18,99
+    target_price_total_hint: Preis + Versand ≤ Ziel = Alarm
+    target_price_per_kg_label: Zielpreis pro kg
+    target_price_per_kg_placeholder: z. B. 14,99
+    target_price_per_kg_hint: Snapshot-Preis/kg ≤ Ziel = Alarm
+    status_notes_title: Status & Notizen
+    link_active_label: Link aktiv
+    notes_label: Notizen (optional)
+    notes_placeholder: z. B. kostenloser Versand ab 50 EUR Bestellwert
+    save_changes: Änderungen speichern
+    save_link: Link speichern
+  snapshot_form:
+    title: Preis-Snapshot hinzufügen
+    price_title: Preis
+    price_label: Preis ({currency})
+    manual_hint: 'Manuell: {value} {currency}'
+    shipping_label: Versand (optional)
+    availability_label: Verfügbarkeit (optional)
+    availability_placeholder: Auf Lager / Ausverkauft / ...
+    save_button: Snapshot speichern
+  snapshot_history:
+    title: Preisverlauf
+    breadcrumb: Snapshots
+    add_snapshot: Snapshot hinzufügen
+    col_captured: Erfasst
+    col_price: Preis
+    col_shipping: Versand
+    col_total: Gesamt
+    col_per_kg: pro kg
+    col_change: Änderung
+    col_availability: Verfügbarkeit
+    col_source: Quelle
+    error_fallback: Fehler
+    empty_message: Noch keine Snapshots für diesen Shop-Link.
+    add_first_snapshot: Ersten Snapshot hinzufügen
+  spool_label:
+    title: Etikett – {code}
+    print: Drucken
+    qr_alt: QR-Code
+  flash:
+    duplicate_filament: 'Dieses Filament existiert bereits: "{name}" ({material}, {color_name}, {diameter_mm} mm)'
+    duplicate_filament_edit: 'Ein anderes Filament mit diesen Daten existiert bereits: "{name}" ({material}, {color_name}, {diameter_mm} mm)'
+    cannot_delete_filament: 'Löschen nicht möglich: {spool_count} Spule(n) und {line_count} Kaufposition(en) verknüpft.'
+    spools_already_exist: Alle Spulen für diese Kaufposition existieren bereits.
+    spools_created: '{count} Spule(n) erstellt.'
+    purchase_saved: Kauf gespeichert. {count} Spule(n) erstellt.
+    duplicate_shoplink: 'Dieser Shop-Link existiert bereits: "{shop_name}" mit derselben URL.'
+    no_shoprule_or_adapter: Keine aktive Shop-Regel für Domain "{domain}" und kein integrierter Adapter. Füge eine Regel hinzu oder aktiviere eine bestehende.
+    price_captured: 'Preis erfasst: {price} {currency}'
+    price_availability_suffix: ' | {availability}'
+    target_reached_suffix: ' — Zielpreis erreicht!'
+    price_check_failed: 'Preisprüfung fehlgeschlagen: {error}'
+  validation:
+    purchase_date_required: Kaufdatum ist erforderlich.
+    shop_name_required: Shop-Name ist erforderlich.
+    quantity_min: Menge muss mindestens 1 sein.
+    spool_weight_positive: Spulengewicht muss größer als 0 sein.
+    invalid_number: Ungültige Zahl.
+    invalid_unit_price: Ungültiger Einzelpreis.
+    invalid_quantity: Ungültige Menge.
+    invalid_spool_weight: Ungültiges Spulengewicht.
+    invalid_shipping_cost: Ungültige Versandkosten.
+    invalid_remaining_weight: Ungültiges Restgewicht.
+    name_required: Name ist erforderlich.
+    material_required: Material ist erforderlich.
+    color_name_required: Farbname ist erforderlich.
+    invalid_color_hex: Farbwert muss im Format
+    invalid_color_hex_2: Zweiter Farbwert muss im Format
+    invalid_diameter_or_weight: Ungültige Zahl für Durchmesser oder Gewicht.
+    manufacturer_missing: Hersteller fehlt oder Name ist leer.
+    url_required: URL ist erforderlich.
+    invalid_url: URL muss mit http:// oder https:// beginnen.
+    package_weight_positive: Packungsgewicht muss größer als 0 sein.
+    price_negative: Preis darf nicht negativ sein.
+    shipping_negative: Versandkosten dürfen nicht negativ sein.
+    target_price_negative: Zielpreis darf nicht negativ sein.
+    target_price_kg_negative: Zielpreis/kg darf nicht negativ sein.
+    invalid_price_or_weight: Ungültige Zahl für Preis oder Gewicht.
+    price_required: Preis ist erforderlich.
+manufacturers:
+  index:
+    title: Hersteller
+    subtitle: Filamentmarken, die in deinem Inventar verwendet werden
+    new_button: Neuer Hersteller
+    table_website: Website
+    table_products: Produkte
+    edit_title: Hersteller bearbeiten
+    delete_title: Hersteller löschen
+    delete_confirm: Hersteller {name} löschen?
+    empty: Noch keine Hersteller vorhanden.
+    add_first: Ersten Hersteller hinzufügen
+  manufacturer_form:
+    title_edit: Hersteller bearbeiten
+    title_new: Neuer Hersteller
+    section_details: Details
+    name_placeholder: z. B. Prusament
+    website_label: Website
+    notes_placeholder: z. B. Wiederverkäufer, Garantiebedingungen, Versandhinweise
+    save_changes: Änderungen speichern
+    save_new: Hersteller speichern
+  manufacturer_detail:
+    delete_confirm: Hersteller {name} löschen?
+    product_count_one: '{count} Produkt'
+    product_count_other: '{count} Produkte'
+    spool_label_one: Spule
+    spool_label_other: Spulen
+    remaining_label: Verbleibend
+    empty: Noch keine Produkte von diesem Hersteller.
+  flash:
+    duplicate: Hersteller "{name}" existiert bereits.
+    cannot_delete: '"{name}" kann nicht gelöscht werden: {count} Filamentprodukt(e) verweisen noch darauf.'
+  validation:
+    name_required: Name ist erforderlich.
+    name_too_long: Name darf höchstens 128 Zeichen lang sein.
+    website_invalid: Website muss mit http:// oder https:// beginnen.
+prints:
+  index:
+    title: Druckprotokoll
+    subtitle_one: '{count} Druck protokolliert'
+    subtitle_other: '{count} Drucke protokolliert'
+    log_button: + Druck protokollieren
+    table_date: Datum
+    table_print_name: Druckname
+    table_filaments: Filamente
+    table_total_used: Gesamtverbrauch
+    delete_confirm: Dieses Druckprotokoll löschen? Dies kann nicht rückgängig gemacht werden.
+    page_of: Seite {page} von {total_pages}
+    previous: ← Zurück
+    next: Weiter →
+    empty: Noch keine Drucke protokolliert.
+    log_first: Protokolliere deinen ersten Druck →
+  print_form:
+    title: Druck protokollieren
+    new: Neu
+    subtitle: Filamentverbrauch nach einem Druck erfassen.
+    section_print_details: Druckdetails
+    print_name_label: Druckname / Datei
+    print_name_placeholder: z. B. Benchy, Handyhalter, Vase
+    notes_placeholder: Qualität, Einstellungen, Probleme…
+    section_filaments_used: Verwendete Filamente
+    at_least_one: mindestens eins
+    spool_label: Spule
+    select_spool: Spule auswählen…
+    remove_aria: Entfernen
+    used_g_label: Verbraucht (g)
+    remaining_label: Verbleibend
+    add_filament: + Weiteres Filament hinzufügen
+    save_button: Druckprotokoll speichern
+  flash:
+    logged: Druck protokolliert.
+    deleted: Druckprotokoll gelöscht.
+  validation:
+    no_lines: Füge mindestens eine Filamentzeile hinzu.
+    line_invalid_spool: 'Zeile {line}: ungültige Spule.'
+    line_used_weight: 'Zeile {line}: Verbrauchtes Gewicht muss größer als 0 sein.'
+    line_spool_not_found: 'Zeile {line}: Spule nicht gefunden.'
+    line_exceeds_remaining: 'Zeile {line}: {used} g überschreitet die verbleibenden {remaining} g auf {code}.'
+shop_rules:
+  index:
+    title: Shop-Regeln
+    subtitle: CSS-Selektoren und Regex-Muster für das Preis-Scraping
+    new_rule: Neue Regel
+    table:
+      domain: Domain
+      price_selector: Preis-Selektor
+      availability_selector: Verfügbarkeits-Selektor
+      currency: Währung
+    builtin_badge: integrierter Adapter aktiv
+    builtin_badge_title: Für diese Domain gibt es einen integrierten Adapter — diese Regel wird nie verwendet.
+    test_link: testen
+    active: aktiv
+    inactive: inaktiv
+    edit_rule_title: Regel bearbeiten
+    delete_rule_title: Regel löschen
+    delete_confirm: Regel für {domain} löschen?
+    empty_state: Noch keine Shop-Regeln. Regeln definieren domänenspezifische CSS-Selektoren für automatisiertes Preis-Scraping.
+    add_first_rule: Erste Regel hinzufügen
+  rule_form:
+    title_edit: Regel bearbeiten
+    title_new: Neue Shop-Regel
+    domain_label: Domain
+    domain_help: Nur die Domain, ohne https:// oder Pfad.
+    adapter_banner_text: Für diesen Shop gibt es bereits integrierte Unterstützung — Preisprüfungen für diese Domain nutzen diese statt der Regel unten. Du musst auf dieser Seite nichts ausfüllen.
+    currency_label: Währung
+    test_url_label: Test-URL
+    open_picker_button: Visuellen Picker öffnen
+    open_picker_help: Gib oben eine Test-URL ein und klicke dann auf Elemente der gerenderten Seite, um die Selektoren unten zu befüllen.
+    css_selectors_title: CSS-Selektoren
+    price_selector_label: Preis-Selektor
+    title_selector_label: Titel-Selektor
+    availability_selector_label: Verfügbarkeits-Selektor
+    regex_title: Regex
+    price_regex_label: Preis-Regex
+    availability_regex_label: Verfügbarkeits-Regex
+    status_notes_title: Status & Notizen
+    rule_active_label: Regel aktiv
+    notes_placeholder: z. B. Preis steht in einem Datenattribut, Selektor liefert Bruttopreis inkl. MwSt.
+    save_changes_button: Änderungen speichern
+    save_rule_button: Regel speichern
+    picker_title: Visueller Picker
+    picker_subtitle: klicke auf ein Element der Seite, um es zu erfassen
+    picker_done: Fertig
+    picker_loading: Seite wird geladen…
+    picker_attach_error: Der Picker konnte nicht an diese Seite angehängt werden.
+    label_price: Preis
+    label_title: Titel
+    label_availability: Verfügbarkeit
+    test_rule_title: Regel testen
+    parse_error: 'Parse-Fehler: {error}'
+    not_found: – nicht gefunden
+    no_selector_defined: kein Selektor/Regex definiert
+  validation:
+    domain_required: Domain ist erforderlich.
+    domain_invalid: 'Ungültige Domain (Beispiel: shop.example.com).'
+  flash:
+    duplicate_domain: Regel für "{domain}" existiert bereits.
+    no_test_url: Keine Test-URL angegeben.
+  test:
+    timeout: Timeout nach {seconds}s.
+    http_error: 'HTTP {status_code}: {reason}'
+  picker:
+    load_error_title: Seite konnte nicht geladen werden
+    load_error_hint: Überprüfe die Test-URL oder die Prüf-Engine in den Einstellungen.
+    retry: Erneut versuchen
+    invalid_url: Gib oben zuerst eine gültige http(s)-Test-URL ein.
+    empty_response: Leere Antwort vom Server.
+users:
+  index:
+    title: Benutzer
+    subtitle_one: '{count} Konto'
+    subtitle_other: '{count} Konten'
+    new_user: Neuer Benutzer
+    col_username: Benutzername
+    col_email: E-Mail
+    col_role: Rolle
+    col_status: Status
+    col_created: Erstellt
+    you_suffix: (du)
+    status_active: aktiv
+    status_inactive: inaktiv
+    edit_title: Benutzer bearbeiten
+    delete_title: Benutzer löschen
+    delete_confirm: Benutzer {username} löschen? Dies kann nicht rückgängig gemacht werden.
+  user_form:
+    title_edit: '{username} bearbeiten'
+    title_new: Neuer Benutzer
+    breadcrumb_users: Benutzer
+    breadcrumb_edit: '{username} bearbeiten'
+    breadcrumb_new: Neuer Benutzer
+    heading_edit: Benutzer bearbeiten
+    heading_new: Neuer Benutzer
+    account_section: Konto
+    username_label: Benutzername
+    username_placeholder: z. B. erik
+    email_label: E-Mail
+    email_placeholder: user@example.com
+    password_section: Passwort
+    password_optional: (optional)
+    password_keep_hint: Leer lassen, um das bestehende Passwort beizubehalten
+    password_label_new: Neues Passwort
+    password_label_create: Passwort
+    password_placeholder_edit: Leer lassen, um das aktuelle Passwort beizubehalten
+    password_placeholder_new: Passwort festlegen
+    role_status_section: Rolle & Status
+    role_label: Rolle
+    role_help: 'Admin: alles · Mitglied: Inventar · Betrachter: nur lesen'
+    active_label: Aktiv
+    cannot_deactivate_self: Du kannst dein eigenes Konto nicht deaktivieren.
+    save_changes: Änderungen speichern
+    create_user: Benutzer erstellen
+  role:
+    admin: Admin
+    member: Mitglied
+    viewer: Betrachter
+  flash:
+    created: Benutzer '{username}' erstellt.
+    updated: Benutzer '{username}' aktualisiert.
+    deleted: Benutzer gelöscht.
+    cannot_delete_self: Du kannst dein eigenes Konto nicht löschen.
+    cannot_delete_last_admin: Das letzte aktive Admin-Konto kann nicht gelöscht werden.
+  validation:
+    username_required: Benutzername ist erforderlich.
+    email_required: E-Mail ist erforderlich.
+    password_required: Passwort ist erforderlich.
+    invalid_role: Ungültige Rolle.
+    username_email_in_use: Benutzername oder E-Mail wird bereits verwendet.
+    username_email_in_use_other: Benutzername oder E-Mail wird bereits von einem anderen Konto verwendet.
+    cannot_deactivate_self: Du kannst dein eigenes Konto nicht deaktivieren.
+    cannot_deactivate_last_admin: Das letzte aktive Admin-Konto kann nicht deaktiviert werden.
+    cannot_demote_last_admin: Der letzte aktive Admin kann nicht degradiert werden. Befördere zuerst einen anderen Benutzer zum Admin.
+api_keys:
+  index:
+    title: API-Schlüssel
+    subtitle_prefix: Bearer-Token für die
+    rest_api_link_text: REST-API
+    new_token_title: API-Schlüssel erstellt — jetzt kopieren
+    new_token_warning_prefix: Dieses Token wird
+    new_token_warning_bold: nur einmal
+    new_token_warning_suffix: angezeigt und kann später nicht mehr abgerufen werden.
+    copy_button: Kopieren
+    copied_button: Kopiert!
+    create_section_title: API-Schlüssel erstellen
+    key_name_label: Schlüsselname
+    key_name_placeholder: z. B. OrcaSlicer, Home Assistant, lokales Skript
+    generate_button: Schlüssel generieren
+    col_name: Name
+    col_created_by: Erstellt von
+    col_created: Erstellt
+    col_last_used: Zuletzt verwendet
+    never: Nie
+    revoke_confirm_prefix: API-Schlüssel
+    revoke_confirm_suffix: ' widerrufen? Clients, die ihn verwenden, verlieren den Zugriff.'
+    revoke_button: Widerrufen
+    empty_title: Noch keine API-Schlüssel.
+    empty_subtitle: Erstelle oben einen, um auf die REST-API zuzugreifen.
+    usage_intro_prefix: Verwende Schlüssel im
+    usage_intro_suffix: 'Header:'
+    full_reference: 'Vollständige API-Referenz:'
+  validation:
+    name_required: Name des API-Schlüssels ist erforderlich.
+  flash:
+    revoked: API-Schlüssel widerrufen.
+notifications:
+  errors:
+    no_webhook_url: Keine Webhook-URL konfiguriert.
+    smtp_incomplete: SMTP-Konfiguration unvollständig (Host, Absender und Empfänger sind erforderlich).
+  labels:
+    target_price: Zielpreis
+    target_price_per_kg: Zielpreis/kg
+  fields:
+    shop: Shop
+    price: Preis
+  discord:
+    price_alert_title: 🎯 {type_label} erreicht
+    test_title: ✅ Verbindung erfolgreich
+    test_description: Die Discord-Integration funktioniert.
+  email:
+    footer_tagline: SpoolBeacon &middot; Filament-Inventar &amp; Preisüberwachung
+    badge_price_alert: Preisalarm
+    price_alert_title: 'Zielpreis erreicht: {filament_name}'
+    price_alert_intro: Der Preis bei {shop_name} ist unter deinen {type_label} gefallen.
+    cta_view_offer: Angebot ansehen
+    badge_test: Test
+    test_title: Verbindung erfolgreich
+    test_intro: Diese Testnachricht bestätigt, dass SpoolBeacon {channel_label} senden kann.
+    subject_price_alert: 'SpoolBeacon: {type_label} erreicht – {filament_name}'
+    plain_body_price_alert: 'Zielpreis erreicht: {filament_name}
+
+      Shop: {shop_name}
+
+      Preis: {price_str}  |  {type_label}: {target_str}
+
+      {shop_url}'
+  alerts:
+    target_price_hit: Preis {price} {currency} <= Ziel {target} {currency}
+    target_price_per_kg_hit: Preis/kg {price} {currency} <= Ziel {target} {currency}/kg

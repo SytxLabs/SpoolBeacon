@@ -1,9 +1,11 @@
-from quart import Quart, redirect, url_for, request, abort
+from quart import Quart, redirect, url_for, request, abort, g
+
 from quart_auth import QuartAuth, Unauthorized
 
 from .config import Config
 from .csrf import generate_csrf_token, validate_csrf
 from .database import init_db
+from .i18n import t, get_locale, SUPPORTED_LOCALES, DEFAULT_LOCALE
 
 auth_manager = QuartAuth()
 
@@ -14,6 +16,8 @@ def create_app(config_class=Config) -> Quart:
 
     auth_manager.init_app(app)
     init_db(app.config["DATABASE_URL"])
+
+    app.jinja_env.globals["t"] = t
 
     from .routes.auth import auth_bp
     from .routes.dashboard import dashboard_bp
@@ -40,6 +44,18 @@ def create_app(config_class=Config) -> Quart:
     app.register_blueprint(api_keys_bp)
 
     @app.before_request
+    async def load_locale():
+        if request.endpoint == "static":
+            g.locale = DEFAULT_LOCALE
+            return
+        from sqlalchemy import select
+        from app.database import get_db
+        from app.models.app_setting import AppSetting
+        async with get_db() as session:
+            value = await session.scalar(select(AppSetting.value).where(AppSetting.key == "app.language"))
+        g.locale = value if value in SUPPORTED_LOCALES else DEFAULT_LOCALE
+
+    @app.before_request
     async def validate_active_session():
         from quart_auth import current_user, logout_user
         from quart import flash
@@ -53,7 +69,7 @@ def create_app(config_class=Config) -> Quart:
             user = await session.get(User, int(current_user.auth_id))
         if not user or not user.is_active:
             logout_user()
-            await flash("Your account has been deactivated or deleted. Contact an administrator.", "error")
+            await flash(t("auth.account_deactivated"), "error")
             return redirect(url_for("auth.login"))
 
     @app.before_request
@@ -126,6 +142,8 @@ def create_app(config_class=Config) -> Quart:
             "nav_alert_count": nav_alert_count,
             "is_admin": is_admin,
             "is_viewer": is_viewer,
+            "current_locale": get_locale(),
+            "available_locales": SUPPORTED_LOCALES,
         }
 
     return app
