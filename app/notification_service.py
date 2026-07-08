@@ -8,13 +8,15 @@ from email.mime.text import MIMEText
 
 import httpx
 
+from app.i18n import t
+
 log = logging.getLogger(__name__)
 
 
 async def send_discord(webhook_url: str, message: str = "", embeds: list[dict] | None = None) -> str | None:
     """POST message/embeds to Discord webhook. Returns error string or None on success."""
     if not webhook_url:
-        return "No webhook URL configured."
+        return t("notifications.errors.no_webhook_url")
     payload: dict = {}
     if message:
         payload["content"] = message
@@ -44,7 +46,7 @@ async def send_email(
 ) -> str | None:
     """Send email via SMTP. Sends multipart plain+HTML if html_body given. Returns error string or None on success."""
     if not host or not from_addr or not to_addr:
-        return "SMTP configuration incomplete (host, from, and to are required)."
+        return t("notifications.errors.smtp_incomplete")
 
     def _send() -> None:
         if html_body:
@@ -98,13 +100,13 @@ def build_price_alert_discord_embed(
     snap_total: float, currency: str, type_label: str, target_str: str,
 ) -> dict:
     return _discord_embed(
-        title=f"🎯 {type_label} reached",
+        title=t("notifications.discord.price_alert_title", type_label=type_label),
         description=f"**{filament_name}**",
         color=0x10B981,
         url=shop_url,
         fields=[
-            ("Shop", shop_name),
-            ("Price", f"{snap_total:.2f} {currency}"),
+            (t("notifications.fields.shop"), shop_name),
+            (t("notifications.fields.price"), f"{snap_total:.2f} {currency}"),
             (type_label, target_str),
         ],
     )
@@ -112,8 +114,8 @@ def build_price_alert_discord_embed(
 
 def build_test_discord_embed() -> dict:
     return _discord_embed(
-        title="✅ Connection successful",
-        description="Discord integration is working.",
+        title=t("notifications.discord.test_title"),
+        description=t("notifications.discord.test_description"),
         color=0x5865F2,
     )
 
@@ -123,6 +125,7 @@ def build_test_discord_embed() -> dict:
 def _email_card_html(*, badge: str, badge_color: str, title: str, intro: str,
                       rows: list[tuple[str, str]] | None = None,
                       cta_label: str | None = None, cta_url: str | None = None) -> str:
+    footer_tagline = t("notifications.email.footer_tagline")
     rows_html = ""
     if rows:
         row_items = "".join(
@@ -163,7 +166,7 @@ def _email_card_html(*, badge: str, badge_color: str, title: str, intro: str,
       {cta_html}
     </div>
     <div style="padding:14px 24px;border-top:1px solid #27272a;color:#52525b;font-size:11px;">
-      SpoolBeacon &middot; Filament Inventory &amp; Price Tracking
+      {footer_tagline}
     </div>
   </div>
 </body>
@@ -175,24 +178,24 @@ def build_price_alert_email_html(
     snap_total: float, currency: str, type_label: str, target_str: str,
 ) -> str:
     return _email_card_html(
-        badge="Price Alert",
+        badge=t("notifications.email.badge_price_alert"),
         badge_color="#10b981",
-        title=f"Target price reached: {filament_name}",
-        intro=f"The price at {shop_name} has dropped below your {type_label.lower()}.",
+        title=t("notifications.email.price_alert_title", filament_name=filament_name),
+        intro=t("notifications.email.price_alert_intro", shop_name=shop_name, type_label=type_label.lower()),
         rows=[
-            ("Shop", shop_name),
-            ("Price", f"{snap_total:.2f} {currency}"),
+            (t("notifications.fields.shop"), shop_name),
+            (t("notifications.fields.price"), f"{snap_total:.2f} {currency}"),
             (type_label, target_str),
         ],
-        cta_label="View offer",
+        cta_label=t("notifications.email.cta_view_offer"),
         cta_url=shop_url,
     )
 
 
 def build_test_email_html(channel_label: str) -> str:
     return _email_card_html(
-        badge="Test",
+        badge=t("notifications.email.badge_test"),
         badge_color="#6366f1",
-        title="Connection successful",
-        intro=f"This test message confirms that SpoolBeacon can send {channel_label}.",
+        title=t("notifications.email.test_title"),
+        intro=t("notifications.email.test_intro", channel_label=channel_label),
     )

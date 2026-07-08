@@ -10,6 +10,7 @@ from selectolax.parser import HTMLParser
 from sqlalchemy import select
 
 from app.database import get_db
+from app.i18n import t
 from app.models.shop_rule import ShopRule
 from app.models.user import User, UserRole
 
@@ -99,9 +100,12 @@ async def _run_test(rule: ShopRule, url: str) -> dict:
             resp.raise_for_status()
             html = resp.text
     except httpx.TimeoutException:
-        return {"ok": False, "error": f"Timeout after {_FETCH_TIMEOUT:.0f}s."}
+        return {"ok": False, "error": t("shop_rules.test.timeout", seconds=f"{_FETCH_TIMEOUT:.0f}")}
     except httpx.HTTPStatusError as e:
-        return {"ok": False, "error": f"HTTP {e.response.status_code}: {e.response.reason_phrase}"}
+        return {"ok": False, "error": t(
+            "shop_rules.test.http_error",
+            status_code=e.response.status_code, reason=e.response.reason_phrase,
+        )}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
@@ -139,9 +143,9 @@ _DOMAIN_RE = re.compile(
 def _validate(form) -> str | None:
     domain = form.get("domain", "").strip().lower()
     if not domain:
-        return "Domain is required."
+        return t("shop_rules.validation.domain_required")
     if not _DOMAIN_RE.match(domain):
-        return "Invalid domain (example: shop.example.com)."
+        return t("shop_rules.validation.domain_invalid")
     return None
 
 
@@ -201,7 +205,7 @@ async def new():
             select(ShopRule).where(ShopRule.domain == domain)
         )).scalar_one_or_none()
         if dup:
-            await flash(f'Rule for "{domain}" already exists.', "error")
+            await flash(t("shop_rules.flash.duplicate_domain", domain=domain), "error")
             return await render_template(
                 "shop_rules/rule_form.html", rule=None, form_data=form,
                 adapter_domains=registered_domains(),
@@ -243,7 +247,7 @@ async def edit(rule_id: int):
             select(ShopRule).where(ShopRule.domain == domain, ShopRule.id != rule_id)
         )).scalar_one_or_none()
         if dup:
-            await flash(f'Rule for "{domain}" already exists.', "error")
+            await flash(t("shop_rules.flash.duplicate_domain", domain=domain), "error")
             return await render_template(
                 "shop_rules/rule_form.html", rule=rule, form_data=form,
                 adapter_domains=registered_domains(),
@@ -297,11 +301,11 @@ def _picker_message_page(url: str, message: str) -> Response:
 <body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
              background:#141417;color:#a1a1aa;font-family:-apple-system,system-ui,sans-serif;">
   <div style="text-align:center;max-width:26rem;padding:1.5rem;">
-    <p style="color:#f87171;font-size:.875rem;font-weight:600;margin-bottom:.5rem;">Could not load page</p>
+    <p style="color:#f87171;font-size:.875rem;font-weight:600;margin-bottom:.5rem;">{html_escape(t("shop_rules.picker.load_error_title"))}</p>
     <p style="font-size:.8rem;word-break:break-word;">{html_escape(message)}</p>
-    <p style="font-size:.75rem;margin-top:1rem;color:#52525b;">Check the Test URL, or the check engine in Settings.</p>
+    <p style="font-size:.75rem;margin-top:1rem;color:#52525b;">{html_escape(t("shop_rules.picker.load_error_hint"))}</p>
     {('<a href="' + html_escape(retry_href) + '" style="display:inline-block;'
-       'margin-top:1rem;color:#818cf8;font-size:.8rem;">Retry</a>') if url else ''}
+       'margin-top:1rem;color:#818cf8;font-size:.8rem;">' + html_escape(t("shop_rules.picker.retry")) + '</a>') if url else ''}
   </div>
 </body></html>""")
 
@@ -318,7 +322,7 @@ async def picker_frame():
 
     url = request.args.get("url", "").strip()
     if not url or not _URL_SCHEME_RE.match(url):
-        return _picker_message_page(url, "Enter a valid http(s) Test URL above first.")
+        return _picker_message_page(url, t("shop_rules.picker.invalid_url"))
 
     async with get_db() as session:
         settings = await get_settings(session)
@@ -332,7 +336,7 @@ async def picker_frame():
         html, err = await _fetch_httpx(url)
 
     if err or not html:
-        return _picker_message_page(url, err or "Empty response from server.")
+        return _picker_message_page(url, err or t("shop_rules.picker.empty_response"))
 
     base_tag = f'<base href="{html_escape(url, quote=True)}">'
     if _HEAD_OPEN_RE.search(html):
@@ -356,7 +360,7 @@ async def test_rule(rule_id: int):
         form = await request.form
         url = form.get("test_url", "").strip() or rule.test_url or ""
         if not url:
-            await flash("No test URL provided.", "error")
+            await flash(t("shop_rules.flash.no_test_url"), "error")
             return await render_template(
                 "shop_rules/rule_form.html", rule=rule, form_data=None, test_result=None,
                 adapter_domains=registered_domains(),

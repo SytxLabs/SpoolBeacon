@@ -1,17 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Inventory – SpoolBeacon{% endblock %}
+{% block title %}{{ t('inventory.index.title') }} – SpoolBeacon{% endblock %}
 
 {% block content %}
 
 <div class="flex items-start justify-between mb-6">
     <div>
-        <h1 class="page-title">Inventory</h1>
+        <h1 class="page-title">{{ t('inventory.index.title') }}</h1>
         <p class="page-subtitle" id="inventory-subtitle">
             {% if products %}
-                {{ products|length }} Filament{% if products|length != 1 %}s{% endif %}
-                {% if current_material %} · filtered: <span class="text-gray-400">{{ current_material }}</span>{% endif %}
+                {% if products|length == 1 %}{{ t('inventory.index.subtitle_count_one', count=products|length) }}{% else %}{{ t('inventory.index.subtitle_count_other', count=products|length) }}{% endif %}
+                {% if current_material %} · {{ t('inventory.index.subtitle_filtered') }} <span class="text-gray-400">{{ current_material }}</span>{% endif %}
             {% else %}
-                Manage filament products and spools
+                {{ t('inventory.index.subtitle_default') }}
             {% endif %}
         </p>
     </div>
@@ -20,7 +20,7 @@
         <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
             <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z"/>
         </svg>
-        Add Filament
+        {{ t('inventory.index.add_filament') }}
     </a>
     {% endif %}
 </div>
@@ -33,7 +33,7 @@
         <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd"/>
     </svg>
     <input type="search" id="inventory-search"
-           placeholder="Search by name, color, material, manufacturer…"
+           placeholder="{{ t('inventory.index.search_placeholder') }}"
            class="w-full bg-gray-900 border border-gray-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white
                   placeholder-gray-600 focus:outline-none focus:border-indigo-500/60
                   focus:ring-2 focus:ring-indigo-500/15 transition-colors">
@@ -47,7 +47,7 @@
        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-all
               {% if not current_material %}bg-indigo-500/15 text-indigo-300 ring-1 ring-inset ring-indigo-500/25
               {% else %}bg-gray-800 text-gray-400 hover:text-gray-200 hover:bg-gray-750{% endif %}">
-        All
+        {{ t('inventory.index.filter_all') }}
     </a>
     {% for mat in materials %}
     <a href="/inventory/?material={{ mat }}"
@@ -97,7 +97,7 @@
             <span class="badge-gray text-[10px]">{{ product.material }}</span>
             <span class="text-[10px] text-gray-600">{{ product.diameter_mm }} mm</span>
             {% if product.id in target_hit_product_ids %}
-            <span class="badge-green text-[10px] ml-auto">Target ↓</span>
+            <span class="badge-green text-[10px] ml-auto">{{ t('inventory.index.badge_target') }}</span>
             {% endif %}
         </div>
 
@@ -108,7 +108,7 @@
                     {{ spool_count }}
                 </p>
                 <p class="text-[10px] text-gray-600 mt-0.5 uppercase tracking-wide">
-                    Spool{{ 's' if spool_count != 1 else '' }}
+                    {% if spool_count == 1 %}{{ t('inventory.index.spools_singular') }}{% else %}{{ t('inventory.index.spools_plural') }}{% endif %}
                 </p>
             </div>
             {% if total_remaining_g > 0 %}
@@ -116,12 +116,12 @@
                 <p class="text-base font-semibold text-gray-200 tabular-nums leading-none">
                     {{ (total_remaining_g / 1000)|round(2) }}<span class="text-xs font-normal text-gray-500 ml-0.5">kg</span>
                 </p>
-                <p class="text-[10px] text-gray-600 mt-0.5 uppercase tracking-wide">Remaining</p>
+                <p class="text-[10px] text-gray-600 mt-0.5 uppercase tracking-wide">{{ t('inventory.index.remaining_label') }}</p>
             </div>
             {% else %}
             <div class="text-right">
                 <p class="text-sm text-gray-700">–</p>
-                <p class="text-[10px] text-gray-700 mt-0.5 uppercase tracking-wide">Remaining</p>
+                <p class="text-[10px] text-gray-700 mt-0.5 uppercase tracking-wide">{{ t('inventory.index.remaining_label') }}</p>
             </div>
             {% endif %}
         </div>
@@ -140,21 +140,21 @@
         </svg>
     </div>
     {% if current_material %}
-    <p class="text-gray-200 font-semibold">No filaments for "{{ current_material }}"</p>
+    <p class="text-gray-200 font-semibold">{{ t('inventory.index.empty_no_filaments_for', material=current_material) }}</p>
     <p class="text-gray-500 text-sm mt-2">
-        <a href="/inventory/" class="text-indigo-400 hover:text-indigo-300 transition-colors">Clear filter</a>
+        <a href="/inventory/" class="text-indigo-400 hover:text-indigo-300 transition-colors">{{ t('inventory.index.clear_filter') }}</a>
     </p>
     {% else %}
-    <p class="text-gray-200 font-semibold text-lg">No filaments yet</p>
+    <p class="text-gray-200 font-semibold text-lg">{{ t('inventory.index.empty_title') }}</p>
     <p class="text-gray-500 text-sm mt-2 max-w-xs mx-auto">
-        Add your first filament to manage purchases, spools, and prices.
+        {{ t('inventory.index.empty_desc') }}
     </p>
     {% if not is_viewer %}
     <a href="/inventory/filament/new" class="btn-primary mt-6">
         <svg viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
             <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z"/>
         </svg>
-        Add First Filament
+        {{ t('inventory.index.add_first_filament') }}
     </a>
     {% endif %}
     {% endif %}
@@ -168,6 +168,10 @@
     const subtitle = document.getElementById('inventory-subtitle');
     const cards = Array.from(document.querySelectorAll('[data-search]'));
     const total = cards.length;
+    const unitSingular = {{ t('inventory.index.js_unit_singular')|tojson }};
+    const unitPlural = {{ t('inventory.index.js_unit_plural')|tojson }};
+    const countTemplate = {{ t('inventory.index.js_count_template')|tojson }};
+    const matchingTemplate = {{ t('inventory.index.js_matching_template')|tojson }};
 
     input.addEventListener('input', function() {
         const q = this.value.toLowerCase().trim();
@@ -178,9 +182,10 @@
             if (match) visible++;
         });
         if (subtitle) {
+            const unit = total !== 1 ? unitPlural : unitSingular;
             subtitle.textContent = q
-                ? visible + ' of ' + total + ' filament' + (total !== 1 ? 's' : '') + ' matching “' + q + '”'
-                : total + ' filament' + (total !== 1 ? 's' : '');
+                ? matchingTemplate.replace('{visible}', visible).replace('{total}', total).replace('{unit}', unit).replace('{query}', q)
+                : countTemplate.replace('{total}', total).replace('{unit}', unit);
         }
     });
 })();

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="de" class="h-full">
+<html lang="{{ current_locale }}" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In – SpoolBeacon</title>
+    <title>{{ t('auth.login.page_title') }} – {{ t('app.title') }}</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -37,7 +37,7 @@
             </svg>
         </div>
         <h1 class="text-xl font-bold text-white tracking-tight">SpoolBeacon</h1>
-        <p class="text-sm text-gray-500 mt-1">Filament Inventory</p>
+        <p class="text-sm text-gray-500 mt-1">{{ t('auth.login.subtitle') }}</p>
     </div>
 
     <!-- Flash messages -->
@@ -57,20 +57,20 @@
     <!-- Login card -->
     <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
         <div class="px-6 py-5 border-b border-gray-800">
-            <p class="text-sm font-medium text-gray-300">Sign in</p>
-            <p class="text-xs text-gray-500 mt-0.5">Enter your credentials to continue</p>
+            <p class="text-sm font-medium text-gray-300">{{ t('auth.login.card_title') }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">{{ t('auth.login.card_subtitle') }}</p>
         </div>
         <form method="POST" class="px-6 py-5 space-y-4">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
             <div>
-                <label for="username" class="block text-xs font-medium text-gray-400 mb-2">Username</label>
+                <label for="username" class="block text-xs font-medium text-gray-400 mb-2">{{ t('auth.fields.username') }}</label>
                 <input type="text" id="username" name="username" required autofocus
                        class="w-full bg-gray-850 border border-gray-750 rounded-lg px-3 py-2.5 text-sm text-white
                               placeholder-gray-600 focus:outline-none focus:border-indigo-500/60
                               focus:ring-2 focus:ring-indigo-500/15 transition-colors">
             </div>
             <div>
-                <label for="password" class="block text-xs font-medium text-gray-400 mb-2">Password</label>
+                <label for="password" class="block text-xs font-medium text-gray-400 mb-2">{{ t('auth.fields.password') }}</label>
                 <input type="password" id="password" name="password" required
                        class="w-full bg-gray-850 border border-gray-750 rounded-lg px-3 py-2.5 text-sm text-white
                               placeholder-gray-600 focus:outline-none focus:border-indigo-500/60
@@ -79,7 +79,7 @@
             <button type="submit"
                     class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm
                            rounded-lg px-4 py-2.5 transition-colors mt-1">
-                Sign in
+                {{ t('auth.login.submit_button') }}
             </button>
         </form>
     </div>
