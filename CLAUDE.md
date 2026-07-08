@@ -32,7 +32,7 @@ No test suite, no linter config exists (Pylint config in `.pylintrc`, run manual
 
 ## Architecture
 
-**Stack:** Quart 0.20 (async Flask), SQLAlchemy 2.x async, asyncmy (MariaDB), Alembic, Jinja2, Tailwind CSS (CDN), APScheduler, httpx, selectolax, cloudscraper, Playwright.
+**Stack:** Quart 0.20 (async Flask), SQLAlchemy 2.x async, asyncmy (MariaDB), Alembic, Jinja2, Tailwind CSS v4 (locally built, committed output, no CDN), APScheduler, httpx, selectolax, cloudscraper, Playwright.
 
 **App factory:** `app/__init__.py` → `create_app()`. Registers blueprints, CSRF middleware, scheduler, error handlers (403/404/500), and a context processor that injects `current_user`, `csrf_token`, `nav_alert_count`, `is_admin` into every template.
 
