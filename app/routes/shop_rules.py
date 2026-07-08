@@ -296,16 +296,22 @@ def _picker_response(body_html: str) -> Response:
 
 def _picker_message_page(url: str, message: str) -> Response:
     retry_href = f"/shop-rules/picker-frame?url={quote(url)}" if url else "#"
+    error_title = html_escape(t("shop_rules.picker.load_error_title"))
+    error_hint = html_escape(t("shop_rules.picker.load_error_hint"))
+    retry_label = html_escape(t("shop_rules.picker.retry"))
+    retry_link = (
+        f'<a href="{html_escape(retry_href)}" '
+        f'style="display:inline-block;margin-top:1rem;color:#818cf8;font-size:.8rem;">{retry_label}</a>'
+    ) if url else ""
     return _picker_response(f"""<!doctype html>
 <html><head><meta charset="utf-8"></head>
 <body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
              background:#141417;color:#a1a1aa;font-family:-apple-system,system-ui,sans-serif;">
   <div style="text-align:center;max-width:26rem;padding:1.5rem;">
-    <p style="color:#f87171;font-size:.875rem;font-weight:600;margin-bottom:.5rem;">{html_escape(t("shop_rules.picker.load_error_title"))}</p>
+    <p style="color:#f87171;font-size:.875rem;font-weight:600;margin-bottom:.5rem;">{error_title}</p>
     <p style="font-size:.8rem;word-break:break-word;">{html_escape(message)}</p>
-    <p style="font-size:.75rem;margin-top:1rem;color:#52525b;">{html_escape(t("shop_rules.picker.load_error_hint"))}</p>
-    {('<a href="' + html_escape(retry_href) + '" style="display:inline-block;'
-       'margin-top:1rem;color:#818cf8;font-size:.8rem;">' + html_escape(t("shop_rules.picker.retry")) + '</a>') if url else ''}
+    <p style="font-size:.75rem;margin-top:1rem;color:#52525b;">{error_hint}</p>
+    {retry_link}
   </div>
 </body></html>""")
 
