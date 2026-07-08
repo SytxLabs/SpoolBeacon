@@ -4,26 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ t('auth.login.page_title') }} – {{ t('app.title') }}</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'] },
-                    colors: {
-                        gray: {
-                            750: '#323238', 800: '#27272a', 850: '#1e1e22',
-                            900: '#141417', 950: '#09090b',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style type="text/tailwindcss">
-        @layer base { ::selection { background-color: #6366f1; color: #fff; } * { -webkit-font-smoothing: antialiased; } }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}">
 </head>
 <body class="h-full bg-gray-950 text-gray-100 font-sans flex items-center justify-center px-4">
 

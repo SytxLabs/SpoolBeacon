@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@theme {
+    --font-sans: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+    --color-gray-50: #fafafa;
+    --color-gray-100: #f4f4f5;
+    --color-gray-200: #e4e4e7;
+    --color-gray-300: #d4d4d8;
+    --color-gray-400: #a1a1aa;
+    --color-gray-500: #71717a;
+    --color-gray-600: #52525b;
+    --color-gray-700: #3f3f46;
+    --color-gray-750: #323238;
+    --color-gray-800: #27272a;
+    --color-gray-850: #1e1e22;
+    --color-gray-900: #141417;
+    --color-gray-950: #09090b;
+}
+
+@layer base {
+    ::selection { background-color: #6366f1; color: #fff; }
+    * { -webkit-font-smoothing: antialiased; }
+}
+
+@layer components {
+    /* Cards — chained via shared selector since v4 @apply can't reference another custom class */
+    .card, .card-hover, .stat-card {
+        @apply bg-gray-900 border border-gray-750 rounded-xl;
+    }
+    .card-hover {
+        @apply hover:border-gray-700 transition-colors duration-150;
+    }
+    .stat-card {
+        @apply p-5;
+    }
+    /* Typography */
+    .section-label {
+        @apply text-[10.5px] font-semibold text-gray-500 uppercase tracking-[0.08em];
+    }
+    .page-title {
+        @apply text-2xl font-bold text-white tracking-tight;
+    }
+    .page-subtitle {
+        @apply text-sm text-gray-500 mt-1;
+    }
+    /* Inputs */
+    .input-base {
+        @apply w-full bg-gray-850 border border-gray-750 rounded-lg px-3 py-2 text-sm text-white
+               placeholder-gray-600 focus:outline-none focus:border-indigo-500/60
+               focus:ring-2 focus:ring-indigo-500/15 transition-colors;
+    }
+    /* Buttons */
+    .btn-primary {
+        @apply inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500
+               text-white text-sm font-medium rounded-lg transition-colors;
+    }
+    .btn-ghost {
+        @apply inline-flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-750
+               text-gray-300 hover:text-white text-sm font-medium rounded-lg transition-colors;
+    }
+    .btn-sm {
+        @apply px-3 py-1.5 text-xs rounded-lg;
+    }
+    .btn-icon {
+        @apply inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg
+               bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 hover:text-indigo-300
+               border border-indigo-500/20 transition-all;
+    }
+    /* Badges — shared base via grouped selector */
+    .badge, .badge-gray, .badge-indigo, .badge-amber, .badge-green, .badge-red, .badge-blue {
+        @apply inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium;
+    }
+    .badge-gray   { @apply bg-gray-800 text-gray-400; }
+    .badge-indigo { @apply bg-indigo-500/15 text-indigo-400 ring-1 ring-inset ring-indigo-500/20; }
+    .badge-amber  { @apply bg-amber-500/15 text-amber-400 ring-1 ring-inset ring-amber-500/20; }
+    .badge-green  { @apply bg-emerald-500/15 text-emerald-400 ring-1 ring-inset ring-emerald-500/20; }
+    .badge-red    { @apply bg-red-500/15 text-red-400 ring-1 ring-inset ring-red-500/20; }
+    .badge-blue   { @apply bg-blue-500/15 text-blue-400 ring-1 ring-inset ring-blue-500/20; }
+    /* Nav — shared base via grouped selector */
+    .nav-link, .nav-link-active, .nav-link-inactive {
+        @apply flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors;
+    }
+    .nav-link-active {
+        @apply bg-white/[0.07] text-white;
+    }
+    .nav-link-inactive {
+        @apply text-gray-400 hover:text-gray-200 hover:bg-white/[0.04];
+    }
+}
