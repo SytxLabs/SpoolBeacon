@@ -21,19 +21,26 @@ python seed_shops.py     # ShopRules only, no inventory data (open-source safe)
 
 # Docker
 docker compose up --build
+
+# Rebuild Tailwind CSS after editing a template or app/static/css/input.css
+# (compiled output app/static/css/tailwind.css is committed, no CDN/Node dependency at runtime)
+tailwindcss -i ./app/static/css/input.css -o ./app/static/css/tailwind.css --minify
+tailwindcss -i ./app/static/css/input.css -o ./app/static/css/tailwind.css --watch   # during active CSS work
 ```
 
-No test suite, no linter config exists.
+No test suite, no linter config exists (Pylint config in `.pylintrc`, run manually: `pylint app`).
 
 ## Architecture
 
-**Stack:** Quart 0.20 (async Flask), SQLAlchemy 2.x async, asyncmy (MariaDB), Alembic, Jinja2, Tailwind CSS (CDN), APScheduler, httpx, selectolax, cloudscraper, Playwright.
+**Stack:** Quart 0.20 (async Flask), SQLAlchemy 2.x async, asyncmy (MariaDB), Alembic, Jinja2, Tailwind CSS v4 (locally built, committed output, no CDN), APScheduler, httpx, selectolax, cloudscraper, Playwright.
 
 **App factory:** `app/__init__.py` → `create_app()`. Registers blueprints, CSRF middleware, scheduler, error handlers (403/404/500), and a context processor that injects `current_user`, `csrf_token`, `nav_alert_count`, `is_admin` into every template.
 
 **DB session:** Always use `async with get_db() as session:`. The context manager auto-commits on clean exit, rolls back on exception.
 
 **Static files:** `app/static/` — served at `/static/`. Logo at `app/static/img/logo.png`, referenced via `url_for('static', filename='img/logo.png')`.
+
+**CSS/Tailwind:** No CDN, no Node.js at runtime. `app/static/css/input.css` is the Tailwind v4 source (`@theme` block holds the custom `gray` palette + font, `@layer components` holds `.card`/`.btn-*`/`.badge-*`/`.nav-link-*` etc. — v4 forbids `@apply`-ing one custom component class from another, so related classes share a grouped selector instead). `app/static/css/tailwind.css` is the committed, built output referenced via `<link>` in every full-page template (`base.html`, `auth/login.html`, `auth/setup.html`, `inventory/spool_label.html`). Rebuild with the standalone Tailwind CLI (no npm install needed): `curl -sL -o tailwindcss https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-x64 && chmod +x tailwindcss`, then the commands above. Commit the rebuilt `tailwind.css` alongside any template/class change.
 
 **Blueprints / routes:**
 
