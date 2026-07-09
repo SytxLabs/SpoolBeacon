@@ -10,17 +10,17 @@ from quart_auth import login_required, current_user
 from sqlalchemy import or_, select, func
 from sqlalchemy.orm import selectinload, contains_eager
 
+from app.alert_service import maybe_create_alerts, dispatch_alert_notifications
 from app.database import get_db
 from app.i18n import t
 from app.models.filament import FilamentProduct, Manufacturer
+from app.models.price_alert_event import PriceAlertEvent
 from app.models.price_snapshot import PriceSnapshot
 from app.models.purchase import Purchase, PurchaseLine
 from app.models.shop_rule import ShopRule
 from app.models.shoplink import ShopLink
 from app.models.spool import Spool, SpoolStatus, StorageStatus
 from app.models.user import User, UserRole
-from app.alert_service import maybe_create_alerts, dispatch_alert_notifications
-from app.models.price_alert_event import PriceAlertEvent
 from app.price_check_service import check_price
 from app.settings_service import get_all as get_settings
 from app.spool_code import generate_spool_code, DEFAULT_TEMPLATE
@@ -48,7 +48,7 @@ async def load_target_hits(session) -> list[dict]:
     """Return ShopLinks whose latest non-error snapshot hits target_price or target_price_per_kg."""
     links = (await session.execute(
         select(ShopLink)
-        .options(selectinload(ShopLink.filament_product))
+        .options(selectinload(ShopLink.filament_product).selectinload(FilamentProduct.manufacturer))
         .where(
             ShopLink.is_active.is_(True),
             or_(ShopLink.target_price.isnot(None), ShopLink.target_price_per_kg.isnot(None)),
@@ -95,7 +95,7 @@ async def load_target_hits(session) -> list[dict]:
                 "hit_price": hit_price,
                 "hit_kg": hit_kg,
                 "product_id": lnk.filament_product_id,
-                "product_name": lnk.filament_product.name if lnk.filament_product else "–",
+                "product_name": lnk.filament_product.display_name if lnk.filament_product else "–",
             })
     return hits
 
@@ -1165,7 +1165,7 @@ async def snapshot_new(product_id: int, link_id: int):
     async with get_db() as session:
         link = (await session.execute(
             select(ShopLink)
-            .options(selectinload(ShopLink.filament_product))
+            .options(selectinload(ShopLink.filament_product).selectinload(FilamentProduct.manufacturer))
             .where(ShopLink.id == link_id)
         )).scalar_one_or_none()
         if not link or link.filament_product_id != product_id:
@@ -1212,12 +1212,12 @@ async def snapshot_new(product_id: int, link_id: int):
             link.target_price, link.target_price_per_kg, link.package_weight_g, link.currency,
         )
 
-        link_url           = link.url
-        link_currency      = link.currency
-        link_target        = link.target_price
-        link_target_kg     = link.target_price_per_kg
-        link_shop_name     = link.shop_name
-        link_filament_name = link.filament_product.name if link.filament_product else ""
+        link_url = link.url
+        link_currency = link.currency
+        link_target = link.target_price
+        link_target_kg = link.target_price_per_kg
+        link_shop_name = link.shop_name
+        link_filament_name = link.filament_product.display_name if link.filament_product else ""
 
     if alert_types:
         await dispatch_alert_notifications(
@@ -1238,7 +1238,7 @@ async def shoplink_check(product_id: int, link_id: int):
     async with get_db() as session:
         link = (await session.execute(
             select(ShopLink)
-            .options(selectinload(ShopLink.filament_product))
+            .options(selectinload(ShopLink.filament_product).selectinload(FilamentProduct.manufacturer))
             .where(ShopLink.id == link_id)
         )).scalar_one_or_none()
         if not link or link.filament_product_id != product_id:
@@ -1261,14 +1261,14 @@ async def shoplink_check(product_id: int, link_id: int):
         settings = await get_settings(session)
 
         # capture plain values before session closes (rule has no lazy relationships)
-        link_url       = link.url
-        link_currency  = link.currency
-        link_shipping  = link.shipping_price
-        link_target    = link.target_price
+        link_url = link.url
+        link_currency = link.currency
+        link_shipping = link.shipping_price
+        link_target = link.target_price
         link_target_kg = link.target_price_per_kg
-        link_package   = link.package_weight_g
-        link_shop      = link.shop_name
-        link_fname     = link.filament_product.name if link.filament_product else ""
+        link_package = link.package_weight_g
+        link_shop = link.shop_name
+        link_fname = link.filament_product.display_name if link.filament_product else ""
 
     result = await check_price(
         link_id=link_id,

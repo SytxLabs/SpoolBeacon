@@ -39,5 +39,10 @@ class FilamentProduct(Base):
     spools = relationship("Spool", back_populates="filament_product")
     shop_links = relationship("ShopLink", back_populates="filament_product")
 
+    @property
+    def display_name(self) -> str:
+        manufacturer_name = self.manufacturer.name if self.manufacturer else ""
+        return f"{manufacturer_name} {self.name} – {self.color_name}".strip()
+
     def __repr__(self) -> str:
         return f"<FilamentProduct {self.name}>"
