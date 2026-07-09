@@ -13,6 +13,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
+from app.models.filament import FilamentProduct
 from app.models.price_snapshot import PriceSnapshot
 from app.models.shop_rule import ShopRule
 from app.models.shoplink import ShopLink
@@ -71,7 +72,7 @@ async def run_price_checks() -> None:
     async with get_db() as session:
         links = (await session.execute(
             select(ShopLink)
-            .options(selectinload(ShopLink.filament_product))
+            .options(selectinload(ShopLink.filament_product).selectinload(FilamentProduct.manufacturer))
             .where(ShopLink.is_active.is_(True))
         )).scalars().all()
 
@@ -117,7 +118,7 @@ async def run_price_checks() -> None:
             "target_price_per_kg": link.target_price_per_kg,
             "package_weight_g": link.package_weight_g,
             "shop_name": link.shop_name,
-            "filament_name": link.filament_product.name if link.filament_product else "",
+            "filament_name": link.filament_product.display_name if link.filament_product else "",
         })
 
     if skipped:
