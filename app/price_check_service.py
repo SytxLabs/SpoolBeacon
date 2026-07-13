@@ -60,9 +60,12 @@ async def _fetch_cloudscraper(url: str) -> tuple[str | None, str | None]:
         sc = cloudscraper.create_scraper(
             browser={"browser": "chrome", "platform": "windows", "mobile": False}
         )
-        r = sc.get(url, timeout=20)
-        r.raise_for_status()
-        return r.text
+        try:
+            r = sc.get(url, timeout=20)
+            r.raise_for_status()
+            return r.text
+        finally:
+            sc.close()
 
     try:
         loop = asyncio.get_event_loop()
