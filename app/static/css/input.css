@@ -87,4 +87,13 @@
     .nav-link-inactive {
         @apply text-gray-400 hover:text-gray-200 hover:bg-white/[0.04];
     }
+    .nav-dropdown-item, .nav-dropdown-item-active {
+        @apply flex items-center gap-2 px-3 py-2 text-sm transition-colors;
+    }
+    .nav-dropdown-item {
+        @apply text-gray-400 hover:text-gray-200 hover:bg-white/[0.04];
+    }
+    .nav-dropdown-item-active {
+        @apply text-white bg-white/[0.06];
+    }
 }

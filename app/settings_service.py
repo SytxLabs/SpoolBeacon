@@ -8,6 +8,8 @@ _DEFAULTS: dict[str, str] = {
     "app.language": "en",
     # spool codes
     "spool.code_template": "SB-{product_id}-{line_id}-{timestamp}-{seq:02d}",
+    # print job codes
+    "print.code_template": "PJ-{date}-{seq:03d}",
     # scheduler
     "scheduler.enabled": "0",
     "scheduler.interval_minutes": "360",

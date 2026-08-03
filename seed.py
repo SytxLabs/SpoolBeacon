@@ -6,8 +6,11 @@ Usage:
   python seed.py --reset    # truncate all demo tables first, then seed fresh
 """
 import asyncio
+import os
 import sys
 from datetime import date, datetime, timedelta
+from pathlib import Path
+from uuid import uuid4
 
 from dotenv import load_dotenv
 
@@ -17,8 +20,9 @@ load_dotenv()
 # Must be imported after load_dotenv() — app.config reads DB_* env vars at import time.
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.orm import selectinload
 
-from app.config import _build_database_url
+from app.config import Config, _build_database_url
 from app.models.filament import Manufacturer, FilamentProduct
 from app.models.purchase import Purchase, PurchaseLine
 from app.models.shoplink import ShopLink
@@ -26,14 +30,113 @@ from app.models.price_snapshot import PriceSnapshot
 from app.models.price_alert_event import PriceAlertEvent
 from app.models.shop_rule import ShopRule
 from app.models.spool import Spool, SpoolStatus, StorageStatus
+from app.models.print_job import PrintJob, PrintJobLine, PrintJobFile, PrintFileKind, PrintJobStatus
 # pylint: enable=wrong-import-position
+
+
+# Tiny valid ASCII STL (a 10mm cube) used to seed one "uploaded file" print job
+# so the 3D preview has something real to render in screenshots/demos.
+_DEMO_STL = b"""solid cube
+facet normal 0 0 -1
+outer loop
+vertex 0 0 0
+vertex 0 10 0
+vertex 10 10 0
+endloop
+endfacet
+facet normal 0 0 -1
+outer loop
+vertex 0 0 0
+vertex 10 10 0
+vertex 10 0 0
+endloop
+endfacet
+facet normal 0 0 1
+outer loop
+vertex 0 0 10
+vertex 10 10 10
+vertex 0 10 10
+endloop
+endfacet
+facet normal 0 0 1
+outer loop
+vertex 0 0 10
+vertex 10 0 10
+vertex 10 10 10
+endloop
+endfacet
+facet normal 0 -1 0
+outer loop
+vertex 0 0 0
+vertex 10 0 0
+vertex 10 0 10
+endloop
+endfacet
+facet normal 0 -1 0
+outer loop
+vertex 0 0 0
+vertex 10 0 10
+vertex 0 0 10
+endloop
+endfacet
+facet normal 0 1 0
+outer loop
+vertex 0 10 0
+vertex 0 10 10
+vertex 10 10 10
+endloop
+endfacet
+facet normal 0 1 0
+outer loop
+vertex 0 10 0
+vertex 10 10 10
+vertex 10 10 0
+endloop
+endfacet
+facet normal -1 0 0
+outer loop
+vertex 0 0 0
+vertex 0 10 10
+vertex 0 10 0
+endloop
+endfacet
+facet normal -1 0 0
+outer loop
+vertex 0 0 0
+vertex 0 0 10
+vertex 0 10 10
+endloop
+endfacet
+facet normal 1 0 0
+outer loop
+vertex 10 0 0
+vertex 10 10 0
+vertex 10 10 10
+endloop
+endfacet
+facet normal 1 0 0
+outer loop
+vertex 10 0 0
+vertex 10 10 10
+vertex 10 0 10
+endloop
+endfacet
+endsolid cube
+"""
 
 
 # ── helpers ────────────────────────────────────────────────────────────────────
 
 async def clear_tables(session: AsyncSession) -> None:
     """Delete all demo data in FK-safe order. Does NOT touch users or app_settings."""
+    demo_uploads = (await session.execute(
+        select(PrintJobFile.stored_filename).where(PrintJobFile.stored_filename.is_not(None))
+    )).scalars().all()
+    for stored_filename in demo_uploads:
+        (Path(Config.UPLOAD_DIR) / stored_filename).unlink(missing_ok=True)
+
     for model in (
+        PrintJobFile, PrintJobLine, PrintJob,
         PriceAlertEvent, PriceSnapshot, ShopLink,
         Spool, PurchaseLine, Purchase,
         FilamentProduct, Manufacturer,
@@ -42,6 +145,61 @@ async def clear_tables(session: AsyncSession) -> None:
         await session.execute(delete(model))
     await session.commit()
     print("clear_tables: all demo tables truncated.")
+
+
+async def upsert_print_job(session, spools_by_product: dict, data: dict) -> bool:
+    existing = (await session.execute(
+        select(PrintJob).where(PrintJob.print_name == data["print_name"])
+    )).scalar_one_or_none()
+    if existing:
+        return False
+
+    status = data["status"]
+    job = PrintJob(
+        job_code=data["job_code"],
+        print_name=data["print_name"],
+        notes=data.get("notes"),
+        status=status,
+        printed_at=data["created_at"],
+        completed_at=data.get("completed_at"),
+        created_at=data["created_at"],
+    )
+    session.add(job)
+    await session.flush()
+
+    for pi, used_g in data["lines"]:
+        spool = spools_by_product[pi][0]
+        product = spool.filament_product
+        session.add(PrintJobLine(
+            print_job_id=job.id,
+            spool_id=spool.id,
+            spool_code=spool.spool_code,
+            product_name=f"{product.manufacturer.name} {product.name} – {product.color_name}",
+            used_g=used_g,
+        ))
+
+    for fd in data.get("files", []):
+        if fd["kind"] == "link":
+            session.add(PrintJobFile(
+                print_job_id=job.id,
+                kind=PrintFileKind.link,
+                provider=fd["provider"],
+                url=fd["url"],
+            ))
+        else:
+            os.makedirs(Config.UPLOAD_DIR, exist_ok=True)
+            stored_filename = f"{uuid4().hex}.stl"
+            (Path(Config.UPLOAD_DIR) / stored_filename).write_bytes(_DEMO_STL)
+            session.add(PrintJobFile(
+                print_job_id=job.id,
+                kind=PrintFileKind.upload,
+                stored_filename=stored_filename,
+                original_filename=fd["original_filename"],
+                file_ext="stl",
+                file_size_bytes=len(_DEMO_STL),
+            ))
+
+    return True
 
 
 async def upsert_manufacturer(session, name: str, website: str) -> Manufacturer:
@@ -505,6 +663,86 @@ async def seed(reset: bool = False) -> None:
 
         await session.flush()
 
+        # ── Print Jobs (board demo data) ──────────────────────────────────────
+        spools_by_product: dict[int, list[Spool]] = {}
+        for pi, product in enumerate(products):
+            rows = (await session.execute(
+                select(Spool)
+                .options(selectinload(Spool.filament_product).selectinload(FilamentProduct.manufacturer))
+                .where(Spool.filament_product_id == product.id)
+                .order_by(Spool.id)
+            )).scalars().all()
+            if rows:
+                spools_by_product[pi] = rows
+
+        raw_print_jobs = [
+            {
+                "job_code": "PJ-DEMO-001",
+                "print_name": "Articulated Dragon",
+                "notes": "Fine layer height (0.12mm). Queue for the weekend, needs ~9h.",
+                "status": PrintJobStatus.planned,
+                "created_at": now - timedelta(hours=6),
+                "lines": [(5, 45.0)],
+                "files": [{"kind": "link", "provider": "printables", "url": "https://www.printables.com/model/198813-flexi-print-in-place-dragon"}],
+            },
+            {
+                "job_code": "PJ-DEMO-002",
+                "print_name": "Calibration Cube",
+                "notes": "First-layer + dimensional accuracy check for the new Black spool.",
+                "status": PrintJobStatus.planned,
+                "created_at": now - timedelta(hours=3),
+                "lines": [(0, 8.0)],
+                "files": [{"kind": "upload", "original_filename": "calibration_cube.stl"}],
+            },
+            {
+                "job_code": "PJ-DEMO-003",
+                "print_name": "Phone Stand v2",
+                "notes": None,
+                "status": PrintJobStatus.planned,
+                "created_at": now - timedelta(hours=1),
+                "lines": [(8, 28.0)],
+                "files": [{"kind": "link", "provider": "makerworld", "url": "https://makerworld.com/en/models/511693-adjustable-phone-stand"}],
+            },
+            {
+                "job_code": "PJ-DEMO-004",
+                "print_name": "Camera Mount Arm",
+                "notes": "On the printer now — check bed adhesion at layer 10.",
+                "status": PrintJobStatus.printing,
+                "created_at": now - timedelta(hours=2),
+                "lines": [(1, 62.0)],
+                "files": [{"kind": "link", "provider": "thingiverse", "url": "https://www.thingiverse.com/thing:3861767"}],
+            },
+            {
+                "job_code": "PJ-DEMO-005",
+                "print_name": "Voronoi Vase",
+                "notes": "Vase mode, 0.6mm nozzle. Turned out great.",
+                "status": PrintJobStatus.done,
+                "created_at": now - timedelta(days=4),
+                "completed_at": now - timedelta(days=4, hours=-5),
+                "lines": [(2, 96.0)],
+                "files": [],
+            },
+            {
+                "job_code": "PJ-DEMO-006",
+                "print_name": "Dual-Color Nameplate",
+                "notes": "AMS colour swap at z=1.2mm for the black inlay.",
+                "status": PrintJobStatus.done,
+                "created_at": now - timedelta(days=1, hours=8),
+                "completed_at": now - timedelta(days=1, hours=5),
+                "lines": [(1, 18.0), (3, 6.0)],
+                "files": [],
+            },
+        ]
+
+        print_job_count = 0
+        for pj in raw_print_jobs:
+            if all(pi in spools_by_product for pi, _ in pj["lines"]):
+                created = await upsert_print_job(session, spools_by_product, pj)
+                if created:
+                    print_job_count += 1
+
+        await session.flush()
+
         # ── ShopLinks + PriceSnapshots + Alerts ───────────────────────────────
         raw_links = [
             # ── Elegoo Rapid PLA+ Black (pi=0) ──────────────────────────────
@@ -847,7 +1085,8 @@ async def seed(reset: bool = False) -> None:
         print(
             f"Seed complete — {len(mfrs)} manufacturers, {len(products)} products, "
             f"{len(raw_purchases)} purchases, {snap_count} snapshots, "
-            f"{alert_count} alerts, {rule_count} shop rules seeded."
+            f"{alert_count} alerts, {rule_count} shop rules, "
+            f"{print_job_count} print jobs seeded."
         )
 
     await engine.dispose()

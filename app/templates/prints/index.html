@@ -3,6 +3,130 @@
 
 {% block content %}
 
+{% macro status_button(job, target_status, label, primary=False) %}
+<form method="POST" action="/prints/{{ job.id }}/status" class="flex-1">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="status" value="{{ target_status }}">
+    <button type="submit" class="w-full py-1.5 rounded-lg text-xs text-center transition-colors
+        {% if primary %}bg-indigo-600 hover:bg-indigo-500 text-white font-medium{% else %}border border-gray-700 text-gray-400 hover:bg-gray-800{% endif %}">
+        {{ label }}
+    </button>
+</form>
+{% endmacro %}
+
+{% macro job_card(job) %}
+<div id="job-{{ job.id }}" class="bg-gray-850 border border-gray-750 rounded-xl p-4 space-y-3">
+    <div class="flex items-start justify-between gap-2">
+        <div class="min-w-0">
+            <p class="text-sm font-medium text-gray-200 truncate">{{ job.print_name or t('prints.index.untitled') }}</p>
+            <p class="text-xs text-gray-600 mt-0.5 flex items-center gap-1.5">
+                <span class="font-mono">{{ job.job_code }}</span>
+                <span>·</span>
+                <span>
+                {% if job.status.value == 'done' and job.completed_at %}
+                {{ job.completed_at.strftime('%d.%m.%Y') }}
+                {% else %}
+                {{ job.created_at.strftime('%d.%m.%Y') }}
+                {% endif %}
+                </span>
+            </p>
+        </div>
+        <div class="flex items-center gap-1 flex-shrink-0">
+            {% if job.status.value != 'done' %}
+            <a href="/prints/{{ job.id }}/edit" class="p-1 rounded-lg text-gray-700 hover:text-indigo-400 hover:bg-indigo-950/30 transition-colors" aria-label="{{ t('common.edit') }}">
+                <svg viewBox="0 0 16 16" fill="currentColor" class="w-3.5 h-3.5">
+                    <path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.351.958a.75.75 0 0 1-.927-.928l.958-3.35c.081-.286.235-.547.445-.757l8.61-8.61Zm1.414 1.06a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354l-1.086-1.086ZM11.189 6.25 9.75 4.81l-6.286 6.287a.25.25 0 0 0-.064.108l-.635 2.222 2.222-.635a.25.25 0 0 0 .108-.064l6.094-6.478Z"/>
+                </svg>
+            </a>
+            {% endif %}
+            <form method="POST" action="/prints/{{ job.id }}/delete"
+                  onsubmit="return confirm('{{ t('prints.index.delete_confirm') }}')">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="p-1 rounded-lg text-gray-700 hover:text-red-400 hover:bg-red-950/30 transition-colors">
+                    <svg viewBox="0 0 16 16" fill="currentColor" class="w-3.5 h-3.5">
+                        <path d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 .75.75V4h-3V2.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.711Z"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {% if job.notes %}
+    <p class="text-xs text-gray-500 line-clamp-2">{{ job.notes }}</p>
+    {% endif %}
+
+    {% if job.lines %}
+    <div class="space-y-1">
+        {% for line in job.lines %}
+        <div class="text-xs text-gray-400 flex items-center justify-between gap-2">
+            <span class="truncate"><span class="font-mono text-gray-600">{{ line.spool_code }}</span> · {{ line.product_name }}</span>
+            <span class="tabular-nums text-gray-300 flex-shrink-0">{{ line.used_g|int }} g</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if job.files %}
+    <div class="flex flex-wrap items-center gap-1.5">
+        {% for file in job.files %}
+        <div class="inline-flex items-center gap-1 bg-gray-850 border border-gray-800 rounded-full pl-2 pr-1 py-0.5">
+            {% if file.kind.value == 'link' %}
+            <a href="{{ file.url }}" target="_blank" rel="noopener"
+               class="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
+                {{ file.provider or t('prints.index.file_link') }}
+            </a>
+            {% else %}
+            <button type="button" onclick="openViewer('{{ url_for('prints.download_file', file_id=file.id) }}', '{{ file.file_ext }}')"
+                    class="text-xs text-gray-400 hover:text-indigo-300 transition-colors">
+                {{ t('prints.index.view_3d') }}
+            </button>
+            {% endif %}
+            <form method="POST" action="/prints/files/{{ file.id }}/delete" class="inline"
+                  onsubmit="return confirm('{{ t('prints.index.delete_file_confirm') }}')">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" aria-label="{{ t('prints.print_form.remove_file_aria') }}"
+                        class="p-0.5 rounded-full text-gray-700 hover:text-red-400 transition-colors">
+                    <svg viewBox="0 0 16 16" fill="currentColor" class="w-3 h-3">
+                        <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 0 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="flex items-center gap-2 pt-1">
+        {% if job.status.value == 'printing' %}
+        {{ status_button(job, 'planned', '‹ ' ~ t('prints.index.move_back')) }}
+        {{ status_button(job, 'done', t('prints.index.mark_done') ~ ' ›', primary=True) }}
+        {% elif job.status.value == 'done' %}
+        {{ status_button(job, 'printing', '‹ ' ~ t('prints.index.reopen')) }}
+        {% else %}
+        {{ status_button(job, 'printing', t('prints.index.start') ~ ' ›', primary=True) }}
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro column(title, jobs, empty_text) %}
+<div class="card flex-1 min-w-[280px] p-4 space-y-3">
+    <div class="flex items-baseline gap-1.5">
+        <p class="text-sm font-medium text-gray-300">{{ title }}</p>
+        <span class="text-xs text-gray-600 tabular-nums">{{ jobs|length }}</span>
+    </div>
+    <div class="space-y-3">
+        {% for job in jobs %}
+        {{ job_card(job) }}
+        {% else %}
+        <div class="border border-dashed border-gray-800 rounded-xl p-6 text-center text-xs text-gray-600">
+            {{ empty_text }}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endmacro %}
+
 <div class="mb-7 flex items-center justify-between">
     <div>
         <h1 class="text-xl font-bold text-white tracking-tight">{{ t('prints.index.title') }}</h1>
@@ -13,77 +137,12 @@
     <a href="/prints/new" class="btn-primary">{{ t('prints.index.log_button') }}</a>
 </div>
 
-{% if jobs %}
-<div class="card overflow-hidden">
-    <table class="w-full text-sm">
-        <thead>
-            <tr class="border-b border-gray-800">
-                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">{{ t('prints.index.table_date') }}</th>
-                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500">{{ t('prints.index.table_print_name') }}</th>
-                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 hidden sm:table-cell">{{ t('prints.index.table_filaments') }}</th>
-                <th class="px-5 py-3 text-right text-xs font-medium text-gray-500">{{ t('prints.index.table_total_used') }}</th>
-                <th class="px-5 py-3"></th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-800/60">
-            {% for job in jobs %}
-            <tr class="hover:bg-white/[0.015] transition-colors">
-                <td class="px-5 py-3.5 text-gray-400 text-xs tabular-nums whitespace-nowrap">
-                    {{ job.printed_at.strftime('%d.%m.%Y') }}
-                    <span class="text-gray-600 block sm:inline">{{ job.printed_at.strftime('%H:%M') }}</span>
-                </td>
-                <td class="px-5 py-3.5">
-                    <p class="text-gray-200 text-sm font-medium">{{ job.print_name or '–' }}</p>
-                    {% if job.notes %}
-                    <p class="text-gray-600 text-xs mt-0.5 truncate max-w-xs">{{ job.notes }}</p>
-                    {% endif %}
-                </td>
-                <td class="px-5 py-3.5 hidden sm:table-cell">
-                    {% for line in job.lines %}
-                    <div class="text-xs text-gray-400 leading-5">
-                        <span class="font-mono text-gray-600">{{ line.spool_code }}</span>
-                        <span class="text-gray-600 mx-1">·</span>
-                        {{ line.product_name }}
-                        <span class="text-gray-600 mx-1">·</span>
-                        <span class="tabular-nums text-gray-300">{{ line.used_g|int }} g</span>
-                    </div>
-                    {% endfor %}
-                </td>
-                <td class="px-5 py-3.5 text-right tabular-nums font-semibold text-gray-200 whitespace-nowrap">
-                    {{ job.total_used_g|int }}<span class="text-gray-600 font-normal text-xs ml-0.5">g</span>
-                </td>
-                <td class="px-5 py-3.5 text-right">
-                    <form method="POST" action="/prints/{{ job.id }}/delete" class="inline"
-                          onsubmit="return confirm('{{ t('prints.index.delete_confirm') }}')">
-                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit"
-                                class="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-950/30 transition-colors">
-                            <svg viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-                                <path d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 .75.75V4h-3V2.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.711Z"/>
-                            </svg>
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+{% if total %}
+<div class="flex flex-col sm:flex-row gap-6 items-start overflow-x-auto pb-2">
+    {{ column(t('prints.index.column_planned'), planned_jobs, t('prints.index.column_empty')) }}
+    {{ column(t('prints.index.column_printing'), printing_jobs, t('prints.index.column_empty')) }}
+    {{ column(t('prints.index.column_done'), done_jobs, t('prints.index.column_empty')) }}
 </div>
-
-{% if total_pages > 1 %}
-<div class="flex items-center justify-between mt-4">
-    <span class="text-xs text-gray-600">{{ t('prints.index.page_of', page=page, total_pages=total_pages) }}</span>
-    <div class="flex items-center gap-2">
-        {% if page > 1 %}
-        <a href="?page={{ page - 1 }}" class="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors">{{ t('prints.index.previous') }}</a>
-        {% endif %}
-        {% if page < total_pages %}
-        <a href="?page={{ page + 1 }}" class="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors">{{ t('prints.index.next') }}</a>
-        {% endif %}
-    </div>
-</div>
-{% endif %}
-
 {% else %}
 <div class="card p-16 text-center">
     <div class="w-14 h-14 rounded-2xl bg-gray-850 border border-gray-800 flex items-center justify-center mx-auto mb-4">
@@ -95,5 +154,47 @@
     <a href="/prints/new" class="inline-block mt-3 text-sm text-indigo-400 hover:text-indigo-300 transition-colors">{{ t('prints.index.log_first') }}</a>
 </div>
 {% endif %}
+
+{# 3D viewer modal, opened by openViewer() for uploaded STL/3MF files #}
+<div id="viewer-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-2xl">
+        <div class="flex items-center justify-between px-5 py-3 border-b border-gray-800">
+            <p class="text-sm font-medium text-gray-200">{{ t('prints.index.view_3d') }}</p>
+            <button type="button" onclick="closeViewer()" class="p-1.5 rounded-lg text-gray-500 hover:text-gray-300 hover:bg-gray-800 transition-colors">
+                <svg viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+                    <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 0 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"/>
+                </svg>
+            </button>
+        </div>
+        <canvas id="viewer-canvas" class="w-full aspect-square rounded-b-2xl bg-gray-950"></canvas>
+    </div>
+</div>
+
+<script type="importmap">
+{
+    "imports": {
+        "three": "{{ url_for('static', filename='js/vendor/three/three.module.js') }}",
+        "three/addons/": "{{ url_for('static', filename='js/vendor/three/addons/') }}"
+    }
+}
+</script>
+<script>
+let activeViewer = null;
+
+async function openViewer(fileUrl, ext) {
+    document.getElementById('viewer-modal').classList.remove('hidden');
+    const { initViewer } = await import("{{ url_for('static', filename='js/print-viewer.js', v=viewer_js_version) }}");
+    const canvas = document.getElementById('viewer-canvas');
+    activeViewer = initViewer(canvas, fileUrl, ext);
+}
+
+function closeViewer() {
+    document.getElementById('viewer-modal').classList.add('hidden');
+    if (activeViewer) {
+        activeViewer.dispose();
+        activeViewer = null;
+    }
+}
+</script>
 
 {% endblock %}

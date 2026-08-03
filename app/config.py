@@ -21,3 +21,4 @@ class Config:
     DEBUG = os.getenv("DEBUG", "false").lower() == "true"
     QUART_AUTH_COOKIE_SECURE = os.getenv("QUART_AUTH_COOKIE_SECURE", "false").lower() == "true"
     QUART_AUTH_COOKIE_SAMESITE = "Lax"
+    UPLOAD_DIR = os.getenv("UPLOAD_DIR", "/app/data/uploads/print_files")

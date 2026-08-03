@@ -26,9 +26,13 @@ Track spools, purchases and shop prices — get notified when a filament hits yo
 |---|---|
 | ![Filament Detail](docs/screenshots/inventory_detail.png) | ![Spools](docs/screenshots/inventory_detail_spools.png) |
 
-| Print Log | Log Print Form |
+| Print Board | New Print Job |
 |---|---|
-| ![Print Log](docs/screenshots/prints_list.png) | ![Log Print](docs/screenshots/prints_new.png) |
+| ![Print Board](docs/screenshots/prints_board.png) | ![New Print Job](docs/screenshots/prints_new.png) |
+
+| 3D Preview |
+|---|
+| ![3D Preview](docs/screenshots/prints_3d_viewer.png) |
 
 | Shop Rules | Manufacturers |
 |---|---|
@@ -223,15 +227,18 @@ For any other shop: create a rule at `/shop-rules` with domain, CSS price select
 
 ---
 
-## 🖨️ Print Log
+## 🖨️ Print Board
 
-Navigate to **Prints** in the nav bar (or `/prints/`) to see all logged print jobs.
+Navigate to **Prints** in the nav bar (or `/prints/`) for a Kanban-style board of your print jobs, grouped into **Planned → Printing → Done** columns.
 
-Hit **+ Log Print** to record a new job:
+Hit **+ Neuer Druckauftrag** to plan a new job:
 
 1. Enter an optional print name and notes.
-2. Add one or more filament lines — select a spool from the grouped dropdown, enter grams used. The live preview shows how much is left on that spool.
-3. Hit **Save Print Log** — remaining weight is deducted from each spool immediately and spool status updates automatically (new → opened → almost empty → empty).
+2. Add one or more filament lines — select a spool from the grouped dropdown, enter planned grams. The live preview shows how much is left on that spool.
+3. Optionally attach print files: a link to Printables/MakerWorld/Thingiverse/etc., or upload an STL/3MF directly — uploaded files get an in-browser 3D preview (three.js, no external service).
+4. Hit **Zum Board hinzufügen** — the job lands in **Planned** with a generated job code (e.g. `PJ-20260803-002`, template configurable under Settings).
+
+Move a card forward with **Starten** / **Fertig markieren**, or back with the reopen button. **Filament is only deducted from the spool once a job is marked Done** — moving it back out of Done restores the weight. Planned/printing jobs can be edited (name, notes, filament lines, files) via the pencil icon; completed jobs are read-only history (reopen first to edit).
 
 Supports multi-filament prints (e.g. dual-extrusion or colour changes mid-print) by adding multiple lines.
 
