@@ -617,6 +617,7 @@ prints:
     file_invalid_type: 'Datei {line}: Nur .stl- und .3mf-Dateien werden unterstützt.'
     file_too_large: 'Datei {line}: Überschreitet das Limit von {max_mb} MB.'
     cannot_edit_done: Abgeschlossene Druckaufträge können nicht bearbeitet werden. Zuerst wieder öffnen.
+    insufficient_at_done: 'Nicht genug Restfilament zum Abschließen — betroffene Spule(n): {codes}.'
 shop_rules:
   index:
     title: Shop-Regeln

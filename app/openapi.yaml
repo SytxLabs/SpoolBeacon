@@ -147,8 +147,14 @@ components:
           type: ["string", "null"]
         notes:
           type: ["string", "null"]
+        status:
+          type: string
+          enum: [planned, printing, done]
         printed_at:
           type: string
+          format: date-time
+        completed_at:
+          type: ["string", "null"]
           format: date-time
         total_used_g:
           type: number
@@ -156,6 +162,14 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/PrintJobLine"
+
+    PrintJobStatusPatch:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [planned, printing, done]
 
     PrintJobCreate:
       type: object
@@ -394,7 +408,11 @@ paths:
           $ref: "#/components/responses/Unauthorized"
     post:
       operationId: createPrint
-      summary: Log a new print job
+      summary: Plan a new print job
+      description: >
+        Creates the print job with status `planned`. Filament is not deducted
+        from any spool until the job is moved to `done` via
+        `PATCH /prints/{id}/status`.
       requestBody:
         required: true
         content:
@@ -423,6 +441,52 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "422":
           description: Validation error (e.g. used_g exceeds remaining weight)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /prints/{id}/status:
+    patch:
+      operationId: updatePrintStatus
+      summary: Move a print job between planned / printing / done
+      description: >
+        Filament is deducted from each line's spool exactly once, when the
+        status transitions into `done`. Moving a job back out of `done`
+        restores the deducted weight.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrintJobStatusPatch"
+            example:
+              status: done
+      responses:
+        "200":
+          description: Updated print job
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrintJob"
+        "400":
+          description: Invalid status value
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          description: Not enough remaining filament on one or more spools to complete the job
           content:
             application/json:
               schema:

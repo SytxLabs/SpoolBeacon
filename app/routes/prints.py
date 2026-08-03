@@ -7,7 +7,7 @@ from uuid import uuid4
 
 from quart import Blueprint, render_template, request, redirect, url_for, abort, flash, send_from_directory
 from quart_auth import login_required, current_user
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.config import Config
@@ -17,8 +17,9 @@ from app.models.filament import FilamentProduct, Manufacturer
 from app.models.spool import Spool, SpoolStatus
 from app.models.user import User, UserRole
 from app.models.print_job import PrintJob, PrintJobLine, PrintJobFile, PrintFileKind, PrintJobStatus
-from app.settings_service import get_all as get_settings
-from app.code_template import generate_code, PRINT_DEFAULT_TEMPLATE
+from app.print_job_service import (
+    create_print_job, deduct_filament, restore_filament, find_insufficient_lines,
+)
 
 prints_bp = Blueprint("prints", __name__, url_prefix="/prints")
 
@@ -32,7 +33,9 @@ async def _validate_lines(form, spool_map: dict[int, Spool]) -> tuple[list[tuple
 
     lines_data = []
     errors = []
-    for i, (sid_raw, ug_raw) in enumerate(zip(spool_ids, used_gs)):
+    if len(spool_ids) != len(used_gs):
+        return [], [t("prints.validation.no_lines")]
+    for i, (sid_raw, ug_raw) in enumerate(zip(spool_ids, used_gs, strict=True)):
         try:
             sid = int(sid_raw)
         except (ValueError, TypeError):
@@ -100,8 +103,8 @@ async def _validate_new_files(form, files_multidict) -> tuple[list[dict], list[s
             upload.stream.seek(0, os.SEEK_END)
             size_bytes = upload.stream.tell()
             upload.stream.seek(0)
-            if size_bytes > _MAX_UPLOAD_MB * 1024 * 1024:
-                errors.append(t("prints.validation.file_too_large", line=i + 1, max_mb=_MAX_UPLOAD_MB))
+            if size_bytes > Config.MAX_UPLOAD_MB * 1024 * 1024:
+                errors.append(t("prints.validation.file_too_large", line=i + 1, max_mb=Config.MAX_UPLOAD_MB))
                 continue
             file_rows.append({
                 "kind": PrintFileKind.upload,
@@ -140,20 +143,12 @@ async def _save_files(session, job_id: int, file_rows: list[dict]) -> None:
             ))
 
 
-async def _generate_job_code(session) -> str:
-    settings = await get_settings(session)
-    template = settings.get("print.code_template", PRINT_DEFAULT_TEMPLATE)
-    existing_count = await session.scalar(select(func.count(PrintJob.id))) or 0
-    return generate_code(template, product_id=0, line_id=0, seq=existing_count + 1)
-
-
 def _viewer_js_version() -> int:
     try:
         return int(_VIEWER_JS_PATH.stat().st_mtime)
     except OSError:
         return 0
 _ALLOWED_FILE_EXTENSIONS = {"stl", "3mf"}
-_MAX_UPLOAD_MB = 50
 _KNOWN_PROVIDERS = {
     "printables.com": "printables",
     "makerworld.com": "makerworld",
@@ -170,7 +165,7 @@ def _detect_provider(url: str) -> str | None:
     if not hostname:
         return None
     hostname = hostname.removeprefix("www.")
-    return _KNOWN_PROVIDERS.get(hostname, hostname)
+    return _KNOWN_PROVIDERS.get(hostname, hostname[:50])
 
 
 def write_required(f):
@@ -182,38 +177,6 @@ def write_required(f):
             abort(403)
         return await f(*args, **kwargs)
     return wrapper
-
-
-def _deduct_filament(job: PrintJob) -> None:
-    for line in job.lines:
-        spool = line.spool
-        if not spool:
-            continue
-        spool.remaining_weight_g = max(0.0, spool.remaining_weight_g - line.used_g)
-        spool.last_weight_update_at = datetime.datetime.utcnow()
-        spool.last_weight_update_source = "print-log"
-        if spool.remaining_weight_g <= 0:
-            spool.status = SpoolStatus.empty
-        elif spool.fill_percent < 20:
-            spool.status = SpoolStatus.almost_empty
-        elif spool.status == SpoolStatus.new:
-            spool.status = SpoolStatus.opened
-
-
-def _restore_filament(job: PrintJob) -> None:
-    for line in job.lines:
-        spool = line.spool
-        if not spool:
-            continue
-        spool.remaining_weight_g = min(spool.initial_weight_g, spool.remaining_weight_g + line.used_g)
-        spool.last_weight_update_at = datetime.datetime.utcnow()
-        spool.last_weight_update_source = "print-log-reversal"
-        if spool.remaining_weight_g <= 0:
-            spool.status = SpoolStatus.empty
-        elif spool.fill_percent < 20:
-            spool.status = SpoolStatus.almost_empty
-        elif spool.status in (SpoolStatus.empty, SpoolStatus.almost_empty):
-            spool.status = SpoolStatus.opened
 
 
 @prints_bp.get("/")
@@ -280,16 +243,14 @@ async def new_print():
         print_name = form.get("print_name", "").strip() or None
         notes = form.get("notes", "").strip() or None
 
-        job = PrintJob(
-            job_code=await _generate_job_code(session),
+        job = await create_print_job(
+            session,
             print_name=print_name,
             notes=notes,
             status=PrintJobStatus.planned,
             printed_at=datetime.datetime.utcnow(),
             created_at=datetime.datetime.utcnow(),
         )
-        session.add(job)
-        await session.flush()
 
         for spool, used_g in lines_data:
             product = spool.filament_product
@@ -398,7 +359,7 @@ async def delete_print(job_id: int):
         if not job:
             abort(404)
         if job.status == PrintJobStatus.done:
-            _restore_filament(job)
+            restore_filament(job)
         for file in job.files:
             if file.kind == PrintFileKind.upload and file.stored_filename:
                 (Path(Config.UPLOAD_DIR) / file.stored_filename).unlink(missing_ok=True)
@@ -430,10 +391,17 @@ async def update_status(job_id: int):
 
         old_status = job.status
         if old_status != PrintJobStatus.done and new_status == PrintJobStatus.done:
-            _deduct_filament(job)
+            insufficient = find_insufficient_lines(job)
+            if insufficient:
+                await flash(
+                    t("prints.validation.insufficient_at_done", codes=", ".join(insufficient)),
+                    "error",
+                )
+                return redirect(url_for("prints.index", _anchor=f"job-{job_id}"))
+            deduct_filament(job)
             job.completed_at = datetime.datetime.utcnow()
         elif old_status == PrintJobStatus.done and new_status != PrintJobStatus.done:
-            _restore_filament(job)
+            restore_filament(job)
             job.completed_at = None
 
         job.status = new_status

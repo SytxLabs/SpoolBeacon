@@ -72,9 +72,18 @@ export function initViewer(canvas, fileUrl, ext) {
     animate();
 
     let loadedObject = null;
-    fetch(fileUrl)
-        .then((response) => response.arrayBuffer())
+    let disposed = false;
+    const abortController = new AbortController();
+
+    fetch(fileUrl, { signal: abortController.signal })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`Failed to fetch ${fileUrl}: ${response.status}`);
+            }
+            return response.arrayBuffer();
+        })
         .then((buffer) => {
+            if (disposed) return;
             const result = loadGeometryOrGroup(ext, buffer);
             if (result.isBufferGeometry) {
                 const material = new THREE.MeshStandardMaterial({ color: 0x818cf8, metalness: 0.1, roughness: 0.6 });
@@ -89,11 +98,14 @@ export function initViewer(canvas, fileUrl, ext) {
             frameObject(camera, controls, loadedObject);
         })
         .catch((error) => {
+            if (error.name === "AbortError") return;
             console.error("Failed to load 3D preview:", error);
         });
 
     return {
         dispose() {
+            disposed = true;
+            abortController.abort();
             cancelAnimationFrame(animationFrame);
             resizeObserver.disconnect();
             controls.dispose();
