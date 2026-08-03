@@ -231,14 +231,14 @@ For any other shop: create a rule at `/shop-rules` with domain, CSS price select
 
 Navigate to **Prints** in the nav bar (or `/prints/`) for a Kanban-style board of your print jobs, grouped into **Planned → Printing → Done** columns.
 
-Hit **+ Neuer Druckauftrag** to plan a new job:
+Hit **+ New Print Job** to plan a new job:
 
 1. Enter an optional print name and notes.
 2. Add one or more filament lines — select a spool from the grouped dropdown, enter planned grams. The live preview shows how much is left on that spool.
 3. Optionally attach print files: a link to Printables/MakerWorld/Thingiverse/etc., or upload an STL/3MF directly — uploaded files get an in-browser 3D preview (three.js, no external service).
-4. Hit **Zum Board hinzufügen** — the job lands in **Planned** with a generated job code (e.g. `PJ-20260803-002`, template configurable under Settings).
+4. Hit **Add to Board** — the job lands in **Planned** with a generated job code (e.g. `PJ-20260803-002`, template configurable under Settings).
 
-Move a card forward with **Starten** / **Fertig markieren**, or back with the reopen button. **Filament is only deducted from the spool once a job is marked Done** — moving it back out of Done restores the weight. Planned/printing jobs can be edited (name, notes, filament lines, files) via the pencil icon; completed jobs are read-only history (reopen first to edit).
+Move a card forward with **Start** / **Mark Done**, or back with the reopen button. **Filament is only deducted from the spool once a job is marked Done** — moving it back out of Done restores the weight. Planned/printing jobs can be edited (name, notes, filament lines, files) via the pencil icon; completed jobs are read-only history (reopen first to edit).
 
 Supports multi-filament prints (e.g. dual-extrusion or colour changes mid-print) by adding multiple lines.
 

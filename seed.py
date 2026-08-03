@@ -264,6 +264,98 @@ async def upsert_shoplink(session, pid: int, data: dict) -> tuple[ShopLink, bool
     return sl, True
 
 
+async def seed_print_jobs(session, products: list[FilamentProduct], now: datetime) -> int:
+    """Seed demo print jobs spanning every board status, file kind and provider."""
+    spools_by_product: dict[int, list[Spool]] = {}
+    for pi, product in enumerate(products):
+        rows = (await session.execute(
+            select(Spool)
+            .options(selectinload(Spool.filament_product).selectinload(FilamentProduct.manufacturer))
+            .where(Spool.filament_product_id == product.id)
+            .order_by(Spool.id)
+        )).scalars().all()
+        if rows:
+            spools_by_product[pi] = rows
+
+    raw_print_jobs = [
+        {
+            "job_code": "PJ-DEMO-001",
+            "print_name": "Articulated Dragon",
+            "notes": "Fine layer height (0.12mm). Queue for the weekend, needs ~9h.",
+            "status": PrintJobStatus.planned,
+            "created_at": now - timedelta(hours=6),
+            "lines": [(5, 45.0)],
+            "files": [{
+                "kind": "link", "provider": "printables",
+                "url": "https://www.printables.com/model/198813-flexi-print-in-place-dragon",
+            }],
+        },
+        {
+            "job_code": "PJ-DEMO-002",
+            "print_name": "Calibration Cube",
+            "notes": "First-layer + dimensional accuracy check for the new Black spool.",
+            "status": PrintJobStatus.planned,
+            "created_at": now - timedelta(hours=3),
+            "lines": [(0, 8.0)],
+            "files": [{"kind": "upload", "original_filename": "calibration_cube.stl"}],
+        },
+        {
+            "job_code": "PJ-DEMO-003",
+            "print_name": "Phone Stand v2",
+            "notes": None,
+            "status": PrintJobStatus.planned,
+            "created_at": now - timedelta(hours=1),
+            "lines": [(8, 28.0)],
+            "files": [{
+                "kind": "link", "provider": "makerworld",
+                "url": "https://makerworld.com/en/models/511693-adjustable-phone-stand",
+            }],
+        },
+        {
+            "job_code": "PJ-DEMO-004",
+            "print_name": "Camera Mount Arm",
+            "notes": "On the printer now — check bed adhesion at layer 10.",
+            "status": PrintJobStatus.printing,
+            "created_at": now - timedelta(hours=2),
+            "lines": [(1, 62.0)],
+            "files": [{
+                "kind": "link", "provider": "thingiverse",
+                "url": "https://www.thingiverse.com/thing:3861767",
+            }],
+        },
+        {
+            "job_code": "PJ-DEMO-005",
+            "print_name": "Voronoi Vase",
+            "notes": "Vase mode, 0.6mm nozzle. Turned out great.",
+            "status": PrintJobStatus.done,
+            "created_at": now - timedelta(days=4),
+            "completed_at": now - timedelta(days=4, hours=-5),
+            "lines": [(2, 96.0)],
+            "files": [],
+        },
+        {
+            "job_code": "PJ-DEMO-006",
+            "print_name": "Dual-Color Nameplate",
+            "notes": "AMS colour swap at z=1.2mm for the black inlay.",
+            "status": PrintJobStatus.done,
+            "created_at": now - timedelta(days=1, hours=8),
+            "completed_at": now - timedelta(days=1, hours=5),
+            "lines": [(1, 18.0), (3, 6.0)],
+            "files": [],
+        },
+    ]
+
+    print_job_count = 0
+    for pj in raw_print_jobs:
+        if not all(pi in spools_by_product for pi, _ in pj["lines"]):
+            continue
+        if await upsert_print_job(session, spools_by_product, pj):
+            print_job_count += 1
+
+    await session.flush()
+    return print_job_count
+
+
 # ── seed ───────────────────────────────────────────────────────────────────────
 
 async def seed(reset: bool = False) -> None:
@@ -664,84 +756,7 @@ async def seed(reset: bool = False) -> None:
         await session.flush()
 
         # ── Print Jobs (board demo data) ──────────────────────────────────────
-        spools_by_product: dict[int, list[Spool]] = {}
-        for pi, product in enumerate(products):
-            rows = (await session.execute(
-                select(Spool)
-                .options(selectinload(Spool.filament_product).selectinload(FilamentProduct.manufacturer))
-                .where(Spool.filament_product_id == product.id)
-                .order_by(Spool.id)
-            )).scalars().all()
-            if rows:
-                spools_by_product[pi] = rows
-
-        raw_print_jobs = [
-            {
-                "job_code": "PJ-DEMO-001",
-                "print_name": "Articulated Dragon",
-                "notes": "Fine layer height (0.12mm). Queue for the weekend, needs ~9h.",
-                "status": PrintJobStatus.planned,
-                "created_at": now - timedelta(hours=6),
-                "lines": [(5, 45.0)],
-                "files": [{"kind": "link", "provider": "printables", "url": "https://www.printables.com/model/198813-flexi-print-in-place-dragon"}],
-            },
-            {
-                "job_code": "PJ-DEMO-002",
-                "print_name": "Calibration Cube",
-                "notes": "First-layer + dimensional accuracy check for the new Black spool.",
-                "status": PrintJobStatus.planned,
-                "created_at": now - timedelta(hours=3),
-                "lines": [(0, 8.0)],
-                "files": [{"kind": "upload", "original_filename": "calibration_cube.stl"}],
-            },
-            {
-                "job_code": "PJ-DEMO-003",
-                "print_name": "Phone Stand v2",
-                "notes": None,
-                "status": PrintJobStatus.planned,
-                "created_at": now - timedelta(hours=1),
-                "lines": [(8, 28.0)],
-                "files": [{"kind": "link", "provider": "makerworld", "url": "https://makerworld.com/en/models/511693-adjustable-phone-stand"}],
-            },
-            {
-                "job_code": "PJ-DEMO-004",
-                "print_name": "Camera Mount Arm",
-                "notes": "On the printer now — check bed adhesion at layer 10.",
-                "status": PrintJobStatus.printing,
-                "created_at": now - timedelta(hours=2),
-                "lines": [(1, 62.0)],
-                "files": [{"kind": "link", "provider": "thingiverse", "url": "https://www.thingiverse.com/thing:3861767"}],
-            },
-            {
-                "job_code": "PJ-DEMO-005",
-                "print_name": "Voronoi Vase",
-                "notes": "Vase mode, 0.6mm nozzle. Turned out great.",
-                "status": PrintJobStatus.done,
-                "created_at": now - timedelta(days=4),
-                "completed_at": now - timedelta(days=4, hours=-5),
-                "lines": [(2, 96.0)],
-                "files": [],
-            },
-            {
-                "job_code": "PJ-DEMO-006",
-                "print_name": "Dual-Color Nameplate",
-                "notes": "AMS colour swap at z=1.2mm for the black inlay.",
-                "status": PrintJobStatus.done,
-                "created_at": now - timedelta(days=1, hours=8),
-                "completed_at": now - timedelta(days=1, hours=5),
-                "lines": [(1, 18.0), (3, 6.0)],
-                "files": [],
-            },
-        ]
-
-        print_job_count = 0
-        for pj in raw_print_jobs:
-            if all(pi in spools_by_product for pi, _ in pj["lines"]):
-                created = await upsert_print_job(session, spools_by_product, pj)
-                if created:
-                    print_job_count += 1
-
-        await session.flush()
+        print_job_count = await seed_print_jobs(session, products, now)
 
         # ── ShopLinks + PriceSnapshots + Alerts ───────────────────────────────
         raw_links = [
