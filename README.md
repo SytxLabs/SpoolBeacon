@@ -1,6 +1,6 @@
 <div align="center">
 
-# SpoolBeacon
+# [SpoolBeacon](https://github.com/SytxLabs/SpoolBeacon)
 
 **Self-hosted filament inventory for 3D printing.**
 Track spools, purchases and shop prices — get notified when a filament hits your target price.
