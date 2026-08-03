@@ -1,3 +1,5 @@
+import os
+
 from quart import Quart, redirect, url_for, request, abort, g
 
 from quart_auth import QuartAuth, Unauthorized
@@ -8,6 +10,16 @@ from .database import init_db
 from .i18n import t, get_locale, SUPPORTED_LOCALES, DEFAULT_LOCALE
 
 auth_manager = QuartAuth()
+
+
+def _static_asset_version(app: Quart, relative_path: str) -> int:
+    """Mtime of a static file, used as a cache-busting query param — the
+    browser's HTTP cache otherwise keeps serving a stale tailwind.css/JS
+    file for up to Cache-Control: max-age after a redeploy."""
+    try:
+        return int(os.path.getmtime(os.path.join(app.static_folder, relative_path)))
+    except OSError:
+        return 0
 
 
 def create_app(config_class=Config) -> Quart:
@@ -144,6 +156,7 @@ def create_app(config_class=Config) -> Quart:
             "is_viewer": is_viewer,
             "current_locale": get_locale(),
             "available_locales": SUPPORTED_LOCALES,
+            "tailwind_css_version": _static_asset_version(app, "css/tailwind.css"),
         }
 
     return app
