@@ -13,6 +13,15 @@ from app.models.api_key import ApiKey
 from app.models.filament import FilamentProduct, Manufacturer
 from app.models.print_job import PrintJob, PrintJobLine
 from app.models.spool import Spool, SpoolStatus
+from app.settings_service import get_all as get_settings
+from app.code_template import generate_code, PRINT_DEFAULT_TEMPLATE
+
+
+async def _generate_job_code(session) -> str:
+    settings = await get_settings(session)
+    template = settings.get("print.code_template", PRINT_DEFAULT_TEMPLATE)
+    existing_count = await session.scalar(select(func.count(PrintJob.id))) or 0
+    return generate_code(template, product_id=0, line_id=0, seq=existing_count + 1)
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -271,6 +280,7 @@ async def create_print():
 
         now = datetime.datetime.utcnow()
         job = PrintJob(
+            job_code=await _generate_job_code(session),
             print_name=data.get("print_name") or None,
             notes=data.get("notes") or None,
             printed_at=now,
@@ -314,6 +324,7 @@ async def create_print():
 def _job_dict(j: PrintJob) -> dict:
     return {
         "id": j.id,
+        "job_code": j.job_code,
         "print_name": j.print_name,
         "notes": j.notes,
         "printed_at": j.printed_at.isoformat() if j.printed_at else None,

@@ -43,3 +43,6 @@ logs/
 *.db
 *.sqlite3
 *.sql.gz
+
+# Uploaded print files (local dev, persisted via Docker volume in prod)
+/data/

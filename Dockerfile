@@ -29,6 +29,7 @@ RUN playwright install --with-deps --only-shell chromium \
 
 COPY --chown=appuser:appuser . .
 RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
+RUN mkdir -p /app/data/uploads/print_files && chown -R appuser:appuser /app/data
 
 USER appuser
 

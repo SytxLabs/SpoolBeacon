@@ -23,7 +23,7 @@ from app.models.spool import Spool, SpoolStatus, StorageStatus
 from app.models.user import User, UserRole
 from app.price_check_service import check_price
 from app.settings_service import get_all as get_settings
-from app.spool_code import generate_spool_code, DEFAULT_TEMPLATE
+from app.code_template import generate_code, SPOOL_DEFAULT_TEMPLATE
 
 inventory_bp = Blueprint("inventory", __name__, url_prefix="/inventory")
 
@@ -524,10 +524,10 @@ async def create_spools_from_line(line_id: int):
             await flash(t("inventory.flash.spools_already_exist"), "info")
         else:
             settings = await get_settings(session)
-            template = settings.get("spool.code_template", DEFAULT_TEMPLATE)
+            template = settings.get("spool.code_template", SPOOL_DEFAULT_TEMPLATE)
             now = datetime.datetime.utcnow()
             for i in range(to_create):
-                code = generate_spool_code(
+                code = generate_code(
                     template,
                     product_id=line.filament_product_id,
                     line_id=line_id,
@@ -628,13 +628,13 @@ async def purchase_new(product_id: int):
         await session.flush()
 
         settings = await get_settings(session)
-        template = settings.get("spool.code_template", DEFAULT_TEMPLATE)
+        template = settings.get("spool.code_template", SPOOL_DEFAULT_TEMPLATE)
         now = datetime.datetime.utcnow()
         existing_for_seq = await session.scalar(
             select(func.count(Spool.id)).where(Spool.filament_product_id == product_id)
         ) or 0
         for i in range(quantity):
-            code = generate_spool_code(
+            code = generate_code(
                 template,
                 product_id=product_id,
                 line_id=line.id,

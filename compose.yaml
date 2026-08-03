@@ -5,6 +5,8 @@ services:
       - "${APP_PORT:-8080}:${APP_PORT:-8080}"
     env_file: .env
     restart: unless-stopped
+    volumes:
+      - app_data:/app/data
     depends_on:
       db:
         condition: service_healthy
@@ -27,3 +29,4 @@ services:
 
 volumes:
   db_data:
+  app_data:
