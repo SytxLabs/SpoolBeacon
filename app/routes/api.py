@@ -11,17 +11,11 @@ from sqlalchemy.orm import selectinload
 from app.database import get_db
 from app.models.api_key import ApiKey
 from app.models.filament import FilamentProduct, Manufacturer
-from app.models.print_job import PrintJob, PrintJobLine
+from app.models.print_job import PrintJob, PrintJobLine, PrintJobStatus
 from app.models.spool import Spool, SpoolStatus
-from app.settings_service import get_all as get_settings
-from app.code_template import generate_code, PRINT_DEFAULT_TEMPLATE
-
-
-async def _generate_job_code(session) -> str:
-    settings = await get_settings(session)
-    template = settings.get("print.code_template", PRINT_DEFAULT_TEMPLATE)
-    existing_count = await session.scalar(select(func.count(PrintJob.id))) or 0
-    return generate_code(template, product_id=0, line_id=0, seq=existing_count + 1)
+from app.print_job_service import (
+    create_print_job, deduct_filament, restore_filament, find_insufficient_lines,
+)
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -249,7 +243,6 @@ async def create_print():
             select(Spool)
             .options(selectinload(Spool.filament_product).selectinload(FilamentProduct.manufacturer))
             .where(Spool.status.notin_([SpoolStatus.archived, SpoolStatus.empty]))
-            .with_for_update()
         )).scalars().all()
         spool_map = {s.id: s for s in spools_q}
 
@@ -279,15 +272,14 @@ async def create_print():
             return await _json_error(422, "; ".join(errors))
 
         now = datetime.datetime.utcnow()
-        job = PrintJob(
-            job_code=await _generate_job_code(session),
+        job = await create_print_job(
+            session,
             print_name=data.get("print_name") or None,
             notes=data.get("notes") or None,
+            status=PrintJobStatus.planned,
             printed_at=now,
             created_at=now,
         )
-        session.add(job)
-        await session.flush()
 
         for spool, used_g in lines_data:
             product = spool.filament_product
@@ -299,15 +291,6 @@ async def create_print():
                 used_g=used_g,
             )
             session.add(line)
-            spool.remaining_weight_g = max(0.0, spool.remaining_weight_g - used_g)
-            spool.last_weight_update_at = now
-            spool.last_weight_update_source = "api"
-            if spool.remaining_weight_g <= 0:
-                spool.status = SpoolStatus.empty
-            elif spool.fill_percent < 20:
-                spool.status = SpoolStatus.almost_empty
-            elif spool.status == SpoolStatus.new:
-                spool.status = SpoolStatus.opened
 
         await session.flush()
 
@@ -321,13 +304,55 @@ async def create_print():
     return jsonify(result), 201
 
 
+@api_bp.patch("/v1/prints/<int:job_id>/status")
+@api_key_required
+async def update_print_status(job_id: int):
+    data = await request.get_json(silent=True) or {}
+    status_raw = data.get("status", "")
+    try:
+        new_status = PrintJobStatus(status_raw)
+    except ValueError:
+        valid = [s.value for s in PrintJobStatus]
+        return await _json_error(400, f"Invalid status. Valid values: {valid}")
+
+    async with get_db() as session:
+        job = (await session.execute(
+            select(PrintJob)
+            .options(selectinload(PrintJob.lines).selectinload(PrintJobLine.spool))
+            .where(PrintJob.id == job_id)
+        )).scalar_one_or_none()
+        if not job:
+            return await _json_error(404, "Print job not found")
+
+        old_status = job.status
+        if old_status != PrintJobStatus.done and new_status == PrintJobStatus.done:
+            insufficient = find_insufficient_lines(job)
+            if insufficient:
+                return await _json_error(
+                    422, f"Not enough remaining filament on spool(s): {', '.join(insufficient)}"
+                )
+            deduct_filament(job)
+            job.completed_at = datetime.datetime.utcnow()
+        elif old_status == PrintJobStatus.done and new_status != PrintJobStatus.done:
+            restore_filament(job)
+            job.completed_at = None
+
+        job.status = new_status
+        await session.flush()
+        result = _job_dict(job)
+
+    return jsonify(result)
+
+
 def _job_dict(j: PrintJob) -> dict:
     return {
         "id": j.id,
         "job_code": j.job_code,
         "print_name": j.print_name,
         "notes": j.notes,
+        "status": j.status.value,
         "printed_at": j.printed_at.isoformat() if j.printed_at else None,
+        "completed_at": j.completed_at.isoformat() if j.completed_at else None,
         "total_used_g": j.total_used_g,
         "lines": [
             {

@@ -18,28 +18,28 @@ Track spools, purchases and shop prices — get notified when a filament hits yo
 
 ## Screenshots
 
-| Dashboard | Inventory |
-|---|---|
+| Dashboard                                    | Inventory                                         |
+|----------------------------------------------|---------------------------------------------------|
 | ![Dashboard](docs/screenshots/dashboard.png) | ![Inventory](docs/screenshots/inventory_list.png) |
 
-| Filament Detail | Spools |
-|---|---|
+| Filament Detail                                           | Spools                                                  |
+|-----------------------------------------------------------|---------------------------------------------------------|
 | ![Filament Detail](docs/screenshots/inventory_detail.png) | ![Spools](docs/screenshots/inventory_detail_spools.png) |
 
-| Print Board | New Print Job |
-|---|---|
+| Print Board                                       | New Print Job                                     |
+|---------------------------------------------------|---------------------------------------------------|
 | ![Print Board](docs/screenshots/prints_board.png) | ![New Print Job](docs/screenshots/prints_new.png) |
 
-| 3D Preview |
-|---|
+| 3D Preview                                           |
+|------------------------------------------------------|
 | ![3D Preview](docs/screenshots/prints_3d_viewer.png) |
 
-| Shop Rules | Manufacturers |
-|---|---|
+| Shop Rules                                     | Manufacturers                                        |
+|------------------------------------------------|------------------------------------------------------|
 | ![Shop Rules](docs/screenshots/shop_rules.png) | ![Manufacturers](docs/screenshots/manufacturers.png) |
 
-| API Keys |
-|---|
+| API Keys                                   |
+|--------------------------------------------|
 | ![API Keys](docs/screenshots/api_keys.png) |
 
 ---
@@ -192,14 +192,14 @@ python seed_shops.py     # ShopRules only, no inventory data
 
 All runtime settings are managed on the Settings page (`/settings`, admin only) — not via `.env`.
 
-| Section | What you can configure |
-|---|---|
-| Scheduler | Enable automatic price checks, set interval in minutes |
-| Fetch engine | `playwright` (default, JS-capable) or `httpx` (faster, no JS) |
-| Discord | Webhook URL, enable/disable, test message |
-| Email (SMTP) | Host, port, credentials, TLS, from/to address, test email |
-| Spool code template | Pattern for auto-generated spool codes |
-| Backup & Restore | Export full inventory as JSON, import additively (admin only) |
+| Section             | What you can configure                                        |
+|---------------------|---------------------------------------------------------------|
+| Scheduler           | Enable automatic price checks, set interval in minutes        |
+| Fetch engine        | `playwright` (default, JS-capable) or `httpx` (faster, no JS) |
+| Discord             | Webhook URL, enable/disable, test message                     |
+| Email (SMTP)        | Host, port, credentials, TLS, from/to address, test email     |
+| Spool code template | Pattern for auto-generated spool codes                        |
+| Backup & Restore    | Export full inventory as JSON, import additively (admin only) |
 
 ---
 
@@ -209,15 +209,15 @@ All runtime settings are managed on the Settings page (`/settings`, admin only) 
 
 These shops work out of the box without any manual configuration:
 
-| Shop | Method |
-|---|---|
-| `3djake.de` | CSS selector |
-| `prusa3d.com` | JSON-LD |
-| `anycubic.com` | Shopify JSON-LD |
-| `eu.store.bambulab.com` | JSON-LD (cloudscraper) |
-| `esun3dstore.com` | Shopify JSON-LD (cloudscraper) |
-| `esun3dstoreeu.com` | Shopify JSON-LD (cloudscraper) |
-| `elegoo.com` | Shopify og:price:amount |
+| Shop                    | Method                         |
+|-------------------------|--------------------------------|
+| `3djake.de`             | CSS selector                   |
+| `prusa3d.com`           | JSON-LD                        |
+| `anycubic.com`          | Shopify JSON-LD                |
+| `eu.store.bambulab.com` | JSON-LD (cloudscraper)         |
+| `esun3dstore.com`       | Shopify JSON-LD (cloudscraper) |
+| `esun3dstoreeu.com`     | Shopify JSON-LD (cloudscraper) |
+| `elegoo.com`            | Shopify og:price:amount        |
 
 To add a new adapter: subclass `BaseAdapter` in `app/shop_adapters/`, implement `extract(html, url) -> AdapterResult`, register in `registry.py` via `_reg(YourAdapter())`.
 
@@ -260,17 +260,18 @@ Authorization: Bearer <your-token>
 
 ### Endpoints
 
-| Method | Path                    | Description                                                                    |
-|--------|-------------------------|--------------------------------------------------------------------------------|
-| GET    | `/api/v1/health`        | Health check (no auth required)                                                |
-| GET    | `/api/v1/manufacturers` | List all manufacturers                                                         |
-| GET    | `/api/v1/products`      | List all filament products                                                     |
-| GET    | `/api/v1/products/{id}` | Product detail including all spools                                            |
-| GET    | `/api/v1/spools`        | List spools — filter with `?status=new\|opened\|almost_empty\|empty\|archived` |
-| GET    | `/api/v1/spools/{id}`   | Single spool                                                                   |
-| PATCH  | `/api/v1/spools/{id}`   | Update remaining weight `{"remaining_g": 450}` — status auto-updates           |
-| GET    | `/api/v1/prints`        | Paginated print jobs (`?page=`, `?per_page=` max 100)                          |
-| POST   | `/api/v1/prints`        | Log a print job (deducts weight from spools)                                   |
+| Method | Path                         | Description                                                                    |
+|--------|------------------------------|--------------------------------------------------------------------------------|
+| GET    | `/api/v1/health`             | Health check (no auth required)                                                |
+| GET    | `/api/v1/manufacturers`      | List all manufacturers                                                         |
+| GET    | `/api/v1/products`           | List all filament products                                                     |
+| GET    | `/api/v1/products/{id}`      | Product detail including all spools                                            |
+| GET    | `/api/v1/spools`             | List spools — filter with `?status=new\|opened\|almost_empty\|empty\|archived` |
+| GET    | `/api/v1/spools/{id}`        | Single spool                                                                   |
+| PATCH  | `/api/v1/spools/{id}`        | Update remaining weight `{"remaining_g": 450}` — status auto-updates           |
+| GET    | `/api/v1/prints`             | Paginated print jobs (`?page=`, `?per_page=` max 100)                          |
+| POST   | `/api/v1/prints`             | Plan a new print job (status `planned`, no weight deducted yet)                |
+| PATCH  | `/api/v1/prints/{id}/status` | Move a job between `planned`/`printing`/`done`                                 |
 
 ### POST /api/v1/prints body
 
@@ -291,7 +292,9 @@ Authorization: Bearer <your-token>
 }
 ```
 
-Spool weight is deducted immediately and spool status auto-updates (new → opened → almost empty → empty).
+The job is created with status `planned`. Spool weight is only deducted once the job is moved to `done` via
+`PATCH /api/v1/prints/{id}/status` (`{"status": "done"}`), and spool status auto-updates (new → opened → almost empty →
+empty). Moving a job back out of `done` restores the deducted weight.
 
 ### Quick example
 
@@ -361,9 +364,9 @@ The shop's HTML structure changed. Use the Test button on `/shop-rules` and upda
 
 Pre-built images are published to [Docker Hub](https://hub.docker.com/r/sytxlabs/spoolbeacon) on every push to `master` and on version tags:
 
-| Tag | Description                       |
-|---|-----------------------------------|
-| `sytxlabs/spoolbeacon:latest` | Latest stable build from `master` |
+| Tag                              | Description                       |
+|----------------------------------|-----------------------------------|
+| `sytxlabs/spoolbeacon:latest`    | Latest stable build from `master` |
 | `sytxlabs/spoolbeacon:<version>` | Pinned release (e.g. `1.0.0`)     |
 
 ```bash

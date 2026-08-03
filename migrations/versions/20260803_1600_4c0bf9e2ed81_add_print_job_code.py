@@ -20,8 +20,9 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     op.add_column('print_jobs', sa.Column('job_code', sa.String(64), nullable=True))
     # Existing rows predate job codes — backfill a unique deterministic value per row
-    # before the column is locked down to NOT NULL + unique.
-    op.execute("UPDATE print_jobs SET job_code = CONCAT('PJ-LEGACY-', LPAD(id, 4, '0')) WHERE job_code IS NULL")
+    # before the column is locked down to NOT NULL + unique. Concatenate the raw id
+    # (not zero-padded to a fixed width) so ids >= 10000 can't collide, e.g. 1000 vs 10000.
+    op.execute("UPDATE print_jobs SET job_code = CONCAT('PJ-LEGACY-', id) WHERE job_code IS NULL")
     op.alter_column('print_jobs', 'job_code', existing_type=sa.String(64), nullable=False)
     op.create_index('ix_print_jobs_job_code', 'print_jobs', ['job_code'], unique=True)
 

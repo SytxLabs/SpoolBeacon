@@ -617,6 +617,7 @@ prints:
     file_invalid_type: 'File {line}: only .stl and .3mf files are supported.'
     file_too_large: 'File {line}: exceeds the {max_mb} MB size limit.'
     cannot_edit_done: Completed print jobs cannot be edited. Reopen it first.
+    insufficient_at_done: 'Not enough remaining filament to mark as done — check spool(s): {codes}.'
 shop_rules:
   index:
     title: Shop Rules

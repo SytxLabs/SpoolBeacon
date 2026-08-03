@@ -159,11 +159,17 @@ async def regenerate_print_codes():
         )).scalars().all()
 
         now = datetime.utcnow()
+        old_codes = {job.id: job.job_code for job in jobs}
+
+        for job in jobs:
+            job.job_code = f"__tmp_{job.id}"
+        await session.flush()
+
         updated = 0
         for i, job in enumerate(jobs):
             new_code = generate_code(template, product_id=0, line_id=0, seq=i + 1, now=now)
-            if new_code != job.job_code:
-                job.job_code = new_code
+            job.job_code = new_code
+            if new_code != old_codes[job.id]:
                 updated += 1
 
     await flash(t("settings.flash.print_codes_regenerated", updated=updated, total=len(jobs)), "success")

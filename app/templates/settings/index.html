@@ -326,7 +326,7 @@
                     <p class="text-xs text-gray-600 mt-0.5">{{ t('settings.inventory.spool_code.regenerate_subtitle') }}</p>
                 </div>
                 <button type="submit" form="form-regenerate"
-                        onclick="return confirm('{{ t('settings.inventory.spool_code.regenerate_confirm') }}')"
+                        onclick="return confirm({{ t('settings.inventory.spool_code.regenerate_confirm')|tojson }})"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg flex-shrink-0
                                bg-amber-700 hover:bg-amber-600 text-white transition-colors">
                     <svg viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
@@ -369,7 +369,7 @@
                     <p class="text-xs text-gray-600 mt-0.5">{{ t('settings.inventory.print_code.regenerate_subtitle') }}</p>
                 </div>
                 <button type="submit" form="form-regenerate-print-codes"
-                        onclick="return confirm('{{ t('settings.inventory.print_code.regenerate_confirm') }}')"
+                        onclick="return confirm({{ t('settings.inventory.print_code.regenerate_confirm')|tojson }})"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg flex-shrink-0
                                bg-amber-700 hover:bg-amber-600 text-white transition-colors">
                     <svg viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
@@ -420,7 +420,7 @@
                                   file:text-xs file:font-medium file:bg-gray-800 file:text-gray-300
                                   hover:file:bg-gray-750 file:cursor-pointer cursor-pointer">
                     <button type="submit" form="form-import"
-                            onclick="return confirm('{{ t('settings.backup.import.confirm') }}')"
+                            onclick="return confirm({{ t('settings.backup.import.confirm')|tojson }})"
                             class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg flex-shrink-0
                                    bg-sky-700 hover:bg-sky-600 text-white transition-colors">
                         {{ t('settings.backup.import.button') }}
