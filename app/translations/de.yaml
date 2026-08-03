@@ -42,6 +42,8 @@ nav:
   users: Benutzer
   settings: Einstellungen
   api_keys: API-Schlüssel
+  more: Mehr
+  admin: Verwaltung
   toggle_menu: Menü umschalten
 errors:
   '403':
@@ -148,6 +150,14 @@ settings:
       regenerate_subtitle: Überschreibt bestehende Codes mit der oben gespeicherten Vorlage.
       regenerate_button: Neu generieren
       regenerate_confirm: Alle Spulen-Codes neu generieren? Bestehende Codes werden überschrieben.
+    print_code:
+      title: Druckauftrags-Code-Vorlage
+      subtitle: Muster zur Generierung von Druckauftrags-Codes. Änderungen gelten nur für neue Druckaufträge.
+      template_label: Vorlage
+      regenerate_title: Alle Druckauftrags-Codes neu generieren
+      regenerate_subtitle: Überschreibt bestehende Codes mit der oben gespeicherten Vorlage.
+      regenerate_button: Neu generieren
+      regenerate_confirm: Alle Druckauftrags-Codes neu generieren? Bestehende Codes werden überschrieben.
   backup:
     section_title: Sicherung & Wiederherstellung
     export:
@@ -166,6 +176,7 @@ settings:
     email_test_failed: 'E-Mail-Test fehlgeschlagen: {error}'
     email_test_success: E-Mail-Test erfolgreich.
     spool_codes_regenerated: 'Spulen-Codes neu generiert: {updated} von {total} aktualisiert.'
+    print_codes_regenerated: 'Druckauftrags-Codes neu generiert: {updated} von {total} aktualisiert.'
     import_no_file: 'Import fehlgeschlagen: keine Datei ausgewählt.'
     import_invalid_json: 'Import fehlgeschlagen: Datei ist kein gültiges JSON.'
     import_complete: Import abgeschlossen. {summary}
@@ -542,46 +553,71 @@ manufacturers:
     website_invalid: Website muss mit http:// oder https:// beginnen.
 prints:
   index:
-    title: Druckprotokoll
-    subtitle_one: '{count} Druck protokolliert'
-    subtitle_other: '{count} Drucke protokolliert'
-    log_button: + Druck protokollieren
-    table_date: Datum
-    table_print_name: Druckname
-    table_filaments: Filamente
-    table_total_used: Gesamtverbrauch
-    delete_confirm: Dieses Druckprotokoll löschen? Dies kann nicht rückgängig gemacht werden.
-    page_of: Seite {page} von {total_pages}
-    previous: ← Zurück
-    next: Weiter →
-    empty: Noch keine Drucke protokolliert.
-    log_first: Protokolliere deinen ersten Druck →
+    title: Druck-Board
+    subtitle_one: '{count} Druckauftrag'
+    subtitle_other: '{count} Druckaufträge'
+    log_button: + Neuer Druckauftrag
+    delete_confirm: Diesen Druckauftrag löschen? Dies kann nicht rückgängig gemacht werden.
+    empty: Noch keine Druckaufträge.
+    log_first: Füge deinen ersten Druckauftrag hinzu →
+    view_3d: 3D ansehen
+    file_link: Link
+    delete_file_confirm: Diese Datei entfernen? Dies kann nicht rückgängig gemacht werden.
+    untitled: Unbenannter Druck
+    column_planned: Geplant
+    column_printing: Im Druck
+    column_done: Fertig
+    column_empty: Keine Aufträge hier.
+    move_back: Zurück
+    reopen: Erneut öffnen
+    mark_done: Fertig markieren
+    start: Starten
   print_form:
-    title: Druck protokollieren
+    title: Neuer Druckauftrag
     new: Neu
-    subtitle: Filamentverbrauch nach einem Druck erfassen.
+    subtitle: Druck planen — Filament wird erst abgezogen, sobald du ihn im Board als fertig markierst.
     section_print_details: Druckdetails
     print_name_label: Druckname / Datei
     print_name_placeholder: z. B. Benchy, Handyhalter, Vase
     notes_placeholder: Qualität, Einstellungen, Probleme…
-    section_filaments_used: Verwendete Filamente
+    section_filaments_used: Geplante Filamente
     at_least_one: mindestens eins
     spool_label: Spule
     select_spool: Spule auswählen…
     remove_aria: Entfernen
-    used_g_label: Verbraucht (g)
+    used_g_label: Geplant (g)
     remaining_label: Verbleibend
     add_filament: + Weiteres Filament hinzufügen
-    save_button: Druckprotokoll speichern
+    section_files: Druckdateien
+    add_file: + Datei hinzufügen
+    file_kind_label: Typ
+    file_kind_link: Link
+    file_kind_upload: Upload
+    url_label: URL
+    url_placeholder: 'https://www.printables.com/model/…'
+    upload_label: STL- / 3MF-Datei
+    remove_file_aria: Datei entfernen
+    save_button: Zum Board hinzufügen
+    save_changes_button: Änderungen speichern
+    edit_title: Druckauftrag bearbeiten
   flash:
-    logged: Druck protokolliert.
-    deleted: Druckprotokoll gelöscht.
+    logged: Druckauftrag zum Board hinzugefügt.
+    deleted: Druckauftrag gelöscht.
+    file_deleted: Datei entfernt.
+    status_updated: Druckauftrag aktualisiert.
+    updated: Druckauftrag aktualisiert.
   validation:
     no_lines: Füge mindestens eine Filamentzeile hinzu.
     line_invalid_spool: 'Zeile {line}: ungültige Spule.'
     line_used_weight: 'Zeile {line}: Verbrauchtes Gewicht muss größer als 0 sein.'
     line_spool_not_found: 'Zeile {line}: Spule nicht gefunden.'
     line_exceeds_remaining: 'Zeile {line}: {used} g überschreitet die verbleibenden {remaining} g auf {code}.'
+    file_invalid_url: 'Datei {line}: Bitte eine gültige URL angeben.'
+    file_no_file: 'Datei {line}: Bitte eine Datei zum Hochladen auswählen.'
+    file_invalid_type: 'Datei {line}: Nur .stl- und .3mf-Dateien werden unterstützt.'
+    file_too_large: 'Datei {line}: Überschreitet das Limit von {max_mb} MB.'
+    cannot_edit_done: Abgeschlossene Druckaufträge können nicht bearbeitet werden. Zuerst wieder öffnen.
+    insufficient_at_done: 'Nicht genug Restfilament zum Abschließen — betroffene Spule(n): {codes}.'
 shop_rules:
   index:
     title: Shop-Regeln

@@ -48,6 +48,9 @@ logs/
 *.sqlite3
 *.sql.gz
 
+# Uploaded print files (never bake into image)
+/data/
+
 # Docs (not needed inside the image)
 README.md
 LICENSE

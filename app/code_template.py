@@ -1,7 +1,9 @@
 """
-Spool code template engine.
-Template stored in AppSetting key 'spool.code_template'.
-Default: SB-{product_id}-{line_id}-{timestamp}-{seq:02d}
+Generic code template engine, used for both spool codes (AppSetting
+'spool.code_template', default SB-{product_id}-{line_id}-{timestamp}-{seq:02d})
+and print job codes (AppSetting 'print.code_template', default PJ-{date}-{seq:03d}).
+{product_id}/{line_id} are only meaningful for spool codes — they resolve to
+the given value (or 0) regardless of which template they're used in.
 
 Supported variables:
   {product_id}        FilamentProduct ID
@@ -22,7 +24,8 @@ from datetime import datetime
 
 _VAR_RE = re.compile(r'\{(\w+)(?::([^}]*))?\}')
 
-DEFAULT_TEMPLATE = "SB-{product_id}-{line_id}-{timestamp}-{seq:02d}"
+SPOOL_DEFAULT_TEMPLATE = "SB-{product_id}-{line_id}-{timestamp}-{seq:02d}"
+PRINT_DEFAULT_TEMPLATE = "PJ-{date}-{seq:03d}"
 
 AVAILABLE_VARS = [
     ("{product_id}", "FilamentProduct ID"),
@@ -39,7 +42,7 @@ AVAILABLE_VARS = [
 ]
 
 
-def generate_spool_code(
+def generate_code(
     template: str,
     product_id: int,
     line_id: int | None,

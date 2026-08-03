@@ -3,7 +3,7 @@ from .app_setting import AppSetting
 from .filament import Manufacturer, FilamentProduct
 from .price_alert_event import PriceAlertEvent
 from .price_snapshot import PriceSnapshot
-from .print_job import PrintJob, PrintJobLine
+from .print_job import PrintJob, PrintJobLine, PrintJobFile, PrintFileKind, PrintJobStatus
 from .purchase import Purchase, PurchaseLine
 from .shop_rule import ShopRule
 from .shoplink import ShopLink
@@ -20,6 +20,6 @@ __all__ = [
     "ShopRule",
     "PriceAlertEvent",
     "AppSetting",
-    "PrintJob", "PrintJobLine",
+    "PrintJob", "PrintJobLine", "PrintJobFile", "PrintFileKind", "PrintJobStatus",
     "ApiKey",
 ]

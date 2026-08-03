@@ -42,6 +42,8 @@ nav:
   users: Users
   settings: Settings
   api_keys: API Keys
+  more: More
+  admin: Admin
   toggle_menu: Toggle menu
 errors:
   '403':
@@ -148,6 +150,14 @@ settings:
       regenerate_subtitle: Overwrites existing codes using the saved template above.
       regenerate_button: Regenerate
       regenerate_confirm: Regenerate all spool codes? Existing codes will be overwritten.
+    print_code:
+      title: Print Job Code Template
+      subtitle: Pattern used when generating print job codes. Changes apply to new print jobs only.
+      template_label: Template
+      regenerate_title: Regenerate all print job codes
+      regenerate_subtitle: Overwrites existing codes using the saved template above.
+      regenerate_button: Regenerate
+      regenerate_confirm: Regenerate all print job codes? Existing codes will be overwritten.
   backup:
     section_title: Backup & Restore
     export:
@@ -166,6 +176,7 @@ settings:
     email_test_failed: 'Email test failed: {error}'
     email_test_success: Email test successful.
     spool_codes_regenerated: 'Spool codes regenerated: {updated} of {total} updated.'
+    print_codes_regenerated: 'Print job codes regenerated: {updated} of {total} updated.'
     import_no_file: 'Import failed: no file selected.'
     import_invalid_json: 'Import failed: file is not valid JSON.'
     import_complete: Import complete. {summary}
@@ -542,46 +553,71 @@ manufacturers:
     website_invalid: Website must start with http:// or https://.
 prints:
   index:
-    title: Print Log
-    subtitle_one: '{count} print logged'
-    subtitle_other: '{count} prints logged'
-    log_button: + Log Print
-    table_date: Date
-    table_print_name: Print Name
-    table_filaments: Filaments
-    table_total_used: Total Used
-    delete_confirm: Delete this print log? This cannot be undone.
-    page_of: Page {page} of {total_pages}
-    previous: ← Previous
-    next: Next →
-    empty: No prints logged yet.
-    log_first: Log your first print →
+    title: Print Board
+    subtitle_one: '{count} print job'
+    subtitle_other: '{count} print jobs'
+    log_button: + New Print Job
+    delete_confirm: Delete this print job? This cannot be undone.
+    empty: No print jobs yet.
+    log_first: Add your first print job →
+    view_3d: View 3D
+    file_link: Link
+    delete_file_confirm: Remove this file? This cannot be undone.
+    untitled: Untitled print
+    column_planned: Planned
+    column_printing: Printing
+    column_done: Done
+    column_empty: No jobs here.
+    move_back: Back
+    reopen: Reopen
+    mark_done: Mark done
+    start: Start
   print_form:
-    title: Log Print
+    title: New Print Job
     new: New
-    subtitle: Record filament usage after a print.
+    subtitle: Plan a print — filament is only deducted once you mark it done on the board.
     section_print_details: Print Details
     print_name_label: Print name / file
     print_name_placeholder: e.g. Benchy, Phone stand, Vase
     notes_placeholder: Quality, settings, issues…
-    section_filaments_used: Filaments Used
+    section_filaments_used: Planned Filaments
     at_least_one: at least one
     spool_label: Spool
     select_spool: Select spool…
     remove_aria: Remove
-    used_g_label: Used (g)
+    used_g_label: Planned (g)
     remaining_label: Remaining
     add_filament: + Add another filament
-    save_button: Save Print Log
+    section_files: Print Files
+    add_file: + Add file
+    file_kind_label: Type
+    file_kind_link: Link
+    file_kind_upload: Upload
+    url_label: URL
+    url_placeholder: 'https://www.printables.com/model/…'
+    upload_label: STL / 3MF file
+    remove_file_aria: Remove file
+    save_button: Add to Board
+    save_changes_button: Save Changes
+    edit_title: Edit Print Job
   flash:
-    logged: Print logged.
-    deleted: Print log deleted.
+    logged: Print job added to the board.
+    deleted: Print job deleted.
+    file_deleted: File removed.
+    status_updated: Print job updated.
+    updated: Print job updated.
   validation:
     no_lines: Add at least one filament line.
     line_invalid_spool: 'Line {line}: invalid spool.'
     line_used_weight: 'Line {line}: used weight must be > 0.'
     line_spool_not_found: 'Line {line}: spool not found.'
     line_exceeds_remaining: 'Line {line}: {used} g exceeds remaining {remaining} g on {code}.'
+    file_invalid_url: 'File {line}: enter a valid URL.'
+    file_no_file: 'File {line}: choose a file to upload.'
+    file_invalid_type: 'File {line}: only .stl and .3mf files are supported.'
+    file_too_large: 'File {line}: exceeds the {max_mb} MB size limit.'
+    cannot_edit_done: Completed print jobs cannot be edited. Reopen it first.
+    insufficient_at_done: 'Not enough remaining filament to mark as done — check spool(s): {codes}.'
 shop_rules:
   index:
     title: Shop Rules

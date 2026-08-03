@@ -17,6 +17,9 @@
 <form id="form-regenerate" method="POST" action="/settings/spool-codes/regenerate">
     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 </form>
+<form id="form-regenerate-print-codes" method="POST" action="/settings/print-codes/regenerate">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+</form>
 <form id="form-import" method="POST" action="/settings/import" enctype="multipart/form-data">
     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 </form>
@@ -323,13 +326,56 @@
                     <p class="text-xs text-gray-600 mt-0.5">{{ t('settings.inventory.spool_code.regenerate_subtitle') }}</p>
                 </div>
                 <button type="submit" form="form-regenerate"
-                        onclick="return confirm('{{ t('settings.inventory.spool_code.regenerate_confirm') }}')"
+                        onclick="return confirm({{ t('settings.inventory.spool_code.regenerate_confirm')|tojson }})"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg flex-shrink-0
                                bg-amber-700 hover:bg-amber-600 text-white transition-colors">
                     <svg viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
                         <path fill-rule="evenodd" d="M8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.001 7.001 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.501 5.501 0 0 0 8 2.5ZM1.705 8.005a.75.75 0 0 1 .834.656 5.501 5.501 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.001 7.001 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834Z" clip-rule="evenodd"/>
                     </svg>
                     {{ t('settings.inventory.spool_code.regenerate_button') }}
+                </button>
+            </div>
+        </div>
+
+        <div class="card p-5 space-y-4 mt-4">
+            <div class="pb-3 border-b border-gray-800">
+                <p class="text-sm font-medium text-gray-200">{{ t('settings.inventory.print_code.title') }}</p>
+                <p class="text-xs text-gray-600 mt-0.5">{{ t('settings.inventory.print_code.subtitle') }}</p>
+            </div>
+            <div>
+                <label for="print_code_template" class="block text-xs text-gray-400 mb-1.5">{{ t('settings.inventory.print_code.template_label') }}</label>
+                <input type="text" id="print_code_template" name="print_code_template"
+                       value="{{ s['print.code_template'] }}"
+                       placeholder="{{ s['print.code_template'] }}"
+                       class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white font-mono
+                              focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30">
+            </div>
+            <div class="rounded-lg bg-gray-850 border border-gray-800 p-3">
+                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-2.5">{{ t('settings.inventory.spool_code.available_vars_title') }}</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1.5">
+                    {% for var, desc in available_vars %}
+                    {% if var not in ('{product_id}', '{line_id}') %}
+                    <div class="flex items-baseline gap-2">
+                        <code class="text-xs text-indigo-400 font-mono whitespace-nowrap">{{ var }}</code>
+                        <span class="text-xs text-gray-600">{{ desc }}</span>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="flex items-center justify-between pt-1 border-t border-gray-800">
+                <div>
+                    <p class="text-sm font-medium text-gray-300">{{ t('settings.inventory.print_code.regenerate_title') }}</p>
+                    <p class="text-xs text-gray-600 mt-0.5">{{ t('settings.inventory.print_code.regenerate_subtitle') }}</p>
+                </div>
+                <button type="submit" form="form-regenerate-print-codes"
+                        onclick="return confirm({{ t('settings.inventory.print_code.regenerate_confirm')|tojson }})"
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg flex-shrink-0
+                               bg-amber-700 hover:bg-amber-600 text-white transition-colors">
+                    <svg viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+                        <path fill-rule="evenodd" d="M8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.001 7.001 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.501 5.501 0 0 0 8 2.5ZM1.705 8.005a.75.75 0 0 1 .834.656 5.501 5.501 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.001 7.001 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834Z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ t('settings.inventory.print_code.regenerate_button') }}
                 </button>
             </div>
         </div>
@@ -374,7 +420,7 @@
                                   file:text-xs file:font-medium file:bg-gray-800 file:text-gray-300
                                   hover:file:bg-gray-750 file:cursor-pointer cursor-pointer">
                     <button type="submit" form="form-import"
-                            onclick="return confirm('{{ t('settings.backup.import.confirm') }}')"
+                            onclick="return confirm({{ t('settings.backup.import.confirm')|tojson }})"
                             class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg flex-shrink-0
                                    bg-sky-700 hover:bg-sky-600 text-white transition-colors">
                         {{ t('settings.backup.import.button') }}

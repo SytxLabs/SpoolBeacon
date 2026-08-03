@@ -11,7 +11,8 @@ from app.models.user import User, UserRole
 from app.settings_service import get_all, set_many
 from app.notification_service import send_discord, send_email, build_test_discord_embed, build_test_email_html
 from app.models.spool import Spool
-from app.spool_code import generate_spool_code, DEFAULT_TEMPLATE, AVAILABLE_VARS
+from app.models.print_job import PrintJob
+from app.code_template import generate_code, SPOOL_DEFAULT_TEMPLATE, PRINT_DEFAULT_TEMPLATE, AVAILABLE_VARS
 from app.import_export_service import export_bundle, import_bundle
 from app.i18n import t, SUPPORTED_LOCALES, DEFAULT_LOCALE
 
@@ -59,7 +60,9 @@ async def save():
             # localization
             "app.language": language if language in SUPPORTED_LOCALES else DEFAULT_LOCALE,
             # spool codes
-            "spool.code_template": form.get("spool_code_template", "").strip() or DEFAULT_TEMPLATE,
+            "spool.code_template": form.get("spool_code_template", "").strip() or SPOOL_DEFAULT_TEMPLATE,
+            # print job codes
+            "print.code_template": form.get("print_code_template", "").strip() or PRINT_DEFAULT_TEMPLATE,
             # scheduler
             "scheduler.enabled": cb("scheduler_enabled"),
             "scheduler.interval_minutes": form.get("scheduler_interval_minutes", "360").strip() or "360",
@@ -116,7 +119,7 @@ async def test_discord():
 async def regenerate_spool_codes():
     async with get_db() as session:
         s = await get_all(session)
-        template = s.get("spool.code_template", DEFAULT_TEMPLATE)
+        template = s.get("spool.code_template", SPOOL_DEFAULT_TEMPLATE)
 
         spools = (await session.execute(
             select(Spool).order_by(Spool.purchase_line_id, Spool.created_at, Spool.id)
@@ -128,7 +131,7 @@ async def regenerate_spool_codes():
         for spool in spools:
             key = (spool.filament_product_id, spool.purchase_line_id)
             seq_counters[key] = seq_counters.get(key, 0) + 1
-            new_code = generate_spool_code(
+            new_code = generate_code(
                 template,
                 product_id=spool.filament_product_id,
                 line_id=spool.purchase_line_id,
@@ -140,6 +143,36 @@ async def regenerate_spool_codes():
                 updated += 1
 
     await flash(t("settings.flash.spool_codes_regenerated", updated=updated, total=len(spools)), "success")
+    return redirect(url_for("settings.index"))
+
+
+@settings_bp.post("/print-codes/regenerate")
+@login_required
+@admin_required
+async def regenerate_print_codes():
+    async with get_db() as session:
+        s = await get_all(session)
+        template = s.get("print.code_template", PRINT_DEFAULT_TEMPLATE)
+
+        jobs = (await session.execute(
+            select(PrintJob).order_by(PrintJob.created_at, PrintJob.id)
+        )).scalars().all()
+
+        now = datetime.utcnow()
+        old_codes = {job.id: job.job_code for job in jobs}
+
+        for job in jobs:
+            job.job_code = f"__tmp_{job.id}"
+        await session.flush()
+
+        updated = 0
+        for i, job in enumerate(jobs):
+            new_code = generate_code(template, product_id=0, line_id=0, seq=i + 1, now=now)
+            job.job_code = new_code
+            if new_code != old_codes[job.id]:
+                updated += 1
+
+    await flash(t("settings.flash.print_codes_regenerated", updated=updated, total=len(jobs)), "success")
     return redirect(url_for("settings.index"))
 
 
